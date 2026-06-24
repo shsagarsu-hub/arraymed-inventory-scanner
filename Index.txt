@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/zxing-wasm@2.1.1/dist/iife/reader/index.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif; }
+
+  :root{
+    --bg:#f5efe6; --surface:#fffdf9; --surface2:#faf6f0;
+    --hdr-bg:#ede4d4; --hdr-border:#d9cfc0;
+    --border:#e8ddd0; --border2:#d9cfc0;
+    --text:#2c2116; --text2:#8b7355; --text3:#b0998a;
+    --red:#c0392b; --red2:#8b2a0e; --red-bg:rgba(192,57,43,.08);
+    --green:#27ae60; --amber:#e67e22; --blue:#667eea;
+  }
+  html,body{ background:var(--bg); color:var(--text); min-height:100vh; }
+
+  .header{ background:linear-gradient(135deg,#b5451b,#8b2a0e); color:#fff9f0; padding:16px 20px;
+    text-align:center; position:sticky; top:0; z-index:20; box-shadow:0 3px 10px rgba(181,69,27,.28); }
+  .header h1{ font-size:17px; font-weight:800; letter-spacing:-.3px; }
+  .header p{ font-size:11px; opacity:.85; margin-top:3px; font-weight:600; }
+
+  .tabs{ display:flex; background:var(--hdr-bg); border-bottom:2px solid var(--hdr-border);
+    position:sticky; top:64px; z-index:19; }
+  .tab{ flex:1; text-align:center; padding:11px 6px; font-size:12px; font-weight:700; color:var(--text2);
+    cursor:pointer; border-bottom:3px solid transparent; transition:all .15s; }
+  .tab.active{ color:var(--red); border-bottom-color:var(--red); background:var(--surface); }
+
+  .container{ padding:14px; max-width:560px; margin:0 auto; }
+  .view{ display:none; } .view.active{ display:block; }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(90,70,50,.06); }
+  .card h3{ font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:.6px;
+    font-weight:800; margin-bottom:10px; }
+
+  .direction-toggle{ display:flex; gap:8px; margin-bottom:14px; }
+  .dir-btn{ flex:1; padding:13px; border-radius:11px; border:2px solid var(--border2);
+    background:var(--surface); font-size:14px; font-weight:800; cursor:pointer; transition:all .15s; color:var(--text2); }
+  .dir-btn.in.active{ background:var(--green); border-color:var(--green); color:#fff; }
+  .dir-btn.out.active{ background:var(--red); border-color:var(--red); color:#fff; }
+
+  .scanner-area{ background:#000; border-radius:12px; overflow:hidden; margin-bottom:12px; }
+  #reader{ width:100%; }
+
+  .btn{ width:100%; padding:13px; border:none; border-radius:10px; font-size:14px; font-weight:700;
+    cursor:pointer; transition:all .15s; font-family:inherit; }
+  .btn-primary{ background:linear-gradient(135deg,#b5451b,#8b2a0e); color:#fff9f0;
+    box-shadow:0 3px 10px rgba(181,69,27,.28); }
+  .btn-primary:hover{ transform:translateY(-1px); }
+  .btn-primary:disabled{ background:#ccc; color:#888; box-shadow:none; transform:none; }
+  .btn-secondary{ background:var(--surface); color:var(--text2); border:1.5px solid var(--border2); }
+  .btn-secondary:hover{ border-color:var(--red); color:var(--red); }
+  .btn-row{ display:flex; gap:8px; }
+  .btn-row .btn{ flex:1; }
+
+  .status-bar{ padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:12px; }
+  .status-ready{ background:#e8f5e9; color:#1e8449; }
+  .status-scanning{ background:#fff3e0; color:#c0710f; }
+  .status-off{ background:var(--surface2); color:var(--text2); }
+
+  .parsed-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .parsed-field{ background:var(--surface2); border-radius:9px; padding:10px; }
+  .parsed-field.full{ grid-column:1/-1; }
+  .parsed-label{ font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; font-weight:700; }
+  .parsed-value{ font-family:'Courier New',monospace; font-size:13px; font-weight:700; color:var(--text); word-break:break-all; }
+  .parsed-value.highlight{ color:var(--red); }
+
+  .item-name-section{ border-top:2px solid var(--border); padding-top:12px; margin-top:4px; }
+  .item-status{ display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:9px; margin-bottom:10px; font-size:12px; font-weight:700; }
+  .item-status.known{ background:#e8f5e9; color:#1e8449; }
+  .item-status.unknown{ background:#fff3cd; color:#8a6313; }
+
+  .fg{ display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+  .fg label{ font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+  .fg input, .fg select{ padding:10px 12px; background:var(--surface); border:2px solid var(--border);
+    border-radius:9px; font-size:13px; color:var(--text); font-family:inherit; }
+  .fg input:focus, .fg select:focus{ outline:none; border-color:var(--red); box-shadow:0 0 0 3px var(--red-bg); }
+
+  .qty-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .qty-row label{ font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+  .qty-btn{ width:38px; height:38px; border-radius:9px; border:2px solid var(--border2); background:var(--surface);
+    font-size:18px; font-weight:800; cursor:pointer; color:var(--text2); }
+  .qty-val{ flex:1; text-align:center; font-size:18px; font-weight:800; }
+
+  .stats-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+  .stat-box{ background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--red);
+    border-radius:11px; padding:11px 8px; text-align:center; }
+  .stat-box.green{ border-top-color:var(--green); }
+  .stat-box.amber{ border-top-color:var(--amber); }
+  .stat-box.blue{ border-top-color:var(--blue); }
+  .stat-num{ font-size:20px; font-weight:800; color:var(--text); }
+  .stat-label{ font-size:9px; color:var(--text2); margin-top:2px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
+
+  .log-entry{ padding:10px 0; border-bottom:1px solid var(--border); }
+  .log-entry:last-child{ border-bottom:none; }
+  .log-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+  .log-name{ font-size:13px; font-weight:700; color:var(--text); }
+  .log-dir{ font-size:9px; font-weight:800; padding:2px 8px; border-radius:10px; text-transform:uppercase; }
+  .log-dir.in{ background:rgba(39,174,96,.12); color:var(--green); }
+  .log-dir.out{ background:rgba(192,57,43,.12); color:var(--red); }
+  .log-meta{ font-size:11px; color:var(--text2); }
+  .log-time{ font-size:10px; color:var(--text3); }
+
+  table{ width:100%; border-collapse:collapse; font-size:11px; }
+  th{ background:var(--hdr-bg); color:var(--text2); font-weight:800; padding:8px 9px; text-align:left;
+    font-size:9px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; border-bottom:2px solid var(--border); }
+  td{ padding:8px 9px; border-bottom:1px solid #f0e8dc; color:var(--text); white-space:nowrap; }
+  tr.neg td{ background:rgba(192,57,43,.06); }
+  tr.neg .bal{ color:var(--red); font-weight:800; }
+  .tbl-wrap{ overflow-x:auto; }
+
+  .empty-state{ text-align:center; padding:24px; color:var(--text3); font-size:13px; }
+  .msg{ padding:9px 13px; border-radius:9px; font-size:12px; font-weight:700; margin-bottom:10px; display:none; }
+  .msg-ok{ background:#d4f5e4; color:#145a32; border-left:4px solid var(--green); }
+  .msg-err{ background:#fde8e8; color:#721c24; border-left:4px solid var(--red); }
+
+  .beep-flash{ display:none; position:fixed; inset:0; background:rgba(39,174,96,.15); z-index:100; pointer-events:none; }
+  .beep-flash.flash{ display:block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📦 ArrayMed Inventory Scanner <span onclick="openApiConfig()" style="cursor:pointer;font-size:14px;">⚙️</span></h1>
+  <p>Real-time GS1 barcode scan-in / scan-out tracking</p>
+  <p style="margin-top:5px;"><span id="apiStatusBadge" style="font-weight:800;">⚠️ Not configured</span></p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-view="scan" onclick="switchTab('scan')">📷 Scan</div>
+  <div class="tab" data-view="dashboard" onclick="switchTab('dashboard')">📊 Stock</div>
+  <div class="tab" data-view="logs" onclick="switchTab('logs')">🕒 Logs</div>
+</div>
+
+<div class="beep-flash" id="flashOverlay"></div>
+
+<div class="container">
+
+  <!-- ══ SCAN VIEW ══ -->
+  <div class="view active" id="view-scan">
+
+    <div class="direction-toggle">
+      <button class="dir-btn in active" id="dirInBtn" onclick="setDirection('IN')">⬇ INWARD</button>
+      <button class="dir-btn out" id="dirOutBtn" onclick="setDirection('OUT')">⬆ OUTWARD</button>
+    </div>
+
+    <div id="statusBar" class="status-bar status-off">Camera off — tap Start to begin</div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="scanner-area">
+        <video id="camVideo" autoplay playsinline muted style="width:100%;display:block;"></video>
+        <canvas id="camCanvas" style="display:none;"></canvas>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="startBtn" onclick="toggleScanner()" style="margin-bottom:14px;">Start Scanner</button>
+
+    <div class="card" id="scanResultCard" style="display:none;">
+      <h3>📋 Scanned Item</h3>
+      <div id="parsedFields"></div>
+
+      <div class="item-name-section">
+        <div id="itemStatusBadge"></div>
+        <div class="msg msg-ok" id="itemMsgOk"></div>
+        <div class="msg msg-err" id="itemMsgErr"></div>
+
+        <div class="fg">
+          <label>Tally Item Name <span style="color:var(--red);">*</span></label>
+          <input type="text" id="itemNameInput" placeholder="Enter item name as per Tally">
+        </div>
+        <div class="fg">
+          <label>Brand (optional)</label>
+          <input type="text" id="brandInput" placeholder="e.g. Stryker, Zeiss, Mindray…">
+        </div>
+
+        <div class="qty-row">
+          <label>Qty</label>
+          <button class="qty-btn" onclick="adjustQty(-1)">−</button>
+          <div class="qty-val" id="qtyVal">1</div>
+          <button class="qty-btn" onclick="adjustQty(1)">+</button>
+        </div>
+
+        <div class="fg">
+          <label>Remarks (optional)</label>
+          <input type="text" id="remarksInput" placeholder="e.g. hospital name, PO ref…">
+        </div>
+
+        <div class="fg">
+          <label>Scanned By</label>
+          <input type="text" id="scannedByInput" placeholder="Your name">
+        </div>
+
+        <button class="btn btn-primary" id="logScanBtn" onclick="submitScan()">✓ Log This Scan</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ DASHBOARD VIEW ══ -->
+  <div class="view" id="view-dashboard">
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-num" id="kTotalScans">0</div><div class="stat-label">Total Scans</div></div>
+      <div class="stat-box blue"><div class="stat-num" id="kUniqueItems">0</div><div class="stat-label">Unique Items</div></div>
+      <div class="stat-box green"><div class="stat-num" id="kTotalIn">0</div><div class="stat-label">Total In</div></div>
+      <div class="stat-box"><div class="stat-num" id="kTotalOut">0</div><div class="stat-label">Total Out</div></div>
+      <div class="stat-box amber"><div class="stat-num" id="kNegative">0</div><div class="stat-label">Negative Bal.</div></div>
+      <div class="stat-box"><div class="stat-num" id="kNetBal">0</div><div class="stat-label">Net Balance</div></div>
+    </div>
+
+    <div class="card" style="padding:0;">
+      <div style="padding:14px 16px 0;display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="margin:0;">📦 Live Stock Balance — by Item &amp; Batch</h3>
+        <button class="btn-secondary btn" style="width:auto;padding:6px 12px;font-size:11px;" onclick="loadDashboard()">⟳ Refresh</button>
+      </div>
+      <div class="tbl-wrap" style="padding:10px 16px 16px;">
+        <table>
+          <thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>Qty In</th><th>Qty Out</th><th>Balance</th><th>Last Scanned</th></tr></thead>
+          <tbody id="stockTableBody"><tr><td colspan="7"><div class="empty-state">Loading…</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LOGS VIEW ══ -->
+  <div class="view" id="view-logs">
+    <div class="card">
+      <h3>🕒 Recent Scan Activity (last 25)</h3>
+      <div id="recentLogsList"><div class="empty-state">Loading…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ========== API CONFIG ==========
+  // The Apps Script project is deployed as a pure JSON API (doGet/doPost).
+  // Paste your deployment's /exec URL once — it's remembered in this browser.
+  let API_BASE_URL = (function() {
+    try { return localStorage.getItem('arraymed_inv_api_url') || ''; } catch (e) { return ''; }
+  })();
+
+  function setApiUrl(url) {
+    API_BASE_URL = url.trim();
+    try { localStorage.setItem('arraymed_inv_api_url', API_BASE_URL); } catch (e) {}
+  }
+
+  function apiGet(action, params) {
+    if (!API_BASE_URL) return Promise.reject('API URL not configured — tap ⚙️ to set it.');
+    const qs = Object.keys(params || {}).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
+    const url = API_BASE_URL + '?action=' + encodeURIComponent(action) + (qs ? '&' + qs : '');
+    return fetch(url).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function apiPost(action, body) {
+    if (!API_BASE_URL) return Promise.reject('API URL not configured — tap ⚙️ to set it.');
+    return fetch(API_BASE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
+      body: JSON.stringify(Object.assign({ action: action }, body))
+    }).then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function openApiConfig() {
+    const current = API_BASE_URL || '';
+    const url = prompt('Paste your Apps Script Web App URL (ends in /exec):', current);
+    if (url !== null && url.trim()) {
+      setApiUrl(url);
+      checkApiConnection();
+    }
+  }
+
+  function checkApiConnection() {
+    const status = document.getElementById('apiStatusBadge');
+    if (!API_BASE_URL) {
+      status.innerHTML = '⚠️ Not configured';
+      status.style.color = 'var(--amber)';
+      return;
+    }
+    status.innerHTML = '🔄 Checking…';
+    apiGet('ping', {})
+      .then(res => {
+        if (res && res.success) {
+          status.innerHTML = '✅ Connected';
+          status.style.color = 'var(--green)';
+        } else {
+          status.innerHTML = '⚠️ Unexpected response';
+          status.style.color = 'var(--amber)';
+        }
+      })
+      .catch(e => {
+        status.innerHTML = '❌ Not reachable';
+        status.style.color = 'var(--red)';
+      });
+  }
+
+  let camStream = null;
+  let isScanning = false;
+  let scanLoopHandle = null;
+  let lastScanTime = 0;
+  let lastScanCode = '';
+  let currentDirection = 'IN';
+  let currentQty = 1;
+  let currentParsed = null;
+  let zxingReady = false;
+
+  // ZXingWASM glue lazily loads its .wasm on first call — kick that off early
+  // so the first real scan isn't delayed waiting on the module.
+  (async function warmupZXing() {
+    try {
+      await ZXingWASM.prepareZXingModule({ fireImmediately: true });
+      zxingReady = true;
+    } catch (e) {
+      console.warn('ZXing warmup failed, will retry on first scan', e);
+    }
+  })();
+
+  checkApiConnection();
+
+  // ========== TAB SWITCHING ==========
+  function switchTab(view) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + view).classList.add('active');
+    if (view === 'dashboard') loadDashboard();
+    if (view === 'logs') loadDashboard();
+  }
+
+  function setDirection(dir) {
+    currentDirection = dir;
+    document.getElementById('dirInBtn').classList.toggle('active', dir === 'IN');
+    document.getElementById('dirOutBtn').classList.toggle('active', dir === 'OUT');
+  }
+
+  function adjustQty(delta) {
+    currentQty = Math.max(1, currentQty + delta);
+    document.getElementById('qtyVal').textContent = currentQty;
+  }
+
+  // ========== GS1 PARSER ==========
+  const GS1_AIS = {
+    '01': { label: 'GTIN', len: 14 },
+    '02': { label: 'Content GTIN', len: 14 },
+    '10': { label: 'Lot/Batch', len: null },
+    '11': { label: 'Production Date', len: 6 },
+    '13': { label: 'Pack Date', len: 6 },
+    '15': { label: 'Best Before', len: 6 },
+    '17': { label: 'Expiry Date', len: 6 },
+    '21': { label: 'Serial No.', len: null },
+    '30': { label: 'Quantity', len: null },
+    '37': { label: 'Count', len: null },
+    '240': { label: 'Product Variant', len: null },
+    '241': { label: 'Customer Part No.', len: null },
+    '250': { label: 'Secondary Serial', len: null },
+  };
+
+  function parseGS1(raw) {
+    let data = raw.replace(/^\]d2/, '').replace(/^\]C1/, '').replace(/^\]e0/, '');
+    const parenRegex = /\((\d{2,4})\)([^()]*)/g;
+    let parenMatch;
+    const fields = [];
+    let usedParen = false;
+    while ((parenMatch = parenRegex.exec(data)) !== null) {
+      usedParen = true;
+      const ai = parenMatch[1];
+      const value = parenMatch[2];
+      const info = GS1_AIS[ai];
+      fields.push({ ai, label: info ? info.label : 'AI ' + ai, value: value.trim() });
+    }
+    if (usedParen && fields.length > 0) return { isGS1: true, fields };
+
+    const parts = data.split(/\x1d/);
+    for (const part of parts) {
+      let pos = 0;
+      while (pos < part.length) {
+        let matched = false;
+        for (const aiLen of [3, 2]) {
+          if (pos + aiLen > part.length) continue;
+          const ai = part.substring(pos, pos + aiLen);
+          if (GS1_AIS[ai]) {
+            const info = GS1_AIS[ai];
+            pos += aiLen;
+            let value;
+            if (info.len) { value = part.substring(pos, pos + info.len); pos += info.len; }
+            else { value = part.substring(pos); pos = part.length; }
+            fields.push({ ai, label: info.label, value: value.trim() });
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) break;
+      }
+    }
+    if (fields.length > 0) return { isGS1: true, fields };
+    return { isGS1: false, fields: [{ ai: '', label: 'Barcode', value: data }] };
+  }
+
+  function formatGS1Date(val) {
+    if (!val || val.length !== 6) return val;
+    const yy = val.substring(0, 2), mm = val.substring(2, 4), dd = val.substring(4, 6);
+    return dd + '/' + mm + '/' + (parseInt(yy) > 50 ? '19' : '20') + yy;
+  }
+  function isDateField(ai) { return ['11','13','15','17'].includes(ai); }
+
+  // ========== CAMERA (raw getUserMedia — same proven pattern as Logistics CRM) ==========
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = currentDirection === 'IN' ? 1400 : 900;
+      gain.gain.value = 0.3;
+      osc.start(); osc.stop(ctx.currentTime + 0.1);
+    } catch(e) {}
+    const flash = document.getElementById('flashOverlay');
+    flash.classList.add('flash');
+    setTimeout(() => flash.classList.remove('flash'), 200);
+  }
+
+  async function toggleScanner() {
+    const btn = document.getElementById('startBtn');
+    const status = document.getElementById('statusBar');
+    if (isScanning) {
+      stopScanner();
+      btn.textContent = 'Start Scanner'; btn.className = 'btn btn-primary';
+      status.className = 'status-bar status-off'; status.textContent = 'Camera off';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Starting camera…';
+    status.className = 'status-bar status-scanning'; status.textContent = 'Requesting camera access…';
+
+    const video = document.getElementById('camVideo');
+    const constraints = { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } };
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      camStream = stream;
+      video.srcObject = stream;
+      await video.play();
+
+      isScanning = true; btn.disabled = false;
+      btn.textContent = 'Stop Scanner'; btn.className = 'btn btn-secondary';
+      status.className = 'status-bar status-ready'; status.textContent = 'Scanning — hold steady over barcode (' + currentDirection + ' mode)';
+
+      runScanLoop();
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Start Scanner';
+      status.className = 'status-bar status-off'; status.textContent = 'Camera access denied';
+      alert('Camera error: ' + err);
+    }
+  }
+
+  function stopScanner() {
+    isScanning = false;
+    if (scanLoopHandle) { cancelAnimationFrame(scanLoopHandle); scanLoopHandle = null; }
+    if (camStream) {
+      camStream.getTracks().forEach(t => t.stop());
+      camStream = null;
+    }
+    const video = document.getElementById('camVideo');
+    video.srcObject = null;
+  }
+
+  // Grabs a frame from the live <video> every ~350ms, decodes it with ZXing-WASM,
+  // and on a hit processes the result. Mirrors the Logistics CRM's manual
+  // canvas-capture approach instead of relying on a library's built-in camera loop.
+  async function runScanLoop() {
+    const video = document.getElementById('camVideo');
+    const canvas = document.getElementById('camCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    async function tick() {
+      if (!isScanning) return;
+      if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        try {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const results = await ZXingWASM.readBarcodesFromImageData(imageData, {
+            tryHarder: true,
+            formats: ['DataMatrix', 'Code128', 'Code39', 'EAN-13', 'EAN-8', 'QRCode', 'ITF', 'Codabar', 'UPC-A', 'UPC-E', 'PDF417', 'Aztec'],
+            maxSymbols: 1
+          });
+          if (results && results.length > 0 && results[0].text) {
+            handleDecodedBarcode(results[0].text, results[0].format);
+          }
+        } catch (e) {
+          // decode miss on this frame — normal, just keep looping
+        }
+      }
+      if (isScanning) scanLoopHandle = requestAnimationFrame(tick);
+    }
+    scanLoopHandle = requestAnimationFrame(tick);
+  }
+
+  function handleDecodedBarcode(decodedText, formatName) {
+    const now = Date.now();
+    if (now - lastScanTime < 2000 && decodedText === lastScanCode) return;
+    lastScanTime = now;
+    lastScanCode = decodedText;
+    beep();
+
+    const parsed = parseGS1(decodedText);
+    const gtinField = parsed.fields.find(f => f.ai === '01');
+    const gtin = gtinField ? gtinField.value : decodedText;
+    const lotField = parsed.fields.find(f => f.ai === '10');
+    const expiryField = parsed.fields.find(f => f.ai === '17');
+    const prodField = parsed.fields.find(f => f.ai === '11');
+
+    currentParsed = {
+      gtin, raw: decodedText, format: formatName || 'Unknown', isGS1: parsed.isGS1,
+      lot: lotField ? lotField.value : '',
+      expiry: expiryField ? formatGS1Date(expiryField.value) : '',
+      productionDate: prodField ? formatGS1Date(prodField.value) : '',
+      fields: parsed.fields
+    };
+
+    renderParsedFields(parsed, formatName || 'Unknown');
+    document.getElementById('scanResultCard').style.display = 'block';
+    document.getElementById('scanResultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    currentQty = 1;
+    document.getElementById('qtyVal').textContent = '1';
+    document.getElementById('itemMsgOk').style.display = 'none';
+    document.getElementById('itemMsgErr').style.display = 'none';
+
+    lookupItem(gtin);
+  }
+
+  function renderParsedFields(parsed, formatName) {
+    let html = '<div class="parsed-grid">';
+    for (const f of parsed.fields) {
+      const displayValue = isDateField(f.ai) ? formatGS1Date(f.value) : f.value;
+      const isGtin = f.ai === '01';
+      const fullWidth = f.ai === '01' || f.label === 'Barcode';
+      html += '<div class="parsed-field ' + (fullWidth ? 'full' : '') + '"><div class="parsed-label">' + f.label + (f.ai ? ' (' + f.ai + ')' : '') + '</div><div class="parsed-value ' + (isGtin ? 'highlight' : '') + '">' + displayValue + '</div></div>';
+    }
+    html += '<div class="parsed-field"><div class="parsed-label">Format</div><div class="parsed-value">' + (parsed.isGS1 ? 'GS1 ' : '') + formatName + '</div></div>';
+    html += '</div>';
+    document.getElementById('parsedFields').innerHTML = html;
+  }
+
+  function lookupItem(gtin) {
+    const badge = document.getElementById('itemStatusBadge');
+    badge.innerHTML = '<div class="item-status unknown">🔍 Checking item master…</div>';
+    apiGet('lookupItemMaster', { gtin: gtin })
+      .then(res => {
+        if (res && res.found) {
+          badge.innerHTML = '<div class="item-status known">✅ Known item — auto-filled from Item Master</div>';
+          document.getElementById('itemNameInput').value = res.itemName || '';
+          document.getElementById('brandInput').value = res.brand || '';
+        } else {
+          badge.innerHTML = '<div class="item-status unknown">⚠️ New GTIN — please enter the Tally Item Name once, it will be remembered next time</div>';
+          document.getElementById('itemNameInput').value = '';
+          document.getElementById('brandInput').value = '';
+        }
+      })
+      .catch(e => {
+        badge.innerHTML = '<div class="item-status unknown">⚠️ Could not check item master — enter name manually</div>';
+      });
+  }
+
+  function submitScan() {
+    const itemName = document.getElementById('itemNameInput').value.trim();
+    const brand = document.getElementById('brandInput').value.trim();
+    const remarks = document.getElementById('remarksInput').value.trim();
+    const scannedBy = document.getElementById('scannedByInput').value.trim();
+    const errEl = document.getElementById('itemMsgErr');
+    const okEl = document.getElementById('itemMsgOk');
+
+    if (!itemName) {
+      errEl.textContent = 'Please enter the Tally Item Name before logging.';
+      errEl.style.display = 'block'; okEl.style.display = 'none';
+      return;
+    }
+    if (!currentParsed) return;
+
+    const btn = document.getElementById('logScanBtn');
+    btn.disabled = true; btn.textContent = '…Saving';
+
+    // Save / update item master mapping first, then log the scan
+    apiPost('saveItemMaster', { gtin: currentParsed.gtin, itemName: itemName, brand: brand, notes: '' })
+      .then(() => {
+        return apiPost('logScan', {
+          entry: {
+            direction: currentDirection,
+            gtin: currentParsed.gtin,
+            itemName: itemName,
+            lot: currentParsed.lot,
+            expiry: currentParsed.expiry,
+            productionDate: currentParsed.productionDate,
+            qty: currentQty,
+            format: currentParsed.format,
+            raw: currentParsed.raw,
+            scannedBy: scannedBy,
+            remarks: remarks
+          }
+        });
+      })
+      .then(res => {
+        btn.disabled = false; btn.textContent = '✓ Log This Scan';
+        if (res && res.success) {
+          okEl.textContent = '✅ ' + currentDirection + ' scan logged for "' + itemName + '" (Qty: ' + currentQty + ')';
+          okEl.style.display = 'block'; errEl.style.display = 'none';
+          setTimeout(() => { okEl.style.display = 'none'; }, 3000);
+        } else {
+          errEl.textContent = '❌ ' + ((res && res.message) || 'Failed to log scan.');
+          errEl.style.display = 'block';
+        }
+      })
+      .catch(e => {
+        btn.disabled = false; btn.textContent = '✓ Log This Scan';
+        errEl.textContent = '❌ Connection error: ' + e;
+        errEl.style.display = 'block';
+      });
+  }
+
+  // ========== DASHBOARD / LOGS ==========
+  function fmtNum(n) {
+    n = parseFloat(n) || 0;
+    return n.toLocaleString('en-IN');
+  }
+
+  function loadDashboard() {
+    apiGet('getDashboardData', {})
+      .then(res => {
+        if (!res || !res.success) return;
+        const k = res.kpis;
+        document.getElementById('kTotalScans').textContent = fmtNum(k.totalScans);
+        document.getElementById('kUniqueItems').textContent = fmtNum(k.uniqueItems);
+        document.getElementById('kTotalIn').textContent = fmtNum(k.totalIn);
+        document.getElementById('kTotalOut').textContent = fmtNum(k.totalOut);
+        document.getElementById('kNegative').textContent = fmtNum(k.negativeCount);
+        document.getElementById('kNetBal').textContent = fmtNum(k.totalIn - k.totalOut);
+
+        const stockBody = document.getElementById('stockTableBody');
+        if (!res.stockRows.length) {
+          stockBody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No scans yet. Start scanning to see live stock here.</div></td></tr>';
+        } else {
+          stockBody.innerHTML = res.stockRows.map(r => {
+            const neg = r.balance < 0;
+            return '<tr class="' + (neg ? 'neg' : '') + '">' +
+              '<td style="font-weight:700;">' + esc(r.itemName) + '</td>' +
+              '<td>' + esc(r.lot || '—') + '</td>' +
+              '<td>' + esc(r.expiry || '—') + '</td>' +
+              '<td style="color:var(--green);font-weight:700;">' + fmtNum(r.qtyIn) + '</td>' +
+              '<td style="color:var(--red);font-weight:700;">' + fmtNum(r.qtyOut) + '</td>' +
+              '<td class="bal" style="font-weight:800;">' + fmtNum(r.balance) + '</td>' +
+              '<td style="font-size:10px;color:var(--text3);">' + fmtDate(r.lastScanned) + '</td>' +
+            '</tr>';
+          }).join('');
+        }
+
+        const logsList = document.getElementById('recentLogsList');
+        if (!res.recentLogs.length) {
+          logsList.innerHTML = '<div class="empty-state">No activity yet.</div>';
+        } else {
+          logsList.innerHTML = res.recentLogs.map(l => {
+            return '<div class="log-entry">' +
+              '<div class="log-top">' +
+                '<span class="log-name">' + esc(l.itemName || '(Unmapped GTIN: ' + l.gtin + ')') + '</span>' +
+                '<span class="log-dir ' + (l.direction === 'OUT' ? 'out' : 'in') + '">' + esc(l.direction) + '</span>' +
+              '</div>' +
+              '<div class="log-meta">Qty: ' + fmtNum(l.qty) + (l.lot ? ' · Lot: ' + esc(l.lot) : '') + (l.expiry ? ' · Exp: ' + esc(l.expiry) : '') + (l.scannedBy ? ' · By: ' + esc(l.scannedBy) : '') + '</div>' +
+              '<div class="log-time">' + fmtDate(l.timestamp) + '</div>' +
+            '</div>';
+          }).join('');
+        }
+      });
+  }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    try {
+      const dt = new Date(d);
+      return dt.toLocaleDateString('en-IN') + ' ' + dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return String(d); }
+  }
+
+  function esc(s) {
+    return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
