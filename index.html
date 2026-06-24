@@ -3,693 +3,946 @@
 <head>
 <base target="_top">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArrayMed — Inventory Scanner</title>
 <script src="https://cdn.jsdelivr.net/npm/zxing-wasm@2.1.1/dist/iife/reader/index.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif; }
 
-  :root{
+  :root {
     --bg:#f5efe6; --surface:#fffdf9; --surface2:#faf6f0;
-    --hdr-bg:#ede4d4; --hdr-border:#d9cfc0;
-    --border:#e8ddd0; --border2:#d9cfc0;
+    --hdr-bg:#2c2116; --border:#e8ddd0; --border2:#d9cfc0;
     --text:#2c2116; --text2:#8b7355; --text3:#b0998a;
-    --red:#c0392b; --red2:#8b2a0e; --red-bg:rgba(192,57,43,.08);
-    --green:#27ae60; --amber:#e67e22; --blue:#667eea;
+    --red:#b5451b; --red2:#8b2a0e; --red-bg:rgba(181,69,27,.09);
+    --green:#27ae60; --green-bg:rgba(39,174,96,.1);
+    --amber:#e67e22; --amber-bg:rgba(230,126,34,.1);
+    --blue:#667eea; --blue-bg:rgba(102,126,234,.1);
+    --sidebar-w:220px;
   }
-  html,body{ background:var(--bg); color:var(--text); min-height:100vh; }
 
-  .header{ background:linear-gradient(135deg,#b5451b,#8b2a0e); color:#fff9f0; padding:16px 20px;
-    text-align:center; position:sticky; top:0; z-index:20; box-shadow:0 3px 10px rgba(181,69,27,.28); }
-  .header h1{ font-size:17px; font-weight:800; letter-spacing:-.3px; }
-  .header p{ font-size:11px; opacity:.85; margin-top:3px; font-weight:600; }
+  html, body { background:var(--bg); color:var(--text); min-height:100vh; }
 
-  .tabs{ display:flex; background:var(--hdr-bg); border-bottom:2px solid var(--hdr-border);
-    position:sticky; top:64px; z-index:19; }
-  .tab{ flex:1; text-align:center; padding:11px 6px; font-size:12px; font-weight:700; color:var(--text2);
-    cursor:pointer; border-bottom:3px solid transparent; transition:all .15s; }
-  .tab.active{ color:var(--red); border-bottom-color:var(--red); background:var(--surface); }
+  /* ── LAYOUT ── */
+  .app-shell { display:flex; min-height:100vh; }
 
-  .container{ padding:14px; max-width:560px; margin:0 auto; }
-  .view{ display:none; } .view.active{ display:block; }
+  /* Sidebar */
+  .sidebar {
+    width:var(--sidebar-w); background:var(--hdr-bg); display:flex;
+    flex-direction:column; position:fixed; top:0; left:0; height:100vh;
+    z-index:30; transition:transform .2s;
+  }
+  .sidebar-logo {
+    padding:20px 16px 16px; border-bottom:1px solid rgba(255,255,255,.1);
+  }
+  .sidebar-logo h1 { font-size:13px; font-weight:800; color:#fff9f0; letter-spacing:-.2px; line-height:1.3; }
+  .sidebar-logo p { font-size:10px; color:rgba(255,249,240,.55); margin-top:3px; font-weight:600; }
+  .api-badge { font-size:10px; font-weight:800; margin-top:8px; display:inline-block; }
 
-  .card{ background:var(--surface); border:1px solid var(--border); border-radius:14px;
-    padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(90,70,50,.06); }
-  .card h3{ font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:.6px;
-    font-weight:800; margin-bottom:10px; }
+  .nav { flex:1; padding:10px 0; overflow-y:auto; }
+  .nav-item {
+    display:flex; align-items:center; gap:10px; padding:11px 18px;
+    font-size:13px; font-weight:700; color:rgba(255,249,240,.65);
+    cursor:pointer; transition:all .15s; border-left:3px solid transparent;
+  }
+  .nav-item:hover { color:#fff9f0; background:rgba(255,255,255,.06); }
+  .nav-item.active { color:#fff9f0; background:rgba(181,69,27,.35); border-left-color:#b5451b; }
+  .nav-item .icon { font-size:16px; width:20px; text-align:center; }
 
-  .direction-toggle{ display:flex; gap:8px; margin-bottom:14px; }
-  .dir-btn{ flex:1; padding:13px; border-radius:11px; border:2px solid var(--border2);
-    background:var(--surface); font-size:14px; font-weight:800; cursor:pointer; transition:all .15s; color:var(--text2); }
-  .dir-btn.in.active{ background:var(--green); border-color:var(--green); color:#fff; }
-  .dir-btn.out.active{ background:var(--red); border-color:var(--red); color:#fff; }
+  .sidebar-footer { padding:12px 16px; border-top:1px solid rgba(255,255,255,.1); }
+  .cfg-btn {
+    width:100%; padding:9px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
+    border-radius:8px; color:rgba(255,249,240,.8); font-size:11px; font-weight:700;
+    cursor:pointer; font-family:inherit; transition:all .15s;
+  }
+  .cfg-btn:hover { background:rgba(255,255,255,.15); }
 
-  .scanner-area{ background:#000; border-radius:12px; overflow:hidden; margin-bottom:12px; }
-  #reader{ width:100%; }
+  /* Main content */
+  .main { margin-left:var(--sidebar-w); flex:1; padding:20px; max-width:900px; }
 
-  .btn{ width:100%; padding:13px; border:none; border-radius:10px; font-size:14px; font-weight:700;
-    cursor:pointer; transition:all .15s; font-family:inherit; }
-  .btn-primary{ background:linear-gradient(135deg,#b5451b,#8b2a0e); color:#fff9f0;
-    box-shadow:0 3px 10px rgba(181,69,27,.28); }
-  .btn-primary:hover{ transform:translateY(-1px); }
-  .btn-primary:disabled{ background:#ccc; color:#888; box-shadow:none; transform:none; }
-  .btn-secondary{ background:var(--surface); color:var(--text2); border:1.5px solid var(--border2); }
-  .btn-secondary:hover{ border-color:var(--red); color:var(--red); }
-  .btn-row{ display:flex; gap:8px; }
-  .btn-row .btn{ flex:1; }
+  /* Mobile: hide sidebar, show bottom nav */
+  @media (max-width:767px) {
+    .sidebar { transform:translateX(-100%); }
+    .main { margin-left:0; padding:12px 12px 80px; }
+    .bottom-nav {
+      display:flex; position:fixed; bottom:0; left:0; right:0; z-index:30;
+      background:var(--hdr-bg); border-top:1px solid rgba(255,255,255,.1);
+    }
+    .bottom-nav-item {
+      flex:1; padding:10px 4px 8px; text-align:center; cursor:pointer;
+      color:rgba(255,249,240,.55); font-size:9px; font-weight:700;
+      text-transform:uppercase; letter-spacing:.3px; transition:all .15s;
+      border-top:2px solid transparent;
+    }
+    .bottom-nav-item .bn-icon { font-size:18px; display:block; margin-bottom:2px; }
+    .bottom-nav-item.active { color:#fff9f0; border-top-color:#b5451b; }
+  }
+  @media (min-width:768px) {
+    .bottom-nav { display:none; }
+  }
 
-  .status-bar{ padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:12px; }
-  .status-ready{ background:#e8f5e9; color:#1e8449; }
-  .status-scanning{ background:#fff3e0; color:#c0710f; }
-  .status-off{ background:var(--surface2); color:var(--text2); }
+  /* ── VIEWS ── */
+  .view { display:none; }
+  .view.active { display:block; }
 
-  .parsed-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
-  .parsed-field{ background:var(--surface2); border-radius:9px; padding:10px; }
-  .parsed-field.full{ grid-column:1/-1; }
-  .parsed-label{ font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; font-weight:700; }
-  .parsed-value{ font-family:'Courier New',monospace; font-size:13px; font-weight:700; color:var(--text); word-break:break-all; }
-  .parsed-value.highlight{ color:var(--red); }
+  .page-title { font-size:20px; font-weight:800; color:var(--text); margin-bottom:16px; letter-spacing:-.4px; }
+  .page-title span { color:var(--red); }
 
-  .item-name-section{ border-top:2px solid var(--border); padding-top:12px; margin-top:4px; }
-  .item-status{ display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:9px; margin-bottom:10px; font-size:12px; font-weight:700; }
-  .item-status.known{ background:#e8f5e9; color:#1e8449; }
-  .item-status.unknown{ background:#fff3cd; color:#8a6313; }
+  /* ── CARDS ── */
+  .card {
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(90,70,50,.05);
+  }
+  .card-title { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:.6px; font-weight:800; margin-bottom:12px; }
 
-  .fg{ display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
-  .fg label{ font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
-  .fg input, .fg select{ padding:10px 12px; background:var(--surface); border:2px solid var(--border);
-    border-radius:9px; font-size:13px; color:var(--text); font-family:inherit; }
-  .fg input:focus, .fg select:focus{ outline:none; border-color:var(--red); box-shadow:0 0 0 3px var(--red-bg); }
+  /* ── KPI ROW ── */
+  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .kpi-box {
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:12px 10px; text-align:center; border-top:3px solid var(--border2);
+  }
+  .kpi-box.red { border-top-color:var(--red); }
+  .kpi-box.green { border-top-color:var(--green); }
+  .kpi-box.blue { border-top-color:var(--blue); }
+  .kpi-box.amber { border-top-color:var(--amber); }
+  .kpi-num { font-size:22px; font-weight:800; color:var(--text); line-height:1; }
+  .kpi-label { font-size:9px; color:var(--text2); margin-top:4px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
 
-  .qty-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-  .qty-row label{ font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
-  .qty-btn{ width:38px; height:38px; border-radius:9px; border:2px solid var(--border2); background:var(--surface);
-    font-size:18px; font-weight:800; cursor:pointer; color:var(--text2); }
-  .qty-val{ flex:1; text-align:center; font-size:18px; font-weight:800; }
+  /* ── BUTTONS ── */
+  .btn {
+    padding:12px 16px; border:none; border-radius:10px; font-size:13px; font-weight:700;
+    cursor:pointer; transition:all .15s; font-family:inherit; display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn-primary { background:linear-gradient(135deg,#b5451b,#8b2a0e); color:#fff9f0; box-shadow:0 3px 10px rgba(181,69,27,.25); }
+  .btn-primary:hover { transform:translateY(-1px); }
+  .btn-primary:disabled { background:#ccc; color:#888; box-shadow:none; transform:none; }
+  .btn-secondary { background:var(--surface); color:var(--text2); border:1.5px solid var(--border2); }
+  .btn-secondary:hover { border-color:var(--red); color:var(--red); }
+  .btn-green { background:var(--green); color:#fff; }
+  .btn-amber { background:var(--amber); color:#fff; }
+  .btn-full { width:100%; justify-content:center; }
 
-  .stats-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
-  .stat-box{ background:var(--surface); border:1px solid var(--border); border-top:3px solid var(--red);
-    border-radius:11px; padding:11px 8px; text-align:center; }
-  .stat-box.green{ border-top-color:var(--green); }
-  .stat-box.amber{ border-top-color:var(--amber); }
-  .stat-box.blue{ border-top-color:var(--blue); }
-  .stat-num{ font-size:20px; font-weight:800; color:var(--text); }
-  .stat-label{ font-size:9px; color:var(--text2); margin-top:2px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
+  /* ── DIRECTION TOGGLE ── */
+  .dir-toggle { display:flex; gap:8px; margin-bottom:14px; }
+  .dir-btn {
+    flex:1; padding:13px; border-radius:11px; border:2px solid var(--border2);
+    background:var(--surface); font-size:13px; font-weight:800; cursor:pointer;
+    transition:all .15s; color:var(--text2); text-align:center;
+  }
+  .dir-btn.in.active { background:var(--green); border-color:var(--green); color:#fff; }
+  .dir-btn.out.active { background:var(--red); border-color:var(--red); color:#fff; }
 
-  .log-entry{ padding:10px 0; border-bottom:1px solid var(--border); }
-  .log-entry:last-child{ border-bottom:none; }
-  .log-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
-  .log-name{ font-size:13px; font-weight:700; color:var(--text); }
-  .log-dir{ font-size:9px; font-weight:800; padding:2px 8px; border-radius:10px; text-transform:uppercase; }
-  .log-dir.in{ background:rgba(39,174,96,.12); color:var(--green); }
-  .log-dir.out{ background:rgba(192,57,43,.12); color:var(--red); }
-  .log-meta{ font-size:11px; color:var(--text2); }
-  .log-time{ font-size:10px; color:var(--text3); }
+  /* ── SCANNER ── */
+  .scanner-wrap { background:#000; border-radius:12px; overflow:hidden; margin-bottom:12px; }
+  #camVideo { width:100%; display:block; }
+  .status-bar { padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:12px; }
+  .s-ready { background:#e8f5e9; color:#1e8449; }
+  .s-scanning { background:#fff3e0; color:#c0710f; }
+  .s-off { background:var(--surface2); color:var(--text2); }
 
-  table{ width:100%; border-collapse:collapse; font-size:11px; }
-  th{ background:var(--hdr-bg); color:var(--text2); font-weight:800; padding:8px 9px; text-align:left;
-    font-size:9px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; border-bottom:2px solid var(--border); }
-  td{ padding:8px 9px; border-bottom:1px solid #f0e8dc; color:var(--text); white-space:nowrap; }
-  tr.neg td{ background:rgba(192,57,43,.06); }
-  tr.neg .bal{ color:var(--red); font-weight:800; }
-  .tbl-wrap{ overflow-x:auto; }
+  /* ── PARSED FIELDS ── */
+  .parsed-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .pf { background:var(--surface2); border-radius:9px; padding:10px; }
+  .pf.full { grid-column:1/-1; }
+  .pf-label { font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; font-weight:700; }
+  .pf-value { font-family:'Courier New',monospace; font-size:13px; font-weight:700; color:var(--text); word-break:break-all; }
+  .pf-value.hi { color:var(--red); }
 
-  .empty-state{ text-align:center; padding:24px; color:var(--text3); font-size:13px; }
-  .msg{ padding:9px 13px; border-radius:9px; font-size:12px; font-weight:700; margin-bottom:10px; display:none; }
-  .msg-ok{ background:#d4f5e4; color:#145a32; border-left:4px solid var(--green); }
-  .msg-err{ background:#fde8e8; color:#721c24; border-left:4px solid var(--red); }
+  /* ── FORM FIELDS ── */
+  .fg { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+  .fg label { font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+  .fg input, .fg select {
+    padding:10px 12px; background:var(--surface); border:2px solid var(--border);
+    border-radius:9px; font-size:13px; color:var(--text); font-family:inherit;
+  }
+  .fg input:focus, .fg select:focus { outline:none; border-color:var(--red); box-shadow:0 0 0 3px var(--red-bg); }
 
-  .beep-flash{ display:none; position:fixed; inset:0; background:rgba(39,174,96,.15); z-index:100; pointer-events:none; }
-  .beep-flash.flash{ display:block; }
+  .qty-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .qty-row label { font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; }
+  .qty-btn { width:38px; height:38px; border-radius:9px; border:2px solid var(--border2); background:var(--surface); font-size:18px; font-weight:800; cursor:pointer; color:var(--text2); }
+  .qty-val { flex:1; text-align:center; font-size:18px; font-weight:800; }
+
+  /* ── ITEM STATUS ── */
+  .item-badge { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:9px; margin-bottom:10px; font-size:12px; font-weight:700; }
+  .item-badge.known { background:var(--green-bg); color:#1e8449; }
+  .item-badge.unknown { background:var(--amber-bg); color:#8a6313; }
+
+  /* ── MSG BARS ── */
+  .msg { padding:9px 13px; border-radius:9px; font-size:12px; font-weight:700; margin-bottom:10px; display:none; }
+  .msg-ok { background:#d4f5e4; color:#145a32; border-left:4px solid var(--green); }
+  .msg-err { background:#fde8e8; color:#721c24; border-left:4px solid var(--red); }
+
+  /* ── TABLES ── */
+  .tbl-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th {
+    background:#f0e8dc; color:var(--text2); font-weight:800; padding:9px 10px;
+    text-align:left; font-size:9px; text-transform:uppercase; letter-spacing:.4px;
+    white-space:nowrap; border-bottom:2px solid var(--border);
+  }
+  td { padding:9px 10px; border-bottom:1px solid #f0e8dc; color:var(--text); }
+  tr:last-child td { border-bottom:none; }
+  tr.neg td { background:rgba(181,69,27,.05); }
+  tr.neg .bal { color:var(--red); font-weight:800; }
+  tr.expiring-soon td { background:rgba(230,126,34,.07); }
+  tr.expired td { background:rgba(181,69,27,.08); }
+  .bal { font-weight:800; }
+
+  /* ── LOG ENTRIES ── */
+  .log-entry { padding:10px 0; border-bottom:1px solid var(--border); }
+  .log-entry:last-child { border-bottom:none; }
+  .log-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+  .log-name { font-size:13px; font-weight:700; }
+  .log-dir { font-size:9px; font-weight:800; padding:2px 8px; border-radius:10px; text-transform:uppercase; }
+  .log-dir.in { background:var(--green-bg); color:var(--green); }
+  .log-dir.out { background:var(--red-bg); color:var(--red); }
+  .log-dir.dc { background:var(--blue-bg); color:var(--blue); }
+  .log-meta { font-size:11px; color:var(--text2); }
+  .log-time { font-size:10px; color:var(--text3); margin-top:2px; }
+
+  /* ── EXPIRY BADGES ── */
+  .exp-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:800; }
+  .exp-ok { background:var(--green-bg); color:var(--green); }
+  .exp-warn { background:var(--amber-bg); color:var(--amber); }
+  .exp-danger { background:var(--red-bg); color:var(--red); }
+  .exp-expired { background:#fde8e8; color:#8b1a1a; }
+
+  /* ── DC HOSPITAL CARD ── */
+  .hospital-header {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 16px; background:var(--surface); border:1px solid var(--border);
+    border-radius:12px 12px 0 0; border-bottom:none; cursor:pointer;
+  }
+  .hospital-header h4 { font-size:14px; font-weight:800; color:var(--text); }
+  .hospital-body { border:1px solid var(--border); border-radius:0 0 12px 12px; overflow:hidden; margin-bottom:12px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(44,33,22,.55);
+    z-index:100; align-items:center; justify-content:center; padding:16px;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:var(--surface); border-radius:16px; padding:20px; width:100%; max-width:380px;
+    box-shadow:0 8px 40px rgba(44,33,22,.25); animation:slideUp .2s ease;
+  }
+  @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+  .modal h3 { font-size:16px; font-weight:800; margin-bottom:6px; }
+  .modal p { font-size:12px; color:var(--text2); margin-bottom:16px; }
+  .modal-opts { display:flex; gap:10px; margin-bottom:16px; }
+  .modal-opt {
+    flex:1; padding:16px 10px; border-radius:12px; border:2px solid var(--border);
+    text-align:center; cursor:pointer; transition:all .15s; font-weight:800; font-size:13px; color:var(--text2);
+  }
+  .modal-opt:hover { border-color:var(--red); color:var(--red); }
+  .modal-opt.selected { border-color:var(--red); background:var(--red-bg); color:var(--red); }
+  .modal-opt .opt-icon { font-size:24px; display:block; margin-bottom:4px; }
+  .modal-cancel { width:100%; padding:10px; background:none; border:none; color:var(--text3); font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; }
+
+  /* ── FLASH ── */
+  .flash-overlay { display:none; position:fixed; inset:0; background:rgba(39,174,96,.15); z-index:200; pointer-events:none; }
+  .flash-overlay.on { display:block; }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align:center; padding:28px 16px; color:var(--text3); }
+  .empty-icon { font-size:32px; margin-bottom:8px; }
+  .empty p { font-size:13px; font-weight:600; }
+  .empty small { font-size:11px; }
+
+  /* ── SECTION DIVIDER ── */
+  .section-label {
+    font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase;
+    letter-spacing:.8px; margin-bottom:10px; margin-top:4px;
+  }
+
+  /* Refresh row */
+  .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .card-header .card-title { margin-bottom:0; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>📦 ArrayMed Inventory Scanner <span onclick="openApiConfig()" style="cursor:pointer;font-size:14px;">⚙️</span></h1>
-  <p>Real-time GS1 barcode scan-in / scan-out tracking</p>
-  <p style="margin-top:5px;"><span id="apiStatusBadge" style="font-weight:800;">⚠️ Not configured</span></p>
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div style="margin-bottom:6px;">
+      <svg width="148" height="32" viewBox="0 0 200 42" xmlns="http://www.w3.org/2000/svg">
+        <text y="36" font-family="Georgia,serif" font-size="40" font-weight="900" letter-spacing="-1">
+          <tspan fill="#ede4d4">Array</tspan><tspan fill="#e8192c">Med</tspan>
+        </text>
+      </svg>
+    </div>
+    <p style="font-size:10px;color:rgba(255,249,240,.5);font-weight:600;letter-spacing:.3px;text-transform:uppercase;">Inventory Scanner</p>
+    <div class="api-badge" id="apiStatusBadge" style="color:#e67e22;">⚠️ Not configured</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" data-view="scan" onclick="switchView('scan')"><span class="icon">📷</span>Scan</div>
+    <div class="nav-item" data-view="inventory" onclick="switchView('inventory')"><span class="icon">📦</span>Inventory Stock</div>
+    <div class="nav-item" data-view="dc" onclick="switchView('dc')"><span class="icon">🏥</span>DC Stock</div>
+    <div class="nav-item" data-view="reports" onclick="switchView('reports')"><span class="icon">📋</span>Reports</div>
+    <div class="nav-item" data-view="logs" onclick="switchView('logs')"><span class="icon">🕒</span>Logs</div>
+  </nav>
+  <div class="sidebar-footer">
+    <button class="cfg-btn" onclick="openApiConfig()">⚙️ Configure API</button>
+  </div>
 </div>
 
-<div class="tabs">
-  <div class="tab active" data-view="scan" onclick="switchTab('scan')">📷 Scan</div>
-  <div class="tab" data-view="dashboard" onclick="switchTab('dashboard')">📊 Stock</div>
-  <div class="tab" data-view="logs" onclick="switchTab('logs')">🕒 Logs</div>
+<!-- ══ BOTTOM NAV (mobile) ══ -->
+<div class="bottom-nav">
+  <div class="bottom-nav-item active" data-view="scan" onclick="switchView('scan')"><span class="bn-icon">📷</span>Scan</div>
+  <div class="bottom-nav-item" data-view="inventory" onclick="switchView('inventory')"><span class="bn-icon">📦</span>Stock</div>
+  <div class="bottom-nav-item" data-view="dc" onclick="switchView('dc')"><span class="bn-icon">🏥</span>DC</div>
+  <div class="bottom-nav-item" data-view="reports" onclick="switchView('reports')"><span class="bn-icon">📋</span>Reports</div>
+  <div class="bottom-nav-item" data-view="logs" onclick="switchView('logs')"><span class="bn-icon">🕒</span>Logs</div>
 </div>
 
-<div class="beep-flash" id="flashOverlay"></div>
+<!-- ══ MAIN ══ -->
+<div class="main">
 
-<div class="container">
-
-  <!-- ══ SCAN VIEW ══ -->
+  <!-- ── SCAN VIEW ── -->
   <div class="view active" id="view-scan">
+    <div class="page-title">📷 Scan <span>Barcode</span></div>
 
-    <div class="direction-toggle">
-      <button class="dir-btn in active" id="dirInBtn" onclick="setDirection('IN')">⬇ INWARD</button>
-      <button class="dir-btn out" id="dirOutBtn" onclick="setDirection('OUT')">⬆ OUTWARD</button>
+    <div class="dir-toggle">
+      <button class="dir-btn in active" id="dirInBtn" onclick="setDirection('IN')">⬇ Inward</button>
+      <button class="dir-btn out" id="dirOutBtn" onclick="setDirection('OUT')">⬆ Outward</button>
     </div>
 
-    <div id="statusBar" class="status-bar status-off">Camera off — tap Start to begin</div>
+    <div id="statusBar" class="status-bar s-off">Camera off — tap Start to begin</div>
 
     <div class="card" style="padding:0;overflow:hidden;">
-      <div class="scanner-area">
-        <video id="camVideo" autoplay playsinline muted style="width:100%;display:block;"></video>
+      <div class="scanner-wrap">
+        <video id="camVideo" autoplay playsinline muted></video>
         <canvas id="camCanvas" style="display:none;"></canvas>
       </div>
     </div>
-    <button class="btn btn-primary" id="startBtn" onclick="toggleScanner()" style="margin-bottom:14px;">Start Scanner</button>
+    <button class="btn btn-primary btn-full" id="startBtn" onclick="toggleScanner()" style="margin-bottom:14px;">▶ Start Scanner</button>
 
     <div class="card" id="scanResultCard" style="display:none;">
-      <h3>📋 Scanned Item</h3>
+      <div class="card-title">📋 Scanned Item</div>
       <div id="parsedFields"></div>
-
-      <div class="item-name-section">
+      <div style="border-top:2px solid var(--border);padding-top:12px;margin-top:4px;">
         <div id="itemStatusBadge"></div>
         <div class="msg msg-ok" id="itemMsgOk"></div>
         <div class="msg msg-err" id="itemMsgErr"></div>
-
         <div class="fg">
-          <label>Tally Item Name <span style="color:var(--red);">*</span></label>
-          <input type="text" id="itemNameInput" placeholder="Enter item name as per Tally">
+          <label>Tally Item Name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="itemNameInput" placeholder="Enter name as per Tally">
         </div>
         <div class="fg">
           <label>Brand (optional)</label>
-          <input type="text" id="brandInput" placeholder="e.g. Stryker, Zeiss, Mindray…">
+          <input type="text" id="brandInput" placeholder="e.g. Stryker, Zeiss…">
         </div>
-
         <div class="qty-row">
           <label>Qty</label>
           <button class="qty-btn" onclick="adjustQty(-1)">−</button>
           <div class="qty-val" id="qtyVal">1</div>
           <button class="qty-btn" onclick="adjustQty(1)">+</button>
         </div>
-
         <div class="fg">
           <label>Remarks (optional)</label>
-          <input type="text" id="remarksInput" placeholder="e.g. hospital name, PO ref…">
+          <input type="text" id="remarksInput" placeholder="PO ref, notes…">
         </div>
-
         <div class="fg">
           <label>Scanned By</label>
           <input type="text" id="scannedByInput" placeholder="Your name">
         </div>
-
-        <button class="btn btn-primary" id="logScanBtn" onclick="submitScan()">✓ Log This Scan</button>
+        <button class="btn btn-primary btn-full" id="logScanBtn" onclick="initiateSubmit()">✓ Log This Scan</button>
       </div>
     </div>
-
   </div>
 
-  <!-- ══ DASHBOARD VIEW ══ -->
-  <div class="view" id="view-dashboard">
-    <div class="stats-row">
-      <div class="stat-box"><div class="stat-num" id="kTotalScans">0</div><div class="stat-label">Total Scans</div></div>
-      <div class="stat-box blue"><div class="stat-num" id="kUniqueItems">0</div><div class="stat-label">Unique Items</div></div>
-      <div class="stat-box green"><div class="stat-num" id="kTotalIn">0</div><div class="stat-label">Total In</div></div>
-      <div class="stat-box"><div class="stat-num" id="kTotalOut">0</div><div class="stat-label">Total Out</div></div>
-      <div class="stat-box amber"><div class="stat-num" id="kNegative">0</div><div class="stat-label">Negative Bal.</div></div>
-      <div class="stat-box"><div class="stat-num" id="kNetBal">0</div><div class="stat-label">Net Balance</div></div>
+  <!-- ── INVENTORY VIEW ── -->
+  <div class="view" id="view-inventory">
+    <div class="page-title">📦 Inventory <span>Stock</span></div>
+    <div class="kpi-grid">
+      <div class="kpi-box red"><div class="kpi-num" id="invTotalScans">0</div><div class="kpi-label">Total Scans</div></div>
+      <div class="kpi-box green"><div class="kpi-num" id="invTotalIn">0</div><div class="kpi-label">Total In</div></div>
+      <div class="kpi-box"><div class="kpi-num" id="invTotalOut">0</div><div class="kpi-label">Total Out (Sale)</div></div>
+      <div class="kpi-box blue"><div class="kpi-num" id="invUniqueItems">0</div><div class="kpi-label">Unique Items</div></div>
+      <div class="kpi-box amber"><div class="kpi-num" id="invNegative">0</div><div class="kpi-label">Negative Bal.</div></div>
+      <div class="kpi-box green"><div class="kpi-num" id="invNetBal">0</div><div class="kpi-label">Net Balance</div></div>
     </div>
-
     <div class="card" style="padding:0;">
-      <div style="padding:14px 16px 0;display:flex;justify-content:space-between;align-items:center;">
-        <h3 style="margin:0;">📦 Live Stock Balance — by Item &amp; Batch</h3>
-        <button class="btn-secondary btn" style="width:auto;padding:6px 12px;font-size:11px;" onclick="loadDashboard()">⟳ Refresh</button>
+      <div style="padding:14px 16px 0;">
+        <div class="card-header">
+          <div class="card-title" style="margin:0;">Live Stock Balance</div>
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">⟳ Refresh</button>
+        </div>
       </div>
-      <div class="tbl-wrap" style="padding:10px 16px 16px;">
+      <div class="tbl-wrap" style="padding:0 16px 16px;">
         <table>
-          <thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>Qty In</th><th>Qty Out</th><th>Balance</th><th>Last Scanned</th></tr></thead>
-          <tbody id="stockTableBody"><tr><td colspan="7"><div class="empty-state">Loading…</div></td></tr></tbody>
+          <thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>In</th><th>Out</th><th>Balance</th><th>Last Scanned</th></tr></thead>
+          <tbody id="invTableBody"><tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><p>Loading…</p></div></td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ══ LOGS VIEW ══ -->
-  <div class="view" id="view-logs">
+  <!-- ── DC STOCK VIEW ── -->
+  <div class="view" id="view-dc">
+    <div class="page-title">🏥 DC <span>Stock</span></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Delivery Challan consignment stock per hospital — Sent − Used = Balance at Hospital</p>
+    <div class="kpi-grid">
+      <div class="kpi-box blue"><div class="kpi-num" id="dcHospitals">0</div><div class="kpi-label">Hospitals</div></div>
+      <div class="kpi-box amber"><div class="kpi-num" id="dcTotalSent">0</div><div class="kpi-label">Total Sent</div></div>
+      <div class="kpi-box green"><div class="kpi-num" id="dcTotalUsed">0</div><div class="kpi-label">Total Used</div></div>
+      <div class="kpi-box red"><div class="kpi-num" id="dcBalance">0</div><div class="kpi-label">At Hospitals</div></div>
+    </div>
+    <div class="card-header" style="margin-bottom:10px;">
+      <div class="section-label" style="margin:0;">By Hospital</div>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">⟳ Refresh</button>
+    </div>
+    <div id="dcHospitalsList"><div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Scan Outward → DC to send stock to a hospital</small></div></div>
+  </div>
+
+  <!-- ── REPORTS VIEW ── -->
+  <div class="view" id="view-reports">
+    <div class="page-title">📋 <span>Reports</span></div>
+
     <div class="card">
-      <h3>🕒 Recent Scan Activity (last 25)</h3>
-      <div id="recentLogsList"><div class="empty-state">Loading…</div></div>
+      <div class="card-header">
+        <div class="card-title" style="margin:0;">⏰ Expiry Tracker — Next 180 Days</div>
+        <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadReports()">⟳ Refresh</button>
+      </div>
+      <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">Covers both Inventory and DC stock. Items expiring within 180 days from today.</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Item Name</th><th>Lot</th><th>Expiry</th><th>Days Left</th><th>Location</th><th>Balance</th><th>Status</th></tr></thead>
+          <tbody id="expiryTableBody"><tr><td colspan="7"><div class="empty"><p>Loading…</p></div></td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
+  <!-- ── LOGS VIEW ── -->
+  <div class="view" id="view-logs">
+    <div class="page-title">🕒 Scan <span>Logs</span></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" style="margin:0;">Recent Activity (last 25)</div>
+        <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadLogs()">⟳ Refresh</button>
+      </div>
+      <div id="recentLogsList"><div class="empty"><p>Loading…</p></div></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══ SCAN TYPE MODAL ══ -->
+<div class="modal-overlay" id="scanTypeModal">
+  <div class="modal">
+    <h3>How is this going out?</h3>
+    <p id="modalSubtext">Select movement type for this outward scan</p>
+    <div class="modal-opts">
+      <div class="modal-opt" id="optSale" onclick="selectScanType('SALE')">
+        <span class="opt-icon">🧾</span>Sale
+      </div>
+      <div class="modal-opt" id="optDC" onclick="selectScanType('DC')">
+        <span class="opt-icon">🏥</span>DC / Consignment
+      </div>
+    </div>
+    <div class="fg" id="hospitalField" style="display:none;">
+      <label>Hospital Name <span style="color:var(--red)">*</span></label>
+      <input type="text" id="hospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="hospitalSuggestions">
+      <datalist id="hospitalSuggestions"></datalist>
+    </div>
+    <button class="btn btn-primary btn-full" id="modalConfirmBtn" onclick="confirmScanType()" style="margin-top:4px;">Confirm & Log</button>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ══ DC USAGE MODAL ══ -->
+<div class="modal-overlay" id="dcUsageModal">
+  <div class="modal">
+    <h3>Log DC Usage</h3>
+    <p id="dcUsageSubtext">Record items consumed at hospital</p>
+    <div class="fg">
+      <label>Item Name</label>
+      <input type="text" id="dcUsageItem" readonly style="background:var(--surface2);">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <div class="fg" style="flex:1;">
+        <label>Lot / Batch</label>
+        <input type="text" id="dcUsageLot" readonly style="background:var(--surface2);">
+      </div>
+      <div class="fg" style="flex:1;">
+        <label>Hospital</label>
+        <input type="text" id="dcUsageHospital" readonly style="background:var(--surface2);">
+      </div>
+    </div>
+    <div class="qty-row">
+      <label>Qty Used</label>
+      <button class="qty-btn" onclick="adjustDcQty(-1)">−</button>
+      <div class="qty-val" id="dcQtyVal">1</div>
+      <button class="qty-btn" onclick="adjustDcQty(1)">+</button>
+    </div>
+    <div class="fg">
+      <label>Remarks (case ref, surgeon…)</label>
+      <input type="text" id="dcUsageRemarks" placeholder="Optional">
+    </div>
+    <button class="btn btn-primary btn-full" id="dcUsageConfirmBtn" onclick="submitDCUsage()">✓ Log Usage</button>
+    <button class="modal-cancel" onclick="closeDCModal()">Cancel</button>
+  </div>
 </div>
 
 <script>
-  // ========== API CONFIG ==========
-  // The Apps Script project is deployed as a pure JSON API (doGet/doPost).
-  // Paste your deployment's /exec URL once — it's remembered in this browser.
-  let API_BASE_URL = (function() {
-    try { return localStorage.getItem('arraymed_inv_api_url') || ''; } catch (e) { return ''; }
-  })();
+// ════════════════════════════════════════════════════════
+//  API
+// ════════════════════════════════════════════════════════
+let API_BASE_URL = (function(){ try { return localStorage.getItem('arraymed_inv_api_url') || ''; } catch(e){ return ''; } })();
 
-  function setApiUrl(url) {
-    API_BASE_URL = url.trim();
-    try { localStorage.setItem('arraymed_inv_api_url', API_BASE_URL); } catch (e) {}
-  }
+function setApiUrl(url){ API_BASE_URL = url.trim(); try{ localStorage.setItem('arraymed_inv_api_url', API_BASE_URL); }catch(e){} }
 
-  function apiGet(action, params) {
-    if (!API_BASE_URL) return Promise.reject('API URL not configured — tap ⚙️ to set it.');
-    const qs = Object.keys(params || {}).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
-    const url = API_BASE_URL + '?action=' + encodeURIComponent(action) + (qs ? '&' + qs : '');
-    return fetch(url).then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    });
-  }
+function apiGet(action, params){
+  if(!API_BASE_URL) return Promise.reject('API URL not configured');
+  const qs = Object.keys(params||{}).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
+  return fetch(API_BASE_URL+'?action='+encodeURIComponent(action)+(qs?'&'+qs:'')).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
+}
 
-  function apiPost(action, body) {
-    if (!API_BASE_URL) return Promise.reject('API URL not configured — tap ⚙️ to set it.');
-    return fetch(API_BASE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids CORS preflight on Apps Script
-      body: JSON.stringify(Object.assign({ action: action }, body))
-    }).then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    });
-  }
+function apiPost(action, body){
+  if(!API_BASE_URL) return Promise.reject('API URL not configured');
+  return fetch(API_BASE_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(Object.assign({action},body))
+  }).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
+}
 
-  function openApiConfig() {
-    const current = API_BASE_URL || '';
-    const url = prompt('Paste your Apps Script Web App URL (ends in /exec):', current);
-    if (url !== null && url.trim()) {
-      setApiUrl(url);
-      checkApiConnection();
+function openApiConfig(){
+  const url = prompt('Paste your Apps Script Web App /exec URL:', API_BASE_URL||'');
+  if(url !== null && url.trim()){ setApiUrl(url); checkApiConnection(); }
+}
+
+function checkApiConnection(){
+  const badge = document.getElementById('apiStatusBadge');
+  if(!API_BASE_URL){ badge.textContent='⚠️ Not configured'; badge.style.color='#e67e22'; return; }
+  badge.textContent='🔄 Checking…'; badge.style.color='#f0c040';
+  apiGet('ping',{})
+    .then(res=>{ if(res&&res.success){ badge.textContent='✅ Connected'; badge.style.color='#2ecc71'; } else { badge.textContent='⚠️ Unexpected'; badge.style.color='#e67e22'; } })
+    .catch(()=>{ badge.textContent='❌ Not reachable'; badge.style.color='#e74c3c'; });
+}
+
+// ════════════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════════════
+function switchView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
+  document.getElementById('view-'+view).classList.add('active');
+  if(view==='inventory') loadInventory();
+  if(view==='dc') loadDC();
+  if(view==='reports') loadReports();
+  if(view==='logs') loadLogs();
+}
+
+// ════════════════════════════════════════════════════════
+//  SCANNER STATE
+// ════════════════════════════════════════════════════════
+let camStream=null, isScanning=false, scanLoopHandle=null;
+let lastScanTime=0, lastScanCode='';
+let currentDirection='IN', currentQty=1, currentParsed=null;
+let pendingScanType=null, pendingHospital='';
+let dcUsageData={};
+
+(async function warmup(){ try{ await ZXingWASM.prepareZXingModule({fireImmediately:true}); }catch(e){} })();
+checkApiConnection();
+
+function setDirection(dir){
+  currentDirection=dir;
+  document.getElementById('dirInBtn').classList.toggle('active', dir==='IN');
+  document.getElementById('dirOutBtn').classList.toggle('active', dir==='OUT');
+}
+
+function adjustQty(d){ currentQty=Math.max(1,currentQty+d); document.getElementById('qtyVal').textContent=currentQty; }
+function adjustDcQty(d){ dcUsageData.qty=Math.max(1,(dcUsageData.qty||1)+d); document.getElementById('dcQtyVal').textContent=dcUsageData.qty; }
+
+// ════════════════════════════════════════════════════════
+//  GS1 PARSER
+// ════════════════════════════════════════════════════════
+const GS1_AIS={'01':{label:'GTIN',len:14},'02':{label:'Content GTIN',len:14},'10':{label:'Lot/Batch',len:null},'11':{label:'Production Date',len:6},'13':{label:'Pack Date',len:6},'15':{label:'Best Before',len:6},'17':{label:'Expiry Date',len:6},'21':{label:'Serial No.',len:null},'30':{label:'Quantity',len:null},'37':{label:'Count',len:null},'240':{label:'Product Variant',len:null},'241':{label:'Customer Part No.',len:null},'250':{label:'Secondary Serial',len:null}};
+
+function parseGS1(raw){
+  let data=raw.replace(/^\]d2/,'').replace(/^\]C1/,'').replace(/^\]e0/,'');
+  const parenRegex=/\((\d{2,4})\)([^()]*)/g;
+  let m; const fields=[]; let usedParen=false;
+  while((m=parenRegex.exec(data))!==null){ usedParen=true; const ai=m[1],value=m[2],info=GS1_AIS[ai]; fields.push({ai,label:info?info.label:'AI '+ai,value:value.trim()}); }
+  if(usedParen&&fields.length>0) return {isGS1:true,fields};
+  const parts=data.split(/\x1d/);
+  for(const part of parts){ let pos=0; while(pos<part.length){ let matched=false; for(const aiLen of [3,2]){ if(pos+aiLen>part.length) continue; const ai=part.substring(pos,pos+aiLen); if(GS1_AIS[ai]){ const info=GS1_AIS[ai]; pos+=aiLen; let value; if(info.len){value=part.substring(pos,pos+info.len);pos+=info.len;}else{value=part.substring(pos);pos=part.length;} fields.push({ai,label:info.label,value:value.trim()}); matched=true; break; } } if(!matched) break; } }
+  if(fields.length>0) return {isGS1:true,fields};
+  return {isGS1:false,fields:[{ai:'',label:'Barcode',value:data}]};
+}
+
+function formatGS1Date(val){
+  if(!val||val.length!==6) return val;
+  const yy=val.substring(0,2),mm=val.substring(2,4),dd=val.substring(4,6);
+  return dd+'/'+mm+'/'+(parseInt(yy)>50?'19':'20')+yy;
+}
+function isDateAI(ai){ return ['11','13','15','17'].includes(ai); }
+
+// Clean any ISO/datetime string to DD/MM/YYYY
+function cleanDate(d){
+  if(!d) return '—';
+  const s=String(d);
+  // Already DD/MM/YYYY
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+  // ISO string
+  try{
+    const dt=new Date(s);
+    if(!isNaN(dt)){
+      const dd=String(dt.getDate()).padStart(2,'0');
+      const mm=String(dt.getMonth()+1).padStart(2,'0');
+      return dd+'/'+mm+'/'+dt.getFullYear();
     }
-  }
+  }catch(e){}
+  return s;
+}
 
-  function checkApiConnection() {
-    const status = document.getElementById('apiStatusBadge');
-    if (!API_BASE_URL) {
-      status.innerHTML = '⚠️ Not configured';
-      status.style.color = 'var(--amber)';
-      return;
+// ════════════════════════════════════════════════════════
+//  CAMERA
+// ════════════════════════════════════════════════════════
+function beep(){
+  try{ const ctx=new(window.AudioContext||window.webkitAudioContext)(); const osc=ctx.createOscillator(); const g=ctx.createGain(); osc.connect(g);g.connect(ctx.destination); osc.frequency.value=currentDirection==='IN'?1400:900; g.gain.value=0.3; osc.start();osc.stop(ctx.currentTime+0.1); }catch(e){}
+  const f=document.getElementById('flashOverlay'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),200);
+}
+
+async function toggleScanner(){
+  const btn=document.getElementById('startBtn'), sb=document.getElementById('statusBar');
+  if(isScanning){ stopScanner(); btn.textContent='▶ Start Scanner'; btn.className='btn btn-primary btn-full'; sb.className='status-bar s-off'; sb.textContent='Camera off'; return; }
+  btn.disabled=true; btn.textContent='Starting camera…';
+  sb.className='status-bar s-scanning'; sb.textContent='Requesting camera access…';
+  const video=document.getElementById('camVideo');
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
+    camStream=stream; video.srcObject=stream; await video.play();
+    isScanning=true; btn.disabled=false; btn.textContent='■ Stop Scanner'; btn.className='btn btn-secondary btn-full';
+    sb.className='status-bar s-ready'; sb.textContent='Scanning — '+currentDirection+' mode active';
+    runScanLoop();
+  }catch(err){ btn.disabled=false; btn.textContent='▶ Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera access denied'; alert('Camera error: '+err); }
+}
+
+function stopScanner(){
+  isScanning=false;
+  if(scanLoopHandle){cancelAnimationFrame(scanLoopHandle);scanLoopHandle=null;}
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  document.getElementById('camVideo').srcObject=null;
+}
+
+async function runScanLoop(){
+  const video=document.getElementById('camVideo'), canvas=document.getElementById('camCanvas');
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  async function tick(){
+    if(!isScanning) return;
+    if(video.readyState===video.HAVE_ENOUGH_DATA&&video.videoWidth>0){
+      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      try{
+        const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+        const results=await ZXingWASM.readBarcodesFromImageData(imgData,{tryHarder:true,formats:['DataMatrix','Code128','Code39','EAN-13','EAN-8','QRCode','ITF','Codabar','UPC-A','UPC-E','PDF417','Aztec'],maxSymbols:1});
+        if(results&&results.length>0&&results[0].text) handleDecodedBarcode(results[0].text,results[0].format);
+      }catch(e){}
     }
-    status.innerHTML = '🔄 Checking…';
-    apiGet('ping', {})
-      .then(res => {
-        if (res && res.success) {
-          status.innerHTML = '✅ Connected';
-          status.style.color = 'var(--green)';
-        } else {
-          status.innerHTML = '⚠️ Unexpected response';
-          status.style.color = 'var(--amber)';
-        }
-      })
-      .catch(e => {
-        status.innerHTML = '❌ Not reachable';
-        status.style.color = 'var(--red)';
-      });
+    if(isScanning) scanLoopHandle=requestAnimationFrame(tick);
   }
+  scanLoopHandle=requestAnimationFrame(tick);
+}
 
-  let camStream = null;
-  let isScanning = false;
-  let scanLoopHandle = null;
-  let lastScanTime = 0;
-  let lastScanCode = '';
-  let currentDirection = 'IN';
-  let currentQty = 1;
-  let currentParsed = null;
-  let zxingReady = false;
-
-  // ZXingWASM glue lazily loads its .wasm on first call — kick that off early
-  // so the first real scan isn't delayed waiting on the module.
-  (async function warmupZXing() {
-    try {
-      await ZXingWASM.prepareZXingModule({ fireImmediately: true });
-      zxingReady = true;
-    } catch (e) {
-      console.warn('ZXing warmup failed, will retry on first scan', e);
-    }
-  })();
-
-  checkApiConnection();
-
-  // ========== TAB SWITCHING ==========
-  function switchTab(view) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + view).classList.add('active');
-    if (view === 'dashboard') loadDashboard();
-    if (view === 'logs') loadDashboard();
-  }
-
-  function setDirection(dir) {
-    currentDirection = dir;
-    document.getElementById('dirInBtn').classList.toggle('active', dir === 'IN');
-    document.getElementById('dirOutBtn').classList.toggle('active', dir === 'OUT');
-  }
-
-  function adjustQty(delta) {
-    currentQty = Math.max(1, currentQty + delta);
-    document.getElementById('qtyVal').textContent = currentQty;
-  }
-
-  // ========== GS1 PARSER ==========
-  const GS1_AIS = {
-    '01': { label: 'GTIN', len: 14 },
-    '02': { label: 'Content GTIN', len: 14 },
-    '10': { label: 'Lot/Batch', len: null },
-    '11': { label: 'Production Date', len: 6 },
-    '13': { label: 'Pack Date', len: 6 },
-    '15': { label: 'Best Before', len: 6 },
-    '17': { label: 'Expiry Date', len: 6 },
-    '21': { label: 'Serial No.', len: null },
-    '30': { label: 'Quantity', len: null },
-    '37': { label: 'Count', len: null },
-    '240': { label: 'Product Variant', len: null },
-    '241': { label: 'Customer Part No.', len: null },
-    '250': { label: 'Secondary Serial', len: null },
+function handleDecodedBarcode(text, fmt){
+  const now=Date.now();
+  if(now-lastScanTime<2000&&text===lastScanCode) return;
+  lastScanTime=now; lastScanCode=text;
+  beep();
+  const parsed=parseGS1(text);
+  const gtinF=parsed.fields.find(f=>f.ai==='01');
+  const lotF=parsed.fields.find(f=>f.ai==='10');
+  const expF=parsed.fields.find(f=>f.ai==='17');
+  const prodF=parsed.fields.find(f=>f.ai==='11');
+  currentParsed={
+    gtin:gtinF?gtinF.value:text, raw:text, format:fmt||'Unknown', isGS1:parsed.isGS1,
+    lot:lotF?lotF.value:'', expiry:expF?formatGS1Date(expF.value):'',
+    productionDate:prodF?formatGS1Date(prodF.value):'', fields:parsed.fields
   };
+  renderParsedFields(parsed, fmt||'Unknown');
+  const card=document.getElementById('scanResultCard');
+  card.style.display='block'; card.scrollIntoView({behavior:'smooth',block:'start'});
+  currentQty=1; document.getElementById('qtyVal').textContent='1';
+  document.getElementById('itemMsgOk').style.display='none';
+  document.getElementById('itemMsgErr').style.display='none';
+  lookupItem(currentParsed.gtin);
+}
 
-  function parseGS1(raw) {
-    let data = raw.replace(/^\]d2/, '').replace(/^\]C1/, '').replace(/^\]e0/, '');
-    const parenRegex = /\((\d{2,4})\)([^()]*)/g;
-    let parenMatch;
-    const fields = [];
-    let usedParen = false;
-    while ((parenMatch = parenRegex.exec(data)) !== null) {
-      usedParen = true;
-      const ai = parenMatch[1];
-      const value = parenMatch[2];
-      const info = GS1_AIS[ai];
-      fields.push({ ai, label: info ? info.label : 'AI ' + ai, value: value.trim() });
-    }
-    if (usedParen && fields.length > 0) return { isGS1: true, fields };
+function renderParsedFields(parsed, fmt){
+  let html='<div class="parsed-grid">';
+  for(const f of parsed.fields){
+    const dv=isDateAI(f.ai)?formatGS1Date(f.value):f.value;
+    const full=f.ai==='01'||f.label==='Barcode';
+    html+=`<div class="pf ${full?'full':''}"><div class="pf-label">${f.label}${f.ai?' ('+f.ai+')':''}</div><div class="pf-value ${f.ai==='01'?'hi':''}">${dv}</div></div>`;
+  }
+  html+=`<div class="pf"><div class="pf-label">Format</div><div class="pf-value">${parsed.isGS1?'GS1 ':''}${fmt}</div></div>`;
+  html+='</div>';
+  document.getElementById('parsedFields').innerHTML=html;
+}
 
-    const parts = data.split(/\x1d/);
-    for (const part of parts) {
-      let pos = 0;
-      while (pos < part.length) {
-        let matched = false;
-        for (const aiLen of [3, 2]) {
-          if (pos + aiLen > part.length) continue;
-          const ai = part.substring(pos, pos + aiLen);
-          if (GS1_AIS[ai]) {
-            const info = GS1_AIS[ai];
-            pos += aiLen;
-            let value;
-            if (info.len) { value = part.substring(pos, pos + info.len); pos += info.len; }
-            else { value = part.substring(pos); pos = part.length; }
-            fields.push({ ai, label: info.label, value: value.trim() });
-            matched = true;
-            break;
-          }
-        }
-        if (!matched) break;
+function lookupItem(gtin){
+  const badge=document.getElementById('itemStatusBadge');
+  badge.innerHTML='<div class="item-badge unknown">🔍 Checking item master…</div>';
+  apiGet('lookupItemMaster',{gtin})
+    .then(res=>{
+      if(res&&res.found){
+        badge.innerHTML='<div class="item-badge known">✅ Known item — auto-filled</div>';
+        document.getElementById('itemNameInput').value=res.itemName||'';
+        document.getElementById('brandInput').value=res.brand||'';
+      } else {
+        badge.innerHTML='<div class="item-badge unknown">⚠️ New GTIN — enter Tally name once, remembered next time</div>';
+        document.getElementById('itemNameInput').value='';
+        document.getElementById('brandInput').value='';
       }
+    }).catch(()=>{ badge.innerHTML='<div class="item-badge unknown">⚠️ Could not check item master</div>'; });
+}
+
+// ════════════════════════════════════════════════════════
+//  SCAN SUBMIT — with Sale/DC modal for Outward
+// ════════════════════════════════════════════════════════
+function initiateSubmit(){
+  const itemName=document.getElementById('itemNameInput').value.trim();
+  const err=document.getElementById('itemMsgErr');
+  if(!itemName){ err.textContent='Please enter the Tally Item Name before logging.'; err.style.display='block'; return; }
+  if(!currentParsed) return;
+  if(currentDirection==='OUT'){
+    openScanTypeModal();
+  } else {
+    submitScan('SALE', '');
+  }
+}
+
+function openScanTypeModal(){
+  pendingScanType=null;
+  document.getElementById('optSale').classList.remove('selected');
+  document.getElementById('optDC').classList.remove('selected');
+  document.getElementById('hospitalField').style.display='none';
+  document.getElementById('hospitalInput').value='';
+  document.getElementById('scanTypeModal').classList.add('open');
+  // Pre-populate hospital suggestions from existing DC data
+  apiGet('getDCHospitals',{}).then(res=>{
+    if(res&&res.hospitals){
+      const dl=document.getElementById('hospitalSuggestions');
+      dl.innerHTML=res.hospitals.map(h=>`<option value="${esc(h)}">`).join('');
     }
-    if (fields.length > 0) return { isGS1: true, fields };
-    return { isGS1: false, fields: [{ ai: '', label: 'Barcode', value: data }] };
-  }
+  }).catch(()=>{});
+}
 
-  function formatGS1Date(val) {
-    if (!val || val.length !== 6) return val;
-    const yy = val.substring(0, 2), mm = val.substring(2, 4), dd = val.substring(4, 6);
-    return dd + '/' + mm + '/' + (parseInt(yy) > 50 ? '19' : '20') + yy;
-  }
-  function isDateField(ai) { return ['11','13','15','17'].includes(ai); }
+function selectScanType(type){
+  pendingScanType=type;
+  document.getElementById('optSale').classList.toggle('selected', type==='SALE');
+  document.getElementById('optDC').classList.toggle('selected', type==='DC');
+  document.getElementById('hospitalField').style.display=type==='DC'?'flex':'none';
+}
 
-  // ========== CAMERA (raw getUserMedia — same proven pattern as Logistics CRM) ==========
-  function beep() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.frequency.value = currentDirection === 'IN' ? 1400 : 900;
-      gain.gain.value = 0.3;
-      osc.start(); osc.stop(ctx.currentTime + 0.1);
-    } catch(e) {}
-    const flash = document.getElementById('flashOverlay');
-    flash.classList.add('flash');
-    setTimeout(() => flash.classList.remove('flash'), 200);
-  }
+function closeModal(){ document.getElementById('scanTypeModal').classList.remove('open'); }
 
-  async function toggleScanner() {
-    const btn = document.getElementById('startBtn');
-    const status = document.getElementById('statusBar');
-    if (isScanning) {
-      stopScanner();
-      btn.textContent = 'Start Scanner'; btn.className = 'btn btn-primary';
-      status.className = 'status-bar status-off'; status.textContent = 'Camera off';
+function confirmScanType(){
+  if(!pendingScanType){ alert('Please select Sale or DC first.'); return; }
+  if(pendingScanType==='DC'){
+    const hosp=document.getElementById('hospitalInput').value.trim();
+    if(!hosp){ alert('Please enter the hospital name for DC tracking.'); return; }
+    pendingHospital=hosp;
+  } else {
+    pendingHospital='';
+  }
+  closeModal();
+  submitScan(pendingScanType, pendingHospital);
+}
+
+function submitScan(scanType, hospital){
+  const itemName=document.getElementById('itemNameInput').value.trim();
+  const brand=document.getElementById('brandInput').value.trim();
+  const remarks=document.getElementById('remarksInput').value.trim();
+  const scannedBy=document.getElementById('scannedByInput').value.trim();
+  const okEl=document.getElementById('itemMsgOk'), errEl=document.getElementById('itemMsgErr');
+  const btn=document.getElementById('logScanBtn');
+  btn.disabled=true; btn.textContent='…Saving';
+
+  apiPost('saveItemMaster',{gtin:currentParsed.gtin,itemName,brand,notes:''})
+    .then(()=>apiPost('logScan',{entry:{
+      direction:currentDirection,
+      scanType:scanType,          // 'SALE' or 'DC'
+      hospital:hospital,
+      gtin:currentParsed.gtin,
+      itemName,
+      lot:currentParsed.lot,
+      expiry:currentParsed.expiry,
+      productionDate:currentParsed.productionDate,
+      qty:currentQty,
+      format:currentParsed.format,
+      raw:currentParsed.raw,
+      scannedBy,
+      remarks
+    }}))
+    .then(res=>{
+      btn.disabled=false; btn.textContent='✓ Log This Scan';
+      if(res&&res.success){
+        const typeLabel=scanType==='DC'?` → DC (${hospital})`:'→ Sale';
+        okEl.textContent=`✅ ${currentDirection} ${typeLabel} logged for "${itemName}" (Qty: ${currentQty})`;
+        okEl.style.display='block'; errEl.style.display='none';
+        setTimeout(()=>okEl.style.display='none',3500);
+      } else {
+        errEl.textContent='❌ '+((res&&res.message)||'Failed to log scan.');
+        errEl.style.display='block';
+      }
+    })
+    .catch(e=>{ btn.disabled=false; btn.textContent='✓ Log This Scan'; errEl.textContent='❌ Connection error: '+e; errEl.style.display='block'; });
+}
+
+// ════════════════════════════════════════════════════════
+//  DC USAGE MODAL
+// ════════════════════════════════════════════════════════
+function openDCUsage(itemName, gtin, lot, hospital, maxQty){
+  dcUsageData={itemName,gtin,lot,hospital,qty:1,maxQty};
+  document.getElementById('dcUsageItem').value=itemName;
+  document.getElementById('dcUsageLot').value=lot||'—';
+  document.getElementById('dcUsageHospital').value=hospital;
+  document.getElementById('dcQtyVal').textContent='1';
+  document.getElementById('dcUsageRemarks').value='';
+  document.getElementById('dcUsageSubtext').textContent=`Consignment at ${hospital}`;
+  document.getElementById('dcUsageModal').classList.add('open');
+}
+function closeDCModal(){ document.getElementById('dcUsageModal').classList.remove('open'); }
+
+function submitDCUsage(){
+  const btn=document.getElementById('dcUsageConfirmBtn');
+  const remarks=document.getElementById('dcUsageRemarks').value.trim();
+  btn.disabled=true; btn.textContent='…Saving';
+  apiPost('logDCUsage',{
+    itemName:dcUsageData.itemName, gtin:dcUsageData.gtin,
+    lot:dcUsageData.lot, hospital:dcUsageData.hospital,
+    qty:dcUsageData.qty, remarks
+  }).then(res=>{
+    btn.disabled=false; btn.textContent='✓ Log Usage';
+    if(res&&res.success){ closeDCModal(); loadDC(); }
+    else alert('Error: '+((res&&res.message)||'Failed'));
+  }).catch(e=>{ btn.disabled=false; btn.textContent='✓ Log Usage'; alert('Error: '+e); });
+}
+
+// ════════════════════════════════════════════════════════
+//  LOAD FUNCTIONS
+// ════════════════════════════════════════════════════════
+function fmtNum(n){ return (parseFloat(n)||0).toLocaleString('en-IN'); }
+
+function loadInventory(){
+  apiGet('getDashboardData',{}).then(res=>{
+    if(!res||!res.success) return;
+    const k=res.kpis;
+    document.getElementById('invTotalScans').textContent=fmtNum(k.totalScans);
+    document.getElementById('invTotalIn').textContent=fmtNum(k.totalIn);
+    document.getElementById('invTotalOut').textContent=fmtNum(k.totalOut);
+    document.getElementById('invUniqueItems').textContent=fmtNum(k.uniqueItems);
+    document.getElementById('invNegative').textContent=fmtNum(k.negativeCount);
+    document.getElementById('invNetBal').textContent=fmtNum(k.totalIn-k.totalOut);
+    const tbody=document.getElementById('invTableBody');
+    if(!res.stockRows.length){
+      tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><p>No inventory scans yet</p></div></td></tr>';
+    } else {
+      tbody.innerHTML=res.stockRows.map(r=>`
+        <tr class="${r.balance<0?'neg':''}">
+          <td style="font-weight:700;">${esc(r.itemName)}</td>
+          <td>${esc(r.lot||'—')}</td>
+          <td>${cleanDate(r.expiry)}</td>
+          <td style="color:var(--green);font-weight:700;">${fmtNum(r.qtyIn)}</td>
+          <td style="color:var(--red);font-weight:700;">${fmtNum(r.qtyOut)}</td>
+          <td class="bal">${fmtNum(r.balance)}</td>
+          <td style="font-size:10px;color:var(--text3);">${cleanDate(r.lastScanned)}</td>
+        </tr>`).join('');
+    }
+  }).catch(()=>{});
+}
+
+function loadLogs(){
+  apiGet('getDashboardData',{}).then(res=>{
+    if(!res||!res.success) return;
+    const el=document.getElementById('recentLogsList');
+    if(!res.recentLogs.length){
+      el.innerHTML='<div class="empty"><p>No activity yet</p></div>';
+    } else {
+      el.innerHTML=res.recentLogs.map(l=>`
+        <div class="log-entry">
+          <div class="log-top">
+            <span class="log-name">${esc(l.itemName||(l.gtin?'GTIN: '+l.gtin:'Unknown'))}</span>
+            <span class="log-dir ${l.direction==='OUT'?(l.scanType==='DC'?'dc':'out'):'in'}">${l.direction==='OUT'?(l.scanType==='DC'?'DC':'Sale'):'IN'}</span>
+          </div>
+          <div class="log-meta">Qty: ${fmtNum(l.qty)}${l.lot?' · Lot: '+esc(l.lot):''}${l.hospital?' · Hospital: '+esc(l.hospital):''}${l.scannedBy?' · By: '+esc(l.scannedBy):''}</div>
+          <div class="log-time">${cleanDate(l.timestamp)}</div>
+        </div>`).join('');
+    }
+  }).catch(()=>{});
+}
+
+function loadDC(){
+  apiGet('getDCStockData',{}).then(res=>{
+    if(!res||!res.success) return;
+    document.getElementById('dcHospitals').textContent=res.kpis.hospitals;
+    document.getElementById('dcTotalSent').textContent=fmtNum(res.kpis.totalSent);
+    document.getElementById('dcTotalUsed').textContent=fmtNum(res.kpis.totalUsed);
+    document.getElementById('dcBalance').textContent=fmtNum(res.kpis.balance);
+    const el=document.getElementById('dcHospitalsList');
+    if(!res.byHospital||!Object.keys(res.byHospital).length){
+      el.innerHTML='<div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Scan Outward → DC to send stock to a hospital</small></div>';
       return;
     }
+    el.innerHTML=Object.entries(res.byHospital).map(([hosp,rows])=>`
+      <div class="hospital-header"><h4>🏥 ${esc(hosp)}</h4><span style="font-size:11px;color:var(--text2);">${rows.length} item${rows.length!==1?'s':''}</span></div>
+      <div class="hospital-body">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Item</th><th>Lot</th><th>Expiry</th><th>Sent</th><th>Used</th><th>At Hospital</th><th></th></tr></thead>
+            <tbody>
+              ${rows.map(r=>`
+                <tr class="${r.balance<=0?'neg':''}">
+                  <td style="font-weight:700;">${esc(r.itemName)}</td>
+                  <td>${esc(r.lot||'—')}</td>
+                  <td>${cleanDate(r.expiry)}</td>
+                  <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
+                  <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
+                  <td class="bal">${fmtNum(r.balance)}</td>
+                  <td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage('${esc(r.itemName).replace(/'/g,"\\'")}','${esc(r.gtin)}','${esc(r.lot||'')}','${esc(hosp).replace(/'/g,"\\'")}',${r.balance})">Log Use</button></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`).join('');
+  }).catch(()=>{});
+}
 
-    btn.disabled = true; btn.textContent = 'Starting camera…';
-    status.className = 'status-bar status-scanning'; status.textContent = 'Requesting camera access…';
-
-    const video = document.getElementById('camVideo');
-    const constraints = { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } };
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      camStream = stream;
-      video.srcObject = stream;
-      await video.play();
-
-      isScanning = true; btn.disabled = false;
-      btn.textContent = 'Stop Scanner'; btn.className = 'btn btn-secondary';
-      status.className = 'status-bar status-ready'; status.textContent = 'Scanning — hold steady over barcode (' + currentDirection + ' mode)';
-
-      runScanLoop();
-    } catch (err) {
-      btn.disabled = false; btn.textContent = 'Start Scanner';
-      status.className = 'status-bar status-off'; status.textContent = 'Camera access denied';
-      alert('Camera error: ' + err);
-    }
-  }
-
-  function stopScanner() {
-    isScanning = false;
-    if (scanLoopHandle) { cancelAnimationFrame(scanLoopHandle); scanLoopHandle = null; }
-    if (camStream) {
-      camStream.getTracks().forEach(t => t.stop());
-      camStream = null;
-    }
-    const video = document.getElementById('camVideo');
-    video.srcObject = null;
-  }
-
-  // Grabs a frame from the live <video> every ~350ms, decodes it with ZXing-WASM,
-  // and on a hit processes the result. Mirrors the Logistics CRM's manual
-  // canvas-capture approach instead of relying on a library's built-in camera loop.
-  async function runScanLoop() {
-    const video = document.getElementById('camVideo');
-    const canvas = document.getElementById('camCanvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-    async function tick() {
-      if (!isScanning) return;
-      if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        try {
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const results = await ZXingWASM.readBarcodesFromImageData(imageData, {
-            tryHarder: true,
-            formats: ['DataMatrix', 'Code128', 'Code39', 'EAN-13', 'EAN-8', 'QRCode', 'ITF', 'Codabar', 'UPC-A', 'UPC-E', 'PDF417', 'Aztec'],
-            maxSymbols: 1
-          });
-          if (results && results.length > 0 && results[0].text) {
-            handleDecodedBarcode(results[0].text, results[0].format);
-          }
-        } catch (e) {
-          // decode miss on this frame — normal, just keep looping
-        }
-      }
-      if (isScanning) scanLoopHandle = requestAnimationFrame(tick);
-    }
-    scanLoopHandle = requestAnimationFrame(tick);
-  }
-
-  function handleDecodedBarcode(decodedText, formatName) {
-    const now = Date.now();
-    if (now - lastScanTime < 2000 && decodedText === lastScanCode) return;
-    lastScanTime = now;
-    lastScanCode = decodedText;
-    beep();
-
-    const parsed = parseGS1(decodedText);
-    const gtinField = parsed.fields.find(f => f.ai === '01');
-    const gtin = gtinField ? gtinField.value : decodedText;
-    const lotField = parsed.fields.find(f => f.ai === '10');
-    const expiryField = parsed.fields.find(f => f.ai === '17');
-    const prodField = parsed.fields.find(f => f.ai === '11');
-
-    currentParsed = {
-      gtin, raw: decodedText, format: formatName || 'Unknown', isGS1: parsed.isGS1,
-      lot: lotField ? lotField.value : '',
-      expiry: expiryField ? formatGS1Date(expiryField.value) : '',
-      productionDate: prodField ? formatGS1Date(prodField.value) : '',
-      fields: parsed.fields
-    };
-
-    renderParsedFields(parsed, formatName || 'Unknown');
-    document.getElementById('scanResultCard').style.display = 'block';
-    document.getElementById('scanResultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    currentQty = 1;
-    document.getElementById('qtyVal').textContent = '1';
-    document.getElementById('itemMsgOk').style.display = 'none';
-    document.getElementById('itemMsgErr').style.display = 'none';
-
-    lookupItem(gtin);
-  }
-
-  function renderParsedFields(parsed, formatName) {
-    let html = '<div class="parsed-grid">';
-    for (const f of parsed.fields) {
-      const displayValue = isDateField(f.ai) ? formatGS1Date(f.value) : f.value;
-      const isGtin = f.ai === '01';
-      const fullWidth = f.ai === '01' || f.label === 'Barcode';
-      html += '<div class="parsed-field ' + (fullWidth ? 'full' : '') + '"><div class="parsed-label">' + f.label + (f.ai ? ' (' + f.ai + ')' : '') + '</div><div class="parsed-value ' + (isGtin ? 'highlight' : '') + '">' + displayValue + '</div></div>';
-    }
-    html += '<div class="parsed-field"><div class="parsed-label">Format</div><div class="parsed-value">' + (parsed.isGS1 ? 'GS1 ' : '') + formatName + '</div></div>';
-    html += '</div>';
-    document.getElementById('parsedFields').innerHTML = html;
-  }
-
-  function lookupItem(gtin) {
-    const badge = document.getElementById('itemStatusBadge');
-    badge.innerHTML = '<div class="item-status unknown">🔍 Checking item master…</div>';
-    apiGet('lookupItemMaster', { gtin: gtin })
-      .then(res => {
-        if (res && res.found) {
-          badge.innerHTML = '<div class="item-status known">✅ Known item — auto-filled from Item Master</div>';
-          document.getElementById('itemNameInput').value = res.itemName || '';
-          document.getElementById('brandInput').value = res.brand || '';
-        } else {
-          badge.innerHTML = '<div class="item-status unknown">⚠️ New GTIN — please enter the Tally Item Name once, it will be remembered next time</div>';
-          document.getElementById('itemNameInput').value = '';
-          document.getElementById('brandInput').value = '';
-        }
-      })
-      .catch(e => {
-        badge.innerHTML = '<div class="item-status unknown">⚠️ Could not check item master — enter name manually</div>';
-      });
-  }
-
-  function submitScan() {
-    const itemName = document.getElementById('itemNameInput').value.trim();
-    const brand = document.getElementById('brandInput').value.trim();
-    const remarks = document.getElementById('remarksInput').value.trim();
-    const scannedBy = document.getElementById('scannedByInput').value.trim();
-    const errEl = document.getElementById('itemMsgErr');
-    const okEl = document.getElementById('itemMsgOk');
-
-    if (!itemName) {
-      errEl.textContent = 'Please enter the Tally Item Name before logging.';
-      errEl.style.display = 'block'; okEl.style.display = 'none';
+function loadReports(){
+  apiGet('getExpiryReport',{}).then(res=>{
+    if(!res||!res.success) return;
+    const tbody=document.getElementById('expiryTableBody');
+    if(!res.items||!res.items.length){
+      tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">✅</div><p>No items expiring in the next 180 days</p></div></td></tr>';
       return;
     }
-    if (!currentParsed) return;
+    tbody.innerHTML=res.items.map(r=>{
+      const days=r.daysLeft;
+      let cls='', badgeCls='exp-ok', badgeLabel='OK';
+      if(days<0){cls='expired';badgeCls='exp-expired';badgeLabel='EXPIRED';}
+      else if(days<=30){cls='expiring-soon';badgeCls='exp-danger';badgeLabel=days+'d';}
+      else if(days<=90){cls='expiring-soon';badgeCls='exp-warn';badgeLabel=days+'d';}
+      else{badgeLabel=days+'d';}
+      return `<tr class="${cls}">
+        <td style="font-weight:700;">${esc(r.itemName)}</td>
+        <td>${esc(r.lot||'—')}</td>
+        <td>${cleanDate(r.expiry)}</td>
+        <td style="font-weight:800;">${days<0?'Expired':days+' days'}</td>
+        <td>${esc(r.location)}</td>
+        <td style="font-weight:700;">${fmtNum(r.balance)}</td>
+        <td><span class="exp-badge ${badgeCls}">${badgeLabel}</span></td>
+      </tr>`;
+    }).join('');
+  }).catch(()=>{});
+}
 
-    const btn = document.getElementById('logScanBtn');
-    btn.disabled = true; btn.textContent = '…Saving';
-
-    // Save / update item master mapping first, then log the scan
-    apiPost('saveItemMaster', { gtin: currentParsed.gtin, itemName: itemName, brand: brand, notes: '' })
-      .then(() => {
-        return apiPost('logScan', {
-          entry: {
-            direction: currentDirection,
-            gtin: currentParsed.gtin,
-            itemName: itemName,
-            lot: currentParsed.lot,
-            expiry: currentParsed.expiry,
-            productionDate: currentParsed.productionDate,
-            qty: currentQty,
-            format: currentParsed.format,
-            raw: currentParsed.raw,
-            scannedBy: scannedBy,
-            remarks: remarks
-          }
-        });
-      })
-      .then(res => {
-        btn.disabled = false; btn.textContent = '✓ Log This Scan';
-        if (res && res.success) {
-          okEl.textContent = '✅ ' + currentDirection + ' scan logged for "' + itemName + '" (Qty: ' + currentQty + ')';
-          okEl.style.display = 'block'; errEl.style.display = 'none';
-          setTimeout(() => { okEl.style.display = 'none'; }, 3000);
-        } else {
-          errEl.textContent = '❌ ' + ((res && res.message) || 'Failed to log scan.');
-          errEl.style.display = 'block';
-        }
-      })
-      .catch(e => {
-        btn.disabled = false; btn.textContent = '✓ Log This Scan';
-        errEl.textContent = '❌ Connection error: ' + e;
-        errEl.style.display = 'block';
-      });
-  }
-
-  // ========== DASHBOARD / LOGS ==========
-  function fmtNum(n) {
-    n = parseFloat(n) || 0;
-    return n.toLocaleString('en-IN');
-  }
-
-  function loadDashboard() {
-    apiGet('getDashboardData', {})
-      .then(res => {
-        if (!res || !res.success) return;
-        const k = res.kpis;
-        document.getElementById('kTotalScans').textContent = fmtNum(k.totalScans);
-        document.getElementById('kUniqueItems').textContent = fmtNum(k.uniqueItems);
-        document.getElementById('kTotalIn').textContent = fmtNum(k.totalIn);
-        document.getElementById('kTotalOut').textContent = fmtNum(k.totalOut);
-        document.getElementById('kNegative').textContent = fmtNum(k.negativeCount);
-        document.getElementById('kNetBal').textContent = fmtNum(k.totalIn - k.totalOut);
-
-        const stockBody = document.getElementById('stockTableBody');
-        if (!res.stockRows.length) {
-          stockBody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No scans yet. Start scanning to see live stock here.</div></td></tr>';
-        } else {
-          stockBody.innerHTML = res.stockRows.map(r => {
-            const neg = r.balance < 0;
-            return '<tr class="' + (neg ? 'neg' : '') + '">' +
-              '<td style="font-weight:700;">' + esc(r.itemName) + '</td>' +
-              '<td>' + esc(r.lot || '—') + '</td>' +
-              '<td>' + esc(r.expiry || '—') + '</td>' +
-              '<td style="color:var(--green);font-weight:700;">' + fmtNum(r.qtyIn) + '</td>' +
-              '<td style="color:var(--red);font-weight:700;">' + fmtNum(r.qtyOut) + '</td>' +
-              '<td class="bal" style="font-weight:800;">' + fmtNum(r.balance) + '</td>' +
-              '<td style="font-size:10px;color:var(--text3);">' + fmtDate(r.lastScanned) + '</td>' +
-            '</tr>';
-          }).join('');
-        }
-
-        const logsList = document.getElementById('recentLogsList');
-        if (!res.recentLogs.length) {
-          logsList.innerHTML = '<div class="empty-state">No activity yet.</div>';
-        } else {
-          logsList.innerHTML = res.recentLogs.map(l => {
-            return '<div class="log-entry">' +
-              '<div class="log-top">' +
-                '<span class="log-name">' + esc(l.itemName || '(Unmapped GTIN: ' + l.gtin + ')') + '</span>' +
-                '<span class="log-dir ' + (l.direction === 'OUT' ? 'out' : 'in') + '">' + esc(l.direction) + '</span>' +
-              '</div>' +
-              '<div class="log-meta">Qty: ' + fmtNum(l.qty) + (l.lot ? ' · Lot: ' + esc(l.lot) : '') + (l.expiry ? ' · Exp: ' + esc(l.expiry) : '') + (l.scannedBy ? ' · By: ' + esc(l.scannedBy) : '') + '</div>' +
-              '<div class="log-time">' + fmtDate(l.timestamp) + '</div>' +
-            '</div>';
-          }).join('');
-        }
-      });
-  }
-
-  function fmtDate(d) {
-    if (!d) return '—';
-    try {
-      const dt = new Date(d);
-      return dt.toLocaleDateString('en-IN') + ' ' + dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-    } catch (e) { return String(d); }
-  }
-
-  function esc(s) {
-    return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
+function esc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
