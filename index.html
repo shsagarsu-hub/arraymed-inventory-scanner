@@ -17,24 +17,20 @@
     --green:#27ae60; --green-bg:rgba(39,174,96,.1);
     --amber:#e67e22; --amber-bg:rgba(230,126,34,.1);
     --blue:#667eea; --blue-bg:rgba(102,126,234,.1);
+    --purple:#8e44ad; --purple-bg:rgba(142,68,173,.1);
     --sidebar-w:220px;
   }
 
   html, body { background:var(--bg); color:var(--text); min-height:100vh; }
 
-  /* ── LAYOUT ── */
   .app-shell { display:flex; min-height:100vh; }
 
-  /* Sidebar */
   .sidebar {
     width:var(--sidebar-w); background:var(--hdr-bg); display:flex;
     flex-direction:column; position:fixed; top:0; left:0; height:100vh;
     z-index:30; transition:transform .2s;
   }
-  .sidebar-logo {
-    padding:20px 16px 16px; border-bottom:1px solid rgba(255,255,255,.1);
-  }
-  .sidebar-logo h1 { font-size:13px; font-weight:800; color:#fff9f0; letter-spacing:-.2px; line-height:1.3; }
+  .sidebar-logo { padding:20px 16px 16px; border-bottom:1px solid rgba(255,255,255,.1); }
   .sidebar-logo p { font-size:10px; color:rgba(255,249,240,.55); margin-top:3px; font-weight:600; }
   .api-badge { font-size:10px; font-weight:800; margin-top:8px; display:inline-block; }
 
@@ -56,50 +52,31 @@
   }
   .cfg-btn:hover { background:rgba(255,255,255,.15); }
 
-  /* Main content */
   .main { margin-left:var(--sidebar-w); flex:1; padding:20px; max-width:900px; }
 
-  /* Mobile: hide sidebar, show bottom nav */
   @media (max-width:767px) {
     .sidebar { transform:translateX(-100%); }
     .main { margin-left:0; padding:12px 12px 80px; }
-    .bottom-nav {
-      display:flex; position:fixed; bottom:0; left:0; right:0; z-index:30;
-      background:var(--hdr-bg); border-top:1px solid rgba(255,255,255,.1);
-    }
-    .bottom-nav-item {
-      flex:1; padding:10px 4px 8px; text-align:center; cursor:pointer;
-      color:rgba(255,249,240,.55); font-size:9px; font-weight:700;
-      text-transform:uppercase; letter-spacing:.3px; transition:all .15s;
-      border-top:2px solid transparent;
-    }
+    .bottom-nav { display:flex; position:fixed; bottom:0; left:0; right:0; z-index:30; background:var(--hdr-bg); border-top:1px solid rgba(255,255,255,.1); }
+    .bottom-nav-item { flex:1; padding:10px 4px 8px; text-align:center; cursor:pointer; color:rgba(255,249,240,.55); font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; transition:all .15s; border-top:2px solid transparent; }
     .bottom-nav-item .bn-icon { font-size:18px; display:block; margin-bottom:2px; }
     .bottom-nav-item.active { color:#fff9f0; border-top-color:#b5451b; }
   }
-  @media (min-width:768px) {
-    .bottom-nav { display:none; }
-  }
+  @media (min-width:768px) { .bottom-nav { display:none; } }
 
-  /* ── VIEWS ── */
   .view { display:none; }
   .view.active { display:block; }
 
   .page-title { font-size:20px; font-weight:800; color:var(--text); margin-bottom:16px; letter-spacing:-.4px; }
   .page-title span { color:var(--red); }
 
-  /* ── CARDS ── */
-  .card {
-    background:var(--surface); border:1px solid var(--border); border-radius:14px;
-    padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(90,70,50,.05);
-  }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(90,70,50,.05); }
   .card-title { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:.6px; font-weight:800; margin-bottom:12px; }
+  .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .card-header .card-title { margin-bottom:0; }
 
-  /* ── KPI ROW ── */
   .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
-  .kpi-box {
-    background:var(--surface); border:1px solid var(--border); border-radius:12px;
-    padding:12px 10px; text-align:center; border-top:3px solid var(--border2);
-  }
+  .kpi-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 10px; text-align:center; border-top:3px solid var(--border2); }
   .kpi-box.red { border-top-color:var(--red); }
   .kpi-box.green { border-top-color:var(--green); }
   .kpi-box.blue { border-top-color:var(--blue); }
@@ -107,78 +84,24 @@
   .kpi-num { font-size:22px; font-weight:800; color:var(--text); line-height:1; }
   .kpi-label { font-size:9px; color:var(--text2); margin-top:4px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
 
-  /* ── BUTTONS ── */
-  .btn {
-    padding:12px 16px; border:none; border-radius:10px; font-size:13px; font-weight:700;
-    cursor:pointer; transition:all .15s; font-family:inherit; display:inline-flex; align-items:center; gap:6px;
-  }
+  .btn { padding:12px 16px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:all .15s; font-family:inherit; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
   .btn-primary { background:linear-gradient(135deg,#b5451b,#8b2a0e); color:#fff9f0; box-shadow:0 3px 10px rgba(181,69,27,.25); }
   .btn-primary:hover { transform:translateY(-1px); }
-  .btn-primary:disabled { background:#ccc; color:#888; box-shadow:none; transform:none; }
+  .btn-primary:disabled { background:#ccc; color:#888; box-shadow:none; transform:none; cursor:not-allowed; }
   .btn-secondary { background:var(--surface); color:var(--text2); border:1.5px solid var(--border2); }
   .btn-secondary:hover { border-color:var(--red); color:var(--red); }
+  .btn-danger { background:var(--red-bg); color:var(--red); border:1.5px solid var(--red); }
   .btn-green { background:var(--green); color:#fff; }
-  .btn-amber { background:var(--amber); color:#fff; }
-  .btn-full { width:100%; justify-content:center; }
+  .btn-full { width:100%; }
 
-  /* ── DIRECTION TOGGLE ── */
-  .dir-toggle { display:flex; gap:8px; margin-bottom:14px; }
-  .dir-btn {
-    flex:1; padding:13px; border-radius:11px; border:2px solid var(--border2);
-    background:var(--surface); font-size:13px; font-weight:800; cursor:pointer;
-    transition:all .15s; color:var(--text2); text-align:center;
-  }
-  .dir-btn.in.active { background:var(--green); border-color:var(--green); color:#fff; }
-  .dir-btn.out.active { background:var(--red); border-color:var(--red); color:#fff; }
-
-  /* ── SCANNER ── */
-  .scanner-wrap { background:#000; border-radius:12px; overflow:hidden; margin-bottom:12px; }
-  #camVideo { width:100%; display:block; }
-  .status-bar { padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:12px; }
-  .s-ready { background:#e8f5e9; color:#1e8449; }
-  .s-scanning { background:#fff3e0; color:#c0710f; }
-  .s-off { background:var(--surface2); color:var(--text2); }
-
-  /* ── PARSED FIELDS ── */
-  .parsed-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
-  .pf { background:var(--surface2); border-radius:9px; padding:10px; }
-  .pf.full { grid-column:1/-1; }
-  .pf-label { font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; font-weight:700; }
-  .pf-value { font-family:'Courier New',monospace; font-size:13px; font-weight:700; color:var(--text); word-break:break-all; }
-  .pf-value.hi { color:var(--red); }
-
-  /* ── FORM FIELDS ── */
   .fg { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
   .fg label { font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
-  .fg input, .fg select {
-    padding:10px 12px; background:var(--surface); border:2px solid var(--border);
-    border-radius:9px; font-size:13px; color:var(--text); font-family:inherit;
-  }
+  .fg input, .fg select { padding:10px 12px; background:var(--surface); border:2px solid var(--border); border-radius:9px; font-size:13px; color:var(--text); font-family:inherit; }
   .fg input:focus, .fg select:focus { outline:none; border-color:var(--red); box-shadow:0 0 0 3px var(--red-bg); }
 
-  .qty-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-  .qty-row label { font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; }
-  .qty-btn { width:38px; height:38px; border-radius:9px; border:2px solid var(--border2); background:var(--surface); font-size:18px; font-weight:800; cursor:pointer; color:var(--text2); }
-  .qty-val { flex:1; text-align:center; font-size:18px; font-weight:800; }
-
-  /* ── ITEM STATUS ── */
-  .item-badge { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:9px; margin-bottom:10px; font-size:12px; font-weight:700; }
-  .item-badge.known { background:var(--green-bg); color:#1e8449; }
-  .item-badge.unknown { background:var(--amber-bg); color:#8a6313; }
-
-  /* ── MSG BARS ── */
-  .msg { padding:9px 13px; border-radius:9px; font-size:12px; font-weight:700; margin-bottom:10px; display:none; }
-  .msg-ok { background:#d4f5e4; color:#145a32; border-left:4px solid var(--green); }
-  .msg-err { background:#fde8e8; color:#721c24; border-left:4px solid var(--red); }
-
-  /* ── TABLES ── */
   .tbl-wrap { overflow-x:auto; }
   table { width:100%; border-collapse:collapse; font-size:12px; }
-  th {
-    background:#f0e8dc; color:var(--text2); font-weight:800; padding:9px 10px;
-    text-align:left; font-size:9px; text-transform:uppercase; letter-spacing:.4px;
-    white-space:nowrap; border-bottom:2px solid var(--border);
-  }
+  th { background:#f0e8dc; color:var(--text2); font-weight:800; padding:9px 10px; text-align:left; font-size:9px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; border-bottom:2px solid var(--border); }
   td { padding:9px 10px; border-bottom:1px solid #f0e8dc; color:var(--text); }
   tr:last-child td { border-bottom:none; }
   tr.neg td { background:rgba(181,69,27,.05); }
@@ -187,7 +110,6 @@
   tr.expired td { background:rgba(181,69,27,.08); }
   .bal { font-weight:800; }
 
-  /* ── LOG ENTRIES ── */
   .log-entry { padding:10px 0; border-bottom:1px solid var(--border); }
   .log-entry:last-child { border-bottom:none; }
   .log-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
@@ -196,67 +118,123 @@
   .log-dir.in { background:var(--green-bg); color:var(--green); }
   .log-dir.out { background:var(--red-bg); color:var(--red); }
   .log-dir.dc { background:var(--blue-bg); color:var(--blue); }
+  .log-dir.ret { background:var(--purple-bg); color:var(--purple); }
   .log-meta { font-size:11px; color:var(--text2); }
   .log-time { font-size:10px; color:var(--text3); margin-top:2px; }
 
-  /* ── EXPIRY BADGES ── */
   .exp-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:800; }
   .exp-ok { background:var(--green-bg); color:var(--green); }
   .exp-warn { background:var(--amber-bg); color:var(--amber); }
   .exp-danger { background:var(--red-bg); color:var(--red); }
   .exp-expired { background:#fde8e8; color:#8b1a1a; }
 
-  /* ── DC HOSPITAL CARD ── */
-  .hospital-header {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:12px 16px; background:var(--surface); border:1px solid var(--border);
-    border-radius:12px 12px 0 0; border-bottom:none; cursor:pointer;
-  }
+  .hospital-header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px 12px 0 0; border-bottom:none; }
   .hospital-header h4 { font-size:14px; font-weight:800; color:var(--text); }
   .hospital-body { border:1px solid var(--border); border-radius:0 0 12px 12px; overflow:hidden; margin-bottom:12px; }
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    display:none; position:fixed; inset:0; background:rgba(44,33,22,.55);
-    z-index:100; align-items:center; justify-content:center; padding:16px;
-  }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(44,33,22,.55); z-index:100; align-items:center; justify-content:center; padding:16px; }
   .modal-overlay.open { display:flex; }
-  .modal {
-    background:var(--surface); border-radius:16px; padding:20px; width:100%; max-width:380px;
-    box-shadow:0 8px 40px rgba(44,33,22,.25); animation:slideUp .2s ease;
-  }
+  .modal { background:var(--surface); border-radius:16px; padding:20px; width:100%; max-width:380px; box-shadow:0 8px 40px rgba(44,33,22,.25); animation:slideUp .2s ease; }
   @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
   .modal h3 { font-size:16px; font-weight:800; margin-bottom:6px; }
   .modal p { font-size:12px; color:var(--text2); margin-bottom:16px; }
-  .modal-opts { display:flex; gap:10px; margin-bottom:16px; }
-  .modal-opt {
-    flex:1; padding:16px 10px; border-radius:12px; border:2px solid var(--border);
-    text-align:center; cursor:pointer; transition:all .15s; font-weight:800; font-size:13px; color:var(--text2);
-  }
-  .modal-opt:hover { border-color:var(--red); color:var(--red); }
-  .modal-opt.selected { border-color:var(--red); background:var(--red-bg); color:var(--red); }
-  .modal-opt .opt-icon { font-size:24px; display:block; margin-bottom:4px; }
   .modal-cancel { width:100%; padding:10px; background:none; border:none; color:var(--text3); font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .qty-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .qty-btn { width:38px; height:38px; border-radius:9px; border:2px solid var(--border2); background:var(--surface); font-size:18px; font-weight:800; cursor:pointer; color:var(--text2); }
+  .qty-val { flex:1; text-align:center; font-size:18px; font-weight:800; }
 
-  /* ── FLASH ── */
   .flash-overlay { display:none; position:fixed; inset:0; background:rgba(39,174,96,.15); z-index:200; pointer-events:none; }
   .flash-overlay.on { display:block; }
+  .flash-overlay.err { background:rgba(181,69,27,.18); }
 
-  /* ── EMPTY STATE ── */
   .empty { text-align:center; padding:28px 16px; color:var(--text3); }
   .empty-icon { font-size:32px; margin-bottom:8px; }
   .empty p { font-size:13px; font-weight:600; }
   .empty small { font-size:11px; }
 
-  /* ── SECTION DIVIDER ── */
-  .section-label {
-    font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase;
-    letter-spacing:.8px; margin-bottom:10px; margin-top:4px;
-  }
+  .section-label { font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; margin-bottom:10px; margin-top:4px; }
 
-  /* Refresh row */
-  .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-  .card-header .card-title { margin-bottom:0; }
+  /* ══════════════ SESSION MODE (warehouse-style scanning) ══════════════ */
+
+  /* Setup screen: choose movement type before scanner ever turns on */
+  .setup-screen { padding:4px 0; }
+  .setup-title { font-size:18px; font-weight:800; margin-bottom:4px; }
+  .setup-sub { font-size:12px; color:var(--text2); margin-bottom:18px; }
+  .movetype-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .movetype-card {
+    background:var(--surface); border:2px solid var(--border2); border-radius:14px;
+    padding:18px 12px; text-align:center; cursor:pointer; transition:all .15s;
+  }
+  .movetype-card:hover { border-color:var(--text2); }
+  .movetype-card .mc-icon { font-size:28px; display:block; margin-bottom:6px; }
+  .movetype-card .mc-label { font-size:13px; font-weight:800; color:var(--text); }
+  .movetype-card .mc-sub { font-size:10px; color:var(--text2); margin-top:2px; }
+  .movetype-card.sel-purchase.selected { border-color:var(--green); background:var(--green-bg); }
+  .movetype-card.sel-sale.selected { border-color:var(--red); background:var(--red-bg); }
+  .movetype-card.sel-dc.selected { border-color:var(--blue); background:var(--blue-bg); }
+  .movetype-card.sel-dcreturn.selected { border-color:var(--purple); background:var(--purple-bg); }
+
+  .hospital-setup-block { display:none; margin-bottom:14px; }
+  .hospital-setup-block.show { display:block; }
+
+  /* Live session scan screen */
+  .session-screen { display:none; }
+  .session-screen.active { display:block; }
+  .session-header {
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--hdr-bg); color:#fff9f0; border-radius:14px; padding:12px 16px; margin-bottom:12px;
+  }
+  .session-header .sh-mode { font-size:13px; font-weight:800; }
+  .session-header .sh-mode small { display:block; font-size:10px; font-weight:600; color:rgba(255,249,240,.6); margin-top:1px; }
+  .session-header .sh-end { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); color:#fff9f0; padding:8px 14px; border-radius:9px; font-size:11px; font-weight:800; cursor:pointer; }
+
+  .session-counters { display:flex; gap:8px; margin-bottom:12px; }
+  .sc-box { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center; }
+  .sc-num { font-size:20px; font-weight:800; }
+  .sc-label { font-size:9px; color:var(--text2); font-weight:700; text-transform:uppercase; margin-top:2px; }
+
+  .scanner-wrap { background:#000; border-radius:12px; overflow:hidden; margin-bottom:10px; position:relative; }
+  #camVideo { width:100%; display:block; }
+  .scan-reticle {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:70%; height:38%; border:3px solid rgba(255,255,255,.5); border-radius:14px; pointer-events:none;
+  }
+  .status-bar { padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:10px; }
+  .s-ready { background:#e8f5e9; color:#1e8449; }
+  .s-scanning { background:#fff3e0; color:#c0710f; }
+  .s-off { background:var(--surface2); color:var(--text2); }
+  .s-justscanned { background:#d4f5e4; color:#145a32; }
+
+  /* Running session list — receipt style */
+  .session-list-card { padding:0; }
+  .session-list-head { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .session-list-head .slh-title { font-size:11px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+  .session-list-body { max-height:320px; overflow-y:auto; }
+  .sl-row { display:flex; align-items:center; justify-content:space-between; padding:9px 16px; border-bottom:1px solid #f0e8dc; gap:10px; }
+  .sl-row:last-child { border-bottom:none; }
+  .sl-row.flash-new { animation:rowFlash .6s ease; }
+  @keyframes rowFlash { from { background:var(--green-bg); } to { background:transparent; } }
+  .sl-row.unmapped { background:rgba(230,126,34,.06); }
+  .sl-main { flex:1; min-width:0; }
+  .sl-name { font-size:12.5px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sl-name.unmapped-name { color:var(--amber); font-style:italic; }
+  .sl-meta { font-size:10px; color:var(--text3); margin-top:1px; }
+  .sl-qty { font-size:15px; font-weight:800; color:var(--text); min-width:34px; text-align:center; background:var(--surface2); border-radius:8px; padding:4px 8px; }
+  .sl-remove { color:var(--text3); font-size:16px; cursor:pointer; padding:2px 6px; font-weight:800; }
+  .sl-remove:hover { color:var(--red); }
+
+  /* Review screen */
+  .review-screen { display:none; }
+  .review-screen.active { display:block; }
+  .review-banner { background:var(--amber-bg); border:1px solid var(--amber); border-radius:10px; padding:10px 14px; font-size:12px; font-weight:700; color:#8a6313; margin-bottom:14px; display:none; }
+  .review-banner.show { display:block; }
+  .review-item-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; }
+  .review-item-card.unmapped { border-color:var(--amber); background:rgba(230,126,34,.04); }
+  .ric-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .ric-gtin { font-family:'Courier New',monospace; font-size:11px; color:var(--text3); }
+  .ric-qty-badge { font-size:12px; font-weight:800; background:var(--surface2); padding:3px 9px; border-radius:8px; }
+
+  .empty-session { text-align:center; padding:36px 16px; color:var(--text3); }
 </style>
 </head>
 <body>
@@ -300,57 +278,106 @@
 <!-- ══ MAIN ══ -->
 <div class="main">
 
-  <!-- ── SCAN VIEW ── -->
+  <!-- ── SCAN VIEW (3 sub-screens: setup → session → review) ── -->
   <div class="view active" id="view-scan">
-    <div class="page-title">📷 Scan <span>Barcode</span></div>
 
-    <div class="dir-toggle">
-      <button class="dir-btn in active" id="dirInBtn" onclick="setDirection('IN')">⬇ Inward</button>
-      <button class="dir-btn out" id="dirOutBtn" onclick="setDirection('OUT')">⬆ Outward</button>
+    <!-- SUB-SCREEN 1: SETUP — pick movement type once, before scanner turns on -->
+    <div class="setup-screen" id="setupScreen">
+      <div class="page-title">📷 Start <span>Scan Session</span></div>
+      <p class="setup-sub">Pick what this session is for. You'll scan items one after another with no extra taps — exactly like a warehouse session.</p>
+
+      <div class="movetype-grid">
+        <div class="movetype-card sel-purchase" id="mtPurchase" onclick="selectSetupMoveType('PURCHASE')">
+          <span class="mc-icon">📥</span>
+          <div class="mc-label">Purchase / Inward</div>
+          <div class="mc-sub">Stock arriving at warehouse</div>
+        </div>
+        <div class="movetype-card sel-sale" id="mtSale" onclick="selectSetupMoveType('SALE')">
+          <span class="mc-icon">🧾</span>
+          <div class="mc-label">Sale</div>
+          <div class="mc-sub">Stock going out — sold</div>
+        </div>
+        <div class="movetype-card sel-dc" id="mtDC" onclick="selectSetupMoveType('DC')">
+          <span class="mc-icon">🏥</span>
+          <div class="mc-label">DC / Consignment</div>
+          <div class="mc-sub">Sent to hospital, unused part</div>
+        </div>
+        <div class="movetype-card sel-dcreturn" id="mtDCReturn" onclick="selectSetupMoveType('DC_RETURN')">
+          <span class="mc-icon">↩️</span>
+          <div class="mc-label">DC Return</div>
+          <div class="mc-sub">Hospital returns unused stock</div>
+        </div>
+      </div>
+
+      <div class="hospital-setup-block" id="hospitalSetupBlock">
+        <div class="fg">
+          <label>Hospital Name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="setupHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="setupHospitalSuggestions">
+          <datalist id="setupHospitalSuggestions"></datalist>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>Scanned By</label>
+        <input type="text" id="setupScannedByInput" placeholder="Your name">
+      </div>
+
+      <button class="btn btn-primary btn-full" id="startSessionBtn" onclick="startSession()" disabled>▶ Start Scanning</button>
     </div>
 
-    <div id="statusBar" class="status-bar s-off">Camera off — tap Start to begin</div>
+    <!-- SUB-SCREEN 2: LIVE SESSION — scanner runs, list builds below, zero taps per scan -->
+    <div class="session-screen" id="sessionScreen">
+      <div class="session-header">
+        <div class="sh-mode" id="sessionModeLabel">—<small id="sessionModeSubLabel"></small></div>
+        <button class="sh-end" onclick="endSession()">⏹ End Session</button>
+      </div>
 
-    <div class="card" style="padding:0;overflow:hidden;">
-      <div class="scanner-wrap">
-        <video id="camVideo" autoplay playsinline muted></video>
-        <canvas id="camCanvas" style="display:none;"></canvas>
+      <div class="session-counters">
+        <div class="sc-box"><div class="sc-num" id="scLines">0</div><div class="sc-label">Line Items</div></div>
+        <div class="sc-box"><div class="sc-num" id="scUnits">0</div><div class="sc-label">Total Units</div></div>
+        <div class="sc-box"><div class="sc-num" id="scUnmapped">0</div><div class="sc-label">Unmapped</div></div>
+      </div>
+
+      <div id="statusBar" class="status-bar s-off">Camera off — tap Start to begin</div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="scanner-wrap">
+          <video id="camVideo" autoplay playsinline muted></video>
+          <canvas id="camCanvas" style="display:none;"></canvas>
+          <div class="scan-reticle"></div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-full" id="toggleCamBtn" onclick="toggleScanner()" style="margin-bottom:14px;">▶ Start Scanner</button>
+
+      <div class="card session-list-card">
+        <div class="session-list-head">
+          <span class="slh-title">This Session</span>
+          <span class="slh-title" id="sessionListCount">0 items</span>
+        </div>
+        <div class="session-list-body" id="sessionListBody">
+          <div class="empty-session"><div class="empty-icon">📭</div><p>No scans yet — point camera at a barcode</p></div>
+        </div>
       </div>
     </div>
-    <button class="btn btn-primary btn-full" id="startBtn" onclick="toggleScanner()" style="margin-bottom:14px;">▶ Start Scanner</button>
 
-    <div class="card" id="scanResultCard" style="display:none;">
-      <div class="card-title">📋 Scanned Item</div>
-      <div id="parsedFields"></div>
-      <div style="border-top:2px solid var(--border);padding-top:12px;margin-top:4px;">
-        <div id="itemStatusBadge"></div>
-        <div class="msg msg-ok" id="itemMsgOk"></div>
-        <div class="msg msg-err" id="itemMsgErr"></div>
-        <div class="fg">
-          <label>Tally Item Name <span style="color:var(--red)">*</span></label>
-          <input type="text" id="itemNameInput" placeholder="Enter name as per Tally">
-        </div>
-        <div class="fg">
-          <label>Brand (optional)</label>
-          <input type="text" id="brandInput" placeholder="e.g. Stryker, Zeiss…">
-        </div>
-        <div class="qty-row">
-          <label>Qty</label>
-          <button class="qty-btn" onclick="adjustQty(-1)">−</button>
-          <div class="qty-val" id="qtyVal">1</div>
-          <button class="qty-btn" onclick="adjustQty(1)">+</button>
-        </div>
-        <div class="fg">
-          <label>Remarks (optional)</label>
-          <input type="text" id="remarksInput" placeholder="PO ref, notes…">
-        </div>
-        <div class="fg">
-          <label>Scanned By</label>
-          <input type="text" id="scannedByInput" placeholder="Your name">
-        </div>
-        <button class="btn btn-primary btn-full" id="logScanBtn" onclick="initiateSubmit()">✓ Log This Scan</button>
+    <!-- SUB-SCREEN 3: REVIEW — name unmapped items, confirm, submit all at once -->
+    <div class="review-screen" id="reviewScreen">
+      <div class="page-title">📋 Review <span>& Submit</span></div>
+      <div class="review-banner" id="reviewBanner">⚠️ Some items are unmapped — enter their Tally Item Name before submitting.</div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
+        <div class="kpi-box blue"><div class="kpi-num" id="reviewLines">0</div><div class="kpi-label">Line Items</div></div>
+        <div class="kpi-box green"><div class="kpi-num" id="reviewUnits">0</div><div class="kpi-label">Total Units</div></div>
+      </div>
+
+      <div id="reviewListBody"></div>
+
+      <div style="display:flex; gap:10px; margin-top:6px;">
+        <button class="btn btn-secondary btn-full" onclick="backToSession()">← Back to Scanning</button>
+        <button class="btn btn-primary btn-full" id="submitSessionBtn" onclick="submitSession()">✓ Submit All</button>
       </div>
     </div>
+
   </div>
 
   <!-- ── INVENTORY VIEW ── -->
@@ -383,7 +410,7 @@
   <!-- ── DC STOCK VIEW ── -->
   <div class="view" id="view-dc">
     <div class="page-title">🏥 DC <span>Stock</span></div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Delivery Challan consignment stock per hospital — Sent − Used = Balance at Hospital</p>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Delivery Challan consignment stock per hospital — Sent − Used − Returned = Balance at Hospital</p>
     <div class="kpi-grid">
       <div class="kpi-box blue"><div class="kpi-num" id="dcHospitals">0</div><div class="kpi-label">Hospitals</div></div>
       <div class="kpi-box amber"><div class="kpi-num" id="dcTotalSent">0</div><div class="kpi-label">Total Sent</div></div>
@@ -394,13 +421,12 @@
       <div class="section-label" style="margin:0;">By Hospital</div>
       <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">⟳ Refresh</button>
     </div>
-    <div id="dcHospitalsList"><div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Scan Outward → DC to send stock to a hospital</small></div></div>
+    <div id="dcHospitalsList"><div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Start a DC / Consignment session to send stock to a hospital</small></div></div>
   </div>
 
   <!-- ── REPORTS VIEW ── -->
   <div class="view" id="view-reports">
     <div class="page-title">📋 <span>Reports</span></div>
-
     <div class="card">
       <div class="card-header">
         <div class="card-title" style="margin:0;">⏰ Expiry Tracker — Next 180 Days</div>
@@ -430,29 +456,6 @@
 
 </div><!-- /main -->
 
-<!-- ══ SCAN TYPE MODAL ══ -->
-<div class="modal-overlay" id="scanTypeModal">
-  <div class="modal">
-    <h3>How is this going out?</h3>
-    <p id="modalSubtext">Select movement type for this outward scan</p>
-    <div class="modal-opts">
-      <div class="modal-opt" id="optSale" onclick="selectScanType('SALE')">
-        <span class="opt-icon">🧾</span>Sale
-      </div>
-      <div class="modal-opt" id="optDC" onclick="selectScanType('DC')">
-        <span class="opt-icon">🏥</span>DC / Consignment
-      </div>
-    </div>
-    <div class="fg" id="hospitalField" style="display:none;">
-      <label>Hospital Name <span style="color:var(--red)">*</span></label>
-      <input type="text" id="hospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="hospitalSuggestions">
-      <datalist id="hospitalSuggestions"></datalist>
-    </div>
-    <button class="btn btn-primary btn-full" id="modalConfirmBtn" onclick="confirmScanType()" style="margin-top:4px;">Confirm & Log</button>
-    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
-  </div>
-</div>
-
 <!-- ══ DC USAGE MODAL ══ -->
 <div class="modal-overlay" id="dcUsageModal">
   <div class="modal">
@@ -473,7 +476,7 @@
       </div>
     </div>
     <div class="qty-row">
-      <label>Qty Used</label>
+      <label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;">Qty Used</label>
       <button class="qty-btn" onclick="adjustDcQty(-1)">−</button>
       <div class="qty-val" id="dcQtyVal">1</div>
       <button class="qty-btn" onclick="adjustDcQty(1)">+</button>
@@ -484,6 +487,16 @@
     </div>
     <button class="btn btn-primary btn-full" id="dcUsageConfirmBtn" onclick="submitDCUsage()">✓ Log Usage</button>
     <button class="modal-cancel" onclick="closeDCModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ══ END-SESSION CONFIRM MODAL ══ -->
+<div class="modal-overlay" id="endSessionModal">
+  <div class="modal">
+    <h3>End this session?</h3>
+    <p>You'll move to the review screen to check items and submit. The camera will stop.</p>
+    <button class="btn btn-primary btn-full" onclick="confirmEndSession()" style="margin-bottom:8px;">Yes, Review & Submit</button>
+    <button class="modal-cancel" onclick="document.getElementById('endSessionModal').classList.remove('open')">Keep Scanning</button>
   </div>
 </div>
 
@@ -535,90 +548,122 @@ function switchView(view){
   if(view==='dc') loadDC();
   if(view==='reports') loadReports();
   if(view==='logs') loadLogs();
+  if(view==='scan' && !sessionActive && !inReview) showSetupScreen();
 }
-
-// ════════════════════════════════════════════════════════
-//  SCANNER STATE
-// ════════════════════════════════════════════════════════
-let camStream=null, isScanning=false, scanLoopHandle=null;
-let lastScanTime=0, lastScanCode='';
-let currentDirection='IN', currentQty=1, currentParsed=null;
-let pendingScanType=null, pendingHospital='';
-let dcUsageData={};
 
 (async function warmup(){ try{ await ZXingWASM.prepareZXingModule({fireImmediately:true}); }catch(e){} })();
 checkApiConnection();
 
-function setDirection(dir){
-  currentDirection=dir;
-  document.getElementById('dirInBtn').classList.toggle('active', dir==='IN');
-  document.getElementById('dirOutBtn').classList.toggle('active', dir==='OUT');
-}
-
-function adjustQty(d){ currentQty=Math.max(1,currentQty+d); document.getElementById('qtyVal').textContent=currentQty; }
-function adjustDcQty(d){ dcUsageData.qty=Math.max(1,(dcUsageData.qty||1)+d); document.getElementById('dcQtyVal').textContent=dcUsageData.qty; }
-
 // ════════════════════════════════════════════════════════
-//  GS1 PARSER
+//  SESSION STATE
 // ════════════════════════════════════════════════════════
-const GS1_AIS={'01':{label:'GTIN',len:14},'02':{label:'Content GTIN',len:14},'10':{label:'Lot/Batch',len:null},'11':{label:'Production Date',len:6},'13':{label:'Pack Date',len:6},'15':{label:'Best Before',len:6},'17':{label:'Expiry Date',len:6},'21':{label:'Serial No.',len:null},'30':{label:'Quantity',len:null},'37':{label:'Count',len:null},'240':{label:'Product Variant',len:null},'241':{label:'Customer Part No.',len:null},'250':{label:'Secondary Serial',len:null}};
+let setupMoveType = null;          // 'PURCHASE' | 'SALE' | 'DC' | 'DC_RETURN'
+let setupHospital = '';
+let setupScannedBy = '';
+let sessionActive = false;
+let inReview = false;
+let sessionLines = [];             // [{gtin,lot,expiry,productionDate,itemName,brand,format,raw,qty,unmapped}]
+let camStream=null, isScanning=false, scanLoopHandle=null;
+let lastScanTime=0, lastScanCode='';
 
-function parseGS1(raw){
-  let data=raw.replace(/^\]d2/,'').replace(/^\]C1/,'').replace(/^\]e0/,'');
-  const parenRegex=/\((\d{2,4})\)([^()]*)/g;
-  let m; const fields=[]; let usedParen=false;
-  while((m=parenRegex.exec(data))!==null){ usedParen=true; const ai=m[1],value=m[2],info=GS1_AIS[ai]; fields.push({ai,label:info?info.label:'AI '+ai,value:value.trim()}); }
-  if(usedParen&&fields.length>0) return {isGS1:true,fields};
-  const parts=data.split(/\x1d/);
-  for(const part of parts){ let pos=0; while(pos<part.length){ let matched=false; for(const aiLen of [3,2]){ if(pos+aiLen>part.length) continue; const ai=part.substring(pos,pos+aiLen); if(GS1_AIS[ai]){ const info=GS1_AIS[ai]; pos+=aiLen; let value; if(info.len){value=part.substring(pos,pos+info.len);pos+=info.len;}else{value=part.substring(pos);pos=part.length;} fields.push({ai,label:info.label,value:value.trim()}); matched=true; break; } } if(!matched) break; } }
-  if(fields.length>0) return {isGS1:true,fields};
-  return {isGS1:false,fields:[{ai:'',label:'Barcode',value:data}]};
+const MOVE_TYPE_META = {
+  PURCHASE:  { direction:'IN',  scanType:'SALE',       label:'📥 Purchase / Inward', needsHospital:false, dirLogLabel:'IN' },
+  SALE:      { direction:'OUT', scanType:'SALE',       label:'🧾 Sale',              needsHospital:false, dirLogLabel:'OUT · Sale' },
+  DC:        { direction:'OUT', scanType:'DC',         label:'🏥 DC / Consignment',  needsHospital:true,  dirLogLabel:'OUT · DC' },
+  DC_RETURN: { direction:'IN',  scanType:'DC_RETURN',  label:'↩️ DC Return',         needsHospital:true,  dirLogLabel:'IN · DC Return' }
+};
+
+// ──────────────────────────────────────────────────────
+//  SETUP SCREEN
+// ──────────────────────────────────────────────────────
+function showSetupScreen(){
+  document.getElementById('setupScreen').style.display='block';
+  document.getElementById('sessionScreen').classList.remove('active');
+  document.getElementById('reviewScreen').classList.remove('active');
+  sessionActive=false; inReview=false;
 }
 
-function formatGS1Date(val){
-  if(!val||val.length!==6) return val;
-  const yy=val.substring(0,2),mm=val.substring(2,4),dd=val.substring(4,6);
-  return dd+'/'+mm+'/'+(parseInt(yy)>50?'19':'20')+yy;
-}
-function isDateAI(ai){ return ['11','13','15','17'].includes(ai); }
+function selectSetupMoveType(type){
+  setupMoveType=type;
+  ['mtPurchase','mtSale','mtDC','mtDCReturn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  const idMap={PURCHASE:'mtPurchase',SALE:'mtSale',DC:'mtDC',DC_RETURN:'mtDCReturn'};
+  document.getElementById(idMap[type]).classList.add('selected');
 
-// Clean any ISO/datetime string to DD/MM/YYYY
-function cleanDate(d){
-  if(!d) return '—';
-  const s=String(d);
-  // Already DD/MM/YYYY
-  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
-  // ISO string
+  const meta=MOVE_TYPE_META[type];
+  const hospBlock=document.getElementById('hospitalSetupBlock');
+  if(meta.needsHospital){
+    hospBlock.classList.add('show');
+    apiGet('getDCHospitals',{}).then(res=>{
+      if(res&&res.hospitals){
+        document.getElementById('setupHospitalSuggestions').innerHTML=res.hospitals.map(h=>`<option value="${esc(h)}">`).join('');
+      }
+    }).catch(()=>{});
+  } else {
+    hospBlock.classList.remove('show');
+  }
+  validateSetupForm();
+}
+
+function validateSetupForm(){
+  const btn=document.getElementById('startSessionBtn');
+  if(!setupMoveType){ btn.disabled=true; return; }
+  const meta=MOVE_TYPE_META[setupMoveType];
+  if(meta.needsHospital){
+    const h=document.getElementById('setupHospitalInput').value.trim();
+    btn.disabled = !h;
+  } else {
+    btn.disabled=false;
+  }
+}
+document.addEventListener('input', e=>{ if(e.target && e.target.id==='setupHospitalInput') validateSetupForm(); });
+
+function startSession(){
+  if(!setupMoveType) return;
+  const meta=MOVE_TYPE_META[setupMoveType];
+  setupHospital = meta.needsHospital ? document.getElementById('setupHospitalInput').value.trim() : '';
+  setupScannedBy = document.getElementById('setupScannedByInput').value.trim();
+  sessionLines = [];
+  sessionActive = true; inReview=false;
+
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('reviewScreen').classList.remove('active');
+  document.getElementById('sessionScreen').classList.add('active');
+
+  document.getElementById('sessionModeLabel').innerHTML = meta.label;
+  document.getElementById('sessionModeSubLabel').textContent = meta.needsHospital ? ('Hospital: '+setupHospital) : '';
+  renderSessionList();
+  updateSessionCounters();
+}
+
+// ──────────────────────────────────────────────────────
+//  CAMERA / SCAN LOOP
+// ──────────────────────────────────────────────────────
+function beep(kind){
   try{
-    const dt=new Date(s);
-    if(!isNaN(dt)){
-      const dd=String(dt.getDate()).padStart(2,'0');
-      const mm=String(dt.getMonth()+1).padStart(2,'0');
-      return dd+'/'+mm+'/'+dt.getFullYear();
-    }
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator(); const g=ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    if(kind==='dup') osc.frequency.value=1100;
+    else if(kind==='unmapped') osc.frequency.value=700;
+    else osc.frequency.value = MOVE_TYPE_META[setupMoveType].direction==='IN' ? 1400 : 900;
+    g.gain.value=0.3; osc.start(); osc.stop(ctx.currentTime+0.1);
   }catch(e){}
-  return s;
-}
-
-// ════════════════════════════════════════════════════════
-//  CAMERA
-// ════════════════════════════════════════════════════════
-function beep(){
-  try{ const ctx=new(window.AudioContext||window.webkitAudioContext)(); const osc=ctx.createOscillator(); const g=ctx.createGain(); osc.connect(g);g.connect(ctx.destination); osc.frequency.value=currentDirection==='IN'?1400:900; g.gain.value=0.3; osc.start();osc.stop(ctx.currentTime+0.1); }catch(e){}
-  const f=document.getElementById('flashOverlay'); f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),200);
+  const f=document.getElementById('flashOverlay');
+  f.classList.toggle('err', kind==='unmapped');
+  f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),200);
 }
 
 async function toggleScanner(){
-  const btn=document.getElementById('startBtn'), sb=document.getElementById('statusBar');
-  if(isScanning){ stopScanner(); btn.textContent='▶ Start Scanner'; btn.className='btn btn-primary btn-full'; sb.className='status-bar s-off'; sb.textContent='Camera off'; return; }
+  const btn=document.getElementById('toggleCamBtn'), sb=document.getElementById('statusBar');
+  if(isScanning){ stopScanner(); btn.textContent='▶ Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera off'; return; }
   btn.disabled=true; btn.textContent='Starting camera…';
   sb.className='status-bar s-scanning'; sb.textContent='Requesting camera access…';
   const video=document.getElementById('camVideo');
   try{
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
     camStream=stream; video.srcObject=stream; await video.play();
-    isScanning=true; btn.disabled=false; btn.textContent='■ Stop Scanner'; btn.className='btn btn-secondary btn-full';
-    sb.className='status-bar s-ready'; sb.textContent='Scanning — '+currentDirection+' mode active';
+    isScanning=true; btn.disabled=false; btn.textContent='■ Stop Scanner';
+    sb.className='status-bar s-ready'; sb.textContent='Scanning — point at next barcode';
     runScanLoop();
   }catch(err){ btn.disabled=false; btn.textContent='▶ Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera access denied'; alert('Camera error: '+err); }
 }
@@ -649,155 +694,276 @@ async function runScanLoop(){
   scanLoopHandle=requestAnimationFrame(tick);
 }
 
+// ════════════════════════════════════════════════════════
+//  GS1 PARSER
+// ════════════════════════════════════════════════════════
+const GS1_AIS={'01':{label:'GTIN',len:14},'02':{label:'Content GTIN',len:14},'10':{label:'Lot/Batch',len:null},'11':{label:'Production Date',len:6},'13':{label:'Pack Date',len:6},'15':{label:'Best Before',len:6},'17':{label:'Expiry Date',len:6},'21':{label:'Serial No.',len:null},'30':{label:'Quantity',len:null},'37':{label:'Count',len:null},'240':{label:'Product Variant',len:null},'241':{label:'Customer Part No.',len:null},'250':{label:'Secondary Serial',len:null}};
+
+function parseGS1(raw){
+  let data=raw.replace(/^\]d2/,'').replace(/^\]C1/,'').replace(/^\]e0/,'');
+  const parenRegex=/\((\d{2,4})\)([^()]*)/g;
+  let m; const fields=[]; let usedParen=false;
+  while((m=parenRegex.exec(data))!==null){ usedParen=true; const ai=m[1],value=m[2],info=GS1_AIS[ai]; fields.push({ai,label:info?info.label:'AI '+ai,value:value.trim()}); }
+  if(usedParen&&fields.length>0) return {isGS1:true,fields};
+  const parts=data.split(/\x1d/);
+  for(const part of parts){ let pos=0; while(pos<part.length){ let matched=false; for(const aiLen of [3,2]){ if(pos+aiLen>part.length) continue; const ai=part.substring(pos,pos+aiLen); if(GS1_AIS[ai]){ const info=GS1_AIS[ai]; pos+=aiLen; let value; if(info.len){value=part.substring(pos,pos+info.len);pos+=info.len;}else{value=part.substring(pos);pos=part.length;} fields.push({ai,label:info.label,value:value.trim()}); matched=true; break; } } if(!matched) break; } }
+  if(fields.length>0) return {isGS1:true,fields};
+  return {isGS1:false,fields:[{ai:'',label:'Barcode',value:data}]};
+}
+
+function formatGS1Date(val){
+  if(!val||val.length!==6) return val;
+  const yy=val.substring(0,2),mm=val.substring(2,4),dd=val.substring(4,6);
+  return dd+'/'+mm+'/'+(parseInt(yy)>50?'19':'20')+yy;
+}
+
+function cleanDate(d){
+  if(!d) return '—';
+  const s=String(d);
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+  try{
+    const dt=new Date(s);
+    if(!isNaN(dt)){
+      const dd=String(dt.getDate()).padStart(2,'0');
+      const mm=String(dt.getMonth()+1).padStart(2,'0');
+      return dd+'/'+mm+'/'+dt.getFullYear();
+    }
+  }catch(e){}
+  return s;
+}
+
+// ════════════════════════════════════════════════════════
+//  CORE: HANDLE A DECODED BARCODE — zero taps, one unit per scan
+// ════════════════════════════════════════════════════════
 function handleDecodedBarcode(text, fmt){
   const now=Date.now();
-  if(now-lastScanTime<2000&&text===lastScanCode) return;
+  if(now-lastScanTime<1200&&text===lastScanCode) return; // debounce same frame re-reads
   lastScanTime=now; lastScanCode=text;
-  beep();
+
   const parsed=parseGS1(text);
   const gtinF=parsed.fields.find(f=>f.ai==='01');
   const lotF=parsed.fields.find(f=>f.ai==='10');
   const expF=parsed.fields.find(f=>f.ai==='17');
   const prodF=parsed.fields.find(f=>f.ai==='11');
-  currentParsed={
-    gtin:gtinF?gtinF.value:text, raw:text, format:fmt||'Unknown', isGS1:parsed.isGS1,
-    lot:lotF?lotF.value:'', expiry:expF?formatGS1Date(expF.value):'',
-    productionDate:prodF?formatGS1Date(prodF.value):'', fields:parsed.fields
+  const gtin = gtinF?gtinF.value:text;
+  const lot = lotF?lotF.value:'';
+  const expiry = expF?formatGS1Date(expF.value):'';
+  const productionDate = prodF?formatGS1Date(prodF.value):'';
+
+  // Check if this GTIN+lot is already in this session's running list -> increment qty
+  const existingIdx = sessionLines.findIndex(l => l.gtin===gtin && l.lot===lot);
+  if(existingIdx !== -1){
+    sessionLines[existingIdx].qty += 1;
+    beep('dup');
+    flashStatusBar('+1 — '+(sessionLines[existingIdx].itemName||'Unmapped item')+' (now '+sessionLines[existingIdx].qty+')');
+    renderSessionList(existingIdx);
+    updateSessionCounters();
+    return;
+  }
+
+  // New line — look up item master in the background; don't block the scan loop
+  const newLine = {
+    gtin, lot, expiry, productionDate,
+    itemName:'', brand:'', format:fmt||'Unknown', raw:text,
+    qty:1, unmapped:true
   };
-  renderParsedFields(parsed, fmt||'Unknown');
-  const card=document.getElementById('scanResultCard');
-  card.style.display='block'; card.scrollIntoView({behavior:'smooth',block:'start'});
-  currentQty=1; document.getElementById('qtyVal').textContent='1';
-  document.getElementById('itemMsgOk').style.display='none';
-  document.getElementById('itemMsgErr').style.display='none';
-  lookupItem(currentParsed.gtin);
-}
+  sessionLines.push(newLine);
+  const idx = sessionLines.length-1;
+  beep('new');
+  flashStatusBar('Scanned — looking up item…');
+  renderSessionList(idx);
+  updateSessionCounters();
 
-function renderParsedFields(parsed, fmt){
-  let html='<div class="parsed-grid">';
-  for(const f of parsed.fields){
-    const dv=isDateAI(f.ai)?formatGS1Date(f.value):f.value;
-    const full=f.ai==='01'||f.label==='Barcode';
-    html+=`<div class="pf ${full?'full':''}"><div class="pf-label">${f.label}${f.ai?' ('+f.ai+')':''}</div><div class="pf-value ${f.ai==='01'?'hi':''}">${dv}</div></div>`;
-  }
-  html+=`<div class="pf"><div class="pf-label">Format</div><div class="pf-value">${parsed.isGS1?'GS1 ':''}${fmt}</div></div>`;
-  html+='</div>';
-  document.getElementById('parsedFields').innerHTML=html;
-}
-
-function lookupItem(gtin){
-  const badge=document.getElementById('itemStatusBadge');
-  badge.innerHTML='<div class="item-badge unknown">🔍 Checking item master…</div>';
-  apiGet('lookupItemMaster',{gtin})
-    .then(res=>{
-      if(res&&res.found){
-        badge.innerHTML='<div class="item-badge known">✅ Known item — auto-filled</div>';
-        document.getElementById('itemNameInput').value=res.itemName||'';
-        document.getElementById('brandInput').value=res.brand||'';
-      } else {
-        badge.innerHTML='<div class="item-badge unknown">⚠️ New GTIN — enter Tally name once, remembered next time</div>';
-        document.getElementById('itemNameInput').value='';
-        document.getElementById('brandInput').value='';
-      }
-    }).catch(()=>{ badge.innerHTML='<div class="item-badge unknown">⚠️ Could not check item master</div>'; });
-}
-
-// ════════════════════════════════════════════════════════
-//  SCAN SUBMIT — with Sale/DC modal for Outward
-// ════════════════════════════════════════════════════════
-function initiateSubmit(){
-  const itemName=document.getElementById('itemNameInput').value.trim();
-  const err=document.getElementById('itemMsgErr');
-  if(!itemName){ err.textContent='Please enter the Tally Item Name before logging.'; err.style.display='block'; return; }
-  if(!currentParsed) return;
-  if(currentDirection==='OUT'){
-    openScanTypeModal();
-  } else {
-    submitScan('SALE', '');
-  }
-}
-
-function openScanTypeModal(){
-  pendingScanType=null;
-  document.getElementById('optSale').classList.remove('selected');
-  document.getElementById('optDC').classList.remove('selected');
-  document.getElementById('hospitalField').style.display='none';
-  document.getElementById('hospitalInput').value='';
-  document.getElementById('scanTypeModal').classList.add('open');
-  // Pre-populate hospital suggestions from existing DC data
-  apiGet('getDCHospitals',{}).then(res=>{
-    if(res&&res.hospitals){
-      const dl=document.getElementById('hospitalSuggestions');
-      dl.innerHTML=res.hospitals.map(h=>`<option value="${esc(h)}">`).join('');
+  apiGet('lookupItemMaster',{gtin}).then(res=>{
+    if(res && res.found){
+      newLine.itemName = res.itemName || '';
+      newLine.brand = res.brand || '';
+      newLine.unmapped = false;
     }
-  }).catch(()=>{});
+    renderSessionList();
+    updateSessionCounters();
+  }).catch(()=>{ /* stays unmapped, resolved at review */ });
 }
 
-function selectScanType(type){
-  pendingScanType=type;
-  document.getElementById('optSale').classList.toggle('selected', type==='SALE');
-  document.getElementById('optDC').classList.toggle('selected', type==='DC');
-  document.getElementById('hospitalField').style.display=type==='DC'?'flex':'none';
+function flashStatusBar(msg){
+  const sb=document.getElementById('statusBar');
+  const prevClass = sb.className;
+  sb.className='status-bar s-justscanned'; sb.textContent=msg;
+  setTimeout(()=>{ if(isScanning){ sb.className='status-bar s-ready'; sb.textContent='Scanning — point at next barcode'; } }, 900);
 }
 
-function closeModal(){ document.getElementById('scanTypeModal').classList.remove('open'); }
-
-function confirmScanType(){
-  if(!pendingScanType){ alert('Please select Sale or DC first.'); return; }
-  if(pendingScanType==='DC'){
-    const hosp=document.getElementById('hospitalInput').value.trim();
-    if(!hosp){ alert('Please enter the hospital name for DC tracking.'); return; }
-    pendingHospital=hosp;
-  } else {
-    pendingHospital='';
+// ──────────────────────────────────────────────────────
+//  SESSION LIST RENDER
+// ──────────────────────────────────────────────────────
+function renderSessionList(flashIdx){
+  const body=document.getElementById('sessionListBody');
+  document.getElementById('sessionListCount').textContent = sessionLines.length + ' item' + (sessionLines.length!==1?'s':'');
+  if(!sessionLines.length){
+    body.innerHTML='<div class="empty-session"><div class="empty-icon">📭</div><p>No scans yet — point camera at a barcode</p></div>';
+    return;
   }
-  closeModal();
-  submitScan(pendingScanType, pendingHospital);
+  // newest first
+  const order = sessionLines.map((l,i)=>i).reverse();
+  body.innerHTML = order.map(i=>{
+    const l=sessionLines[i];
+    const name = l.itemName || ('Unmapped — GTIN '+l.gtin);
+    return `<div class="sl-row ${l.unmapped?'unmapped':''} ${i===flashIdx?'flash-new':''}">
+      <div class="sl-main">
+        <div class="sl-name ${l.unmapped?'unmapped-name':''}">${esc(name)}</div>
+        <div class="sl-meta">${l.lot?('Lot: '+esc(l.lot)+' · '):''}${l.expiry?('Exp: '+esc(l.expiry)):''}${l.unmapped?' · ⚠️ needs name':''}</div>
+      </div>
+      <div class="sl-qty">${l.qty}</div>
+      <div class="sl-remove" onclick="removeSessionLine(${i})" title="Remove">✕</div>
+    </div>`;
+  }).join('');
 }
 
-function submitScan(scanType, hospital){
-  const itemName=document.getElementById('itemNameInput').value.trim();
-  const brand=document.getElementById('brandInput').value.trim();
-  const remarks=document.getElementById('remarksInput').value.trim();
-  const scannedBy=document.getElementById('scannedByInput').value.trim();
-  const okEl=document.getElementById('itemMsgOk'), errEl=document.getElementById('itemMsgErr');
-  const btn=document.getElementById('logScanBtn');
-  btn.disabled=true; btn.textContent='…Saving';
+function removeSessionLine(idx){
+  sessionLines.splice(idx,1);
+  renderSessionList();
+  updateSessionCounters();
+}
 
-  apiPost('saveItemMaster',{gtin:currentParsed.gtin,itemName,brand,notes:''})
-    .then(()=>apiPost('logScan',{entry:{
-      direction:currentDirection,
-      scanType:scanType,          // 'SALE' or 'DC'
-      hospital:hospital,
-      gtin:currentParsed.gtin,
-      itemName,
-      lot:currentParsed.lot,
-      expiry:currentParsed.expiry,
-      productionDate:currentParsed.productionDate,
-      qty:currentQty,
-      format:currentParsed.format,
-      raw:currentParsed.raw,
-      scannedBy,
-      remarks
-    }}))
-    .then(res=>{
-      btn.disabled=false; btn.textContent='✓ Log This Scan';
-      if(res&&res.success){
-        const typeLabel=scanType==='DC'?` → DC (${hospital})`:'→ Sale';
-        okEl.textContent=`✅ ${currentDirection} ${typeLabel} logged for "${itemName}" (Qty: ${currentQty})`;
-        okEl.style.display='block'; errEl.style.display='none';
-        setTimeout(()=>okEl.style.display='none',3500);
-      } else {
-        errEl.textContent='❌ '+((res&&res.message)||'Failed to log scan.');
-        errEl.style.display='block';
-      }
-    })
-    .catch(e=>{ btn.disabled=false; btn.textContent='✓ Log This Scan'; errEl.textContent='❌ Connection error: '+e; errEl.style.display='block'; });
+function updateSessionCounters(){
+  document.getElementById('scLines').textContent = sessionLines.length;
+  document.getElementById('scUnits').textContent = sessionLines.reduce((a,l)=>a+l.qty,0);
+  document.getElementById('scUnmapped').textContent = sessionLines.filter(l=>l.unmapped).length;
+}
+
+// ──────────────────────────────────────────────────────
+//  END SESSION → REVIEW
+// ──────────────────────────────────────────────────────
+function endSession(){
+  if(!sessionLines.length){ confirmEndSession(); return; }
+  document.getElementById('endSessionModal').classList.add('open');
+}
+function confirmEndSession(){
+  document.getElementById('endSessionModal').classList.remove('open');
+  stopScanner();
+  document.getElementById('toggleCamBtn').textContent='▶ Start Scanner';
+  document.getElementById('statusBar').className='status-bar s-off';
+  document.getElementById('statusBar').textContent='Camera off';
+  goToReview();
+}
+
+function backToSession(){
+  inReview=false;
+  document.getElementById('reviewScreen').classList.remove('active');
+  document.getElementById('sessionScreen').classList.add('active');
+}
+
+function goToReview(){
+  sessionActive=false; inReview=true;
+  document.getElementById('sessionScreen').classList.remove('active');
+  document.getElementById('reviewScreen').classList.add('active');
+  renderReview();
+}
+
+function renderReview(){
+  const unmappedCount = sessionLines.filter(l=>l.unmapped).length;
+  document.getElementById('reviewBanner').classList.toggle('show', unmappedCount>0);
+  document.getElementById('reviewLines').textContent = sessionLines.length;
+  document.getElementById('reviewUnits').textContent = sessionLines.reduce((a,l)=>a+l.qty,0);
+
+  const body=document.getElementById('reviewListBody');
+  if(!sessionLines.length){
+    body.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>No items in this session</p></div>';
+    return;
+  }
+  body.innerHTML = sessionLines.map((l,i)=>`
+    <div class="review-item-card ${l.unmapped?'unmapped':''}" id="ric-${i}">
+      <div class="ric-top">
+        <div>
+          <div class="ric-gtin">GTIN ${esc(l.gtin)}${l.lot?(' · Lot '+esc(l.lot)):''}</div>
+        </div>
+        <div class="ric-qty-badge">Qty: ${l.qty}</div>
+      </div>
+      ${l.unmapped ? `
+        <div class="fg" style="margin-bottom:6px;">
+          <label>Tally Item Name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="ric-name-${i}" placeholder="Enter name as per Tally" oninput="updateReviewLineName(${i}, this.value)">
+        </div>
+        <div class="fg" style="margin-bottom:0;">
+          <label>Brand (optional)</label>
+          <input type="text" id="ric-brand-${i}" placeholder="e.g. Stryker, Zeiss…" oninput="updateReviewLineBrand(${i}, this.value)">
+        </div>
+      ` : `<div style="font-size:13px;font-weight:700;">${esc(l.itemName)}${l.brand?(' · '+esc(l.brand)):''}</div>`}
+    </div>
+  `).join('');
+}
+
+function updateReviewLineName(i,val){ sessionLines[i].itemName=val.trim(); }
+function updateReviewLineBrand(i,val){ sessionLines[i].brand=val.trim(); }
+
+// ──────────────────────────────────────────────────────
+//  SUBMIT SESSION — one batchLogScan call for everything
+// ──────────────────────────────────────────────────────
+function submitSession(){
+  const stillUnmapped = sessionLines.filter(l=>l.unmapped && !l.itemName.trim());
+  if(stillUnmapped.length){
+    alert('Please enter the Tally Item Name for all unmapped items ('+stillUnmapped.length+' remaining) before submitting.');
+    return;
+  }
+  if(!sessionLines.length){ alert('No items to submit.'); return; }
+
+  const btn=document.getElementById('submitSessionBtn');
+  btn.disabled=true; btn.textContent='…Submitting';
+
+  const meta=MOVE_TYPE_META[setupMoveType];
+
+  // First save any new item-master entries (unmapped items just named)
+  const newMasters = sessionLines.filter(l=>l.unmapped);
+  const masterSaves = newMasters.map(l=>apiPost('saveItemMaster',{gtin:l.gtin,itemName:l.itemName,brand:l.brand||'',notes:''}));
+
+  Promise.all(masterSaves).then(()=>{
+    const entries = sessionLines.map(l=>({
+      direction: meta.direction,
+      scanType: meta.scanType,
+      hospital: setupHospital,
+      gtin: l.gtin,
+      itemName: l.itemName,
+      lot: l.lot,
+      expiry: l.expiry,
+      productionDate: l.productionDate,
+      qty: l.qty,
+      format: l.format,
+      raw: l.raw,
+      scannedBy: setupScannedBy,
+      remarks: ''
+    }));
+    return apiPost('batchLogScan',{entries});
+  }).then(res=>{
+    btn.disabled=false; btn.textContent='✓ Submit All';
+    if(res && res.success){
+      alert('✅ Session submitted — '+res.written+' line item(s) logged.');
+      resetAfterSubmit();
+    } else {
+      const errMsg = (res && res.message) || (res && res.errors && JSON.stringify(res.errors)) || 'Some items failed to log.';
+      alert('⚠️ '+errMsg+(res&&res.written?(' ('+res.written+'/'+res.total+' succeeded)'):''));
+      if(res && res.written) resetAfterSubmit(); // partial success — don't resubmit good rows
+    }
+  }).catch(e=>{
+    btn.disabled=false; btn.textContent='✓ Submit All';
+    alert('❌ Connection error: '+e);
+  });
+}
+
+function resetAfterSubmit(){
+  sessionLines=[]; setupMoveType=null; setupHospital=''; setupScannedBy='';
+  document.getElementById('setupHospitalInput').value='';
+  document.getElementById('setupScannedByInput').value='';
+  ['mtPurchase','mtSale','mtDC','mtDCReturn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  document.getElementById('hospitalSetupBlock').classList.remove('show');
+  document.getElementById('startSessionBtn').disabled=true;
+  inReview=false; sessionActive=false;
+  document.getElementById('reviewScreen').classList.remove('active');
+  showSetupScreen();
 }
 
 // ════════════════════════════════════════════════════════
-//  DC USAGE MODAL
+//  DC USAGE MODAL (manual usage logging from DC Stock view)
 // ════════════════════════════════════════════════════════
+let dcUsageData={};
 function openDCUsage(itemName, gtin, lot, hospital, maxQty){
   dcUsageData={itemName,gtin,lot,hospital,qty:1,maxQty};
   document.getElementById('dcUsageItem').value=itemName;
@@ -809,6 +975,7 @@ function openDCUsage(itemName, gtin, lot, hospital, maxQty){
   document.getElementById('dcUsageModal').classList.add('open');
 }
 function closeDCModal(){ document.getElementById('dcUsageModal').classList.remove('open'); }
+function adjustDcQty(d){ dcUsageData.qty=Math.max(1,(dcUsageData.qty||1)+d); document.getElementById('dcQtyVal').textContent=dcUsageData.qty; }
 
 function submitDCUsage(){
   const btn=document.getElementById('dcUsageConfirmBtn');
@@ -826,7 +993,7 @@ function submitDCUsage(){
 }
 
 // ════════════════════════════════════════════════════════
-//  LOAD FUNCTIONS
+//  LOAD FUNCTIONS (Inventory / DC / Reports / Logs views)
 // ════════════════════════════════════════════════════════
 function fmtNum(n){ return (parseFloat(n)||0).toLocaleString('en-IN'); }
 
@@ -865,15 +1032,19 @@ function loadLogs(){
     if(!res.recentLogs.length){
       el.innerHTML='<div class="empty"><p>No activity yet</p></div>';
     } else {
-      el.innerHTML=res.recentLogs.map(l=>`
-        <div class="log-entry">
+      el.innerHTML=res.recentLogs.map(l=>{
+        let dirCls='in', dirLabel='IN';
+        if(l.direction==='OUT'){ dirCls = l.scanType==='DC' ? 'dc' : 'out'; dirLabel = l.scanType==='DC' ? 'DC' : 'Sale'; }
+        else if(l.scanType==='DC_RETURN'){ dirCls='ret'; dirLabel='DC Return'; }
+        return `<div class="log-entry">
           <div class="log-top">
             <span class="log-name">${esc(l.itemName||(l.gtin?'GTIN: '+l.gtin:'Unknown'))}</span>
-            <span class="log-dir ${l.direction==='OUT'?(l.scanType==='DC'?'dc':'out'):'in'}">${l.direction==='OUT'?(l.scanType==='DC'?'DC':'Sale'):'IN'}</span>
+            <span class="log-dir ${dirCls}">${dirLabel}</span>
           </div>
           <div class="log-meta">Qty: ${fmtNum(l.qty)}${l.lot?' · Lot: '+esc(l.lot):''}${l.hospital?' · Hospital: '+esc(l.hospital):''}${l.scannedBy?' · By: '+esc(l.scannedBy):''}</div>
           <div class="log-time">${cleanDate(l.timestamp)}</div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
   }).catch(()=>{});
 }
@@ -887,7 +1058,7 @@ function loadDC(){
     document.getElementById('dcBalance').textContent=fmtNum(res.kpis.balance);
     const el=document.getElementById('dcHospitalsList');
     if(!res.byHospital||!Object.keys(res.byHospital).length){
-      el.innerHTML='<div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Scan Outward → DC to send stock to a hospital</small></div>';
+      el.innerHTML='<div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Start a DC / Consignment session to send stock to a hospital</small></div>';
       return;
     }
     el.innerHTML=Object.entries(res.byHospital).map(([hosp,rows])=>`
@@ -895,7 +1066,7 @@ function loadDC(){
       <div class="hospital-body">
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>Item</th><th>Lot</th><th>Expiry</th><th>Sent</th><th>Used</th><th>At Hospital</th><th></th></tr></thead>
+            <thead><tr><th>Item</th><th>Lot</th><th>Expiry</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
             <tbody>
               ${rows.map(r=>`
                 <tr class="${r.balance<=0?'neg':''}">
@@ -904,6 +1075,7 @@ function loadDC(){
                   <td>${cleanDate(r.expiry)}</td>
                   <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
                   <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
+                  <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
                   <td class="bal">${fmtNum(r.balance)}</td>
                   <td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage('${esc(r.itemName).replace(/'/g,"\\'")}','${esc(r.gtin)}','${esc(r.lot||'')}','${esc(hosp).replace(/'/g,"\\'")}',${r.balance})">Log Use</button></td>
                 </tr>`).join('')}
