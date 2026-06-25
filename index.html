@@ -720,16 +720,33 @@ const MOVE_TYPE_META = {
 // ──────────────────────────────────────────────────────
 function populateSegmentDropdowns(){
   apiGet('getSegments',{}).then(res=>{
-    if(res && res.success && res.segments){
+    if(res && res.success && res.segments && res.segments.length){
       cachedSegments = res.segments;
       const opts = '<option value="">Select segment…</option>' + res.segments.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
-      document.getElementById('segmentSelect').innerHTML = opts;
+      const segSel = document.getElementById('segmentSelect');
       const invSel = document.getElementById('invSegmentSelect');
       const dcSel = document.getElementById('dcSegmentSelect');
-      if(invSel) invSel.innerHTML = '<option value="">Select segment…</option>' + res.segments.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
-      if(dcSel) dcSel.innerHTML = '<option value="">Select segment…</option>' + res.segments.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+      if(segSel) segSel.innerHTML = opts;
+      if(invSel) invSel.innerHTML = opts;
+      if(dcSel) dcSel.innerHTML = opts;
+    } else {
+      // Backend reached but returned no segments — surface this instead of
+      // silently leaving the dropdown empty, so it's obvious what's wrong.
+      const msg = (res && res.message) ? res.message : 'No segments returned by backend.';
+      console.error('populateSegmentDropdowns: ', msg, res);
+      setSegmentDropdownError('⚠️ Could not load segments: ' + msg);
     }
-  }).catch(()=>{});
+  }).catch(err=>{
+    console.error('populateSegmentDropdowns failed:', err);
+    setSegmentDropdownError('⚠️ Could not reach backend to load segments. Check API URL in ⚙️ Configure API.');
+  });
+}
+
+function setSegmentDropdownError(msg){
+  ['segmentSelect','invSegmentSelect','dcSegmentSelect'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = `<option value="">${esc(msg)}</option>`;
+  });
 }
 
 function onSegmentChanged(){
