@@ -160,6 +160,10 @@
   .setup-screen { padding:4px 0; }
   .setup-title { font-size:18px; font-weight:800; margin-bottom:4px; }
   .setup-sub { font-size:12px; color:var(--text2); margin-bottom:18px; }
+  .movetype-gate-hint {
+    background:var(--surface2); border:1.5px dashed var(--border2); border-radius:10px;
+    padding:14px; text-align:center; font-size:12px; color:var(--text2); font-weight:600; margin-bottom:16px;
+  }
   .movetype-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
   .movetype-card {
     background:var(--surface); border:2px solid var(--border2); border-radius:14px;
@@ -301,89 +305,101 @@
   <!-- ── SCAN VIEW (3 sub-screens: setup → session → review) ── -->
   <div class="view active" id="view-scan">
 
-    <!-- SUB-SCREEN 1: SETUP — pick movement type once, before scanner turns on -->
+    <!-- SUB-SCREEN 1: SETUP — pick Segment first, then movement type, before scanner turns on -->
     <div class="setup-screen" id="setupScreen">
       <div class="page-title">📷 Start <span>Scan Session</span></div>
-      <p class="setup-sub">Pick what this session is for. You'll scan items one after another with no extra taps — exactly like a warehouse session.</p>
+      <p class="setup-sub">Pick the business unit, then what this session is for. You'll scan items one after another with no extra taps — exactly like a warehouse session.</p>
 
-      <div class="movetype-grid">
-        <div class="movetype-card sel-purchase" id="mtPurchase" onclick="selectSetupMoveType('PURCHASE')">
-          <span class="mc-icon">📥</span>
-          <div class="mc-label">Purchase / Inward</div>
-          <div class="mc-sub">Stock arriving at warehouse</div>
-        </div>
-        <div class="movetype-card sel-sale" id="mtSale" onclick="selectSetupMoveType('SALE')">
-          <span class="mc-icon">🧾</span>
-          <div class="mc-label">Sale</div>
-          <div class="mc-sub">Stock going out — sold</div>
-        </div>
-        <div class="movetype-card sel-dc" id="mtDC" onclick="selectSetupMoveType('DC')">
-          <span class="mc-icon">🏥</span>
-          <div class="mc-label">DC / Consignment</div>
-          <div class="mc-sub">Sent to hospital, unused part</div>
-        </div>
-        <div class="movetype-card sel-dcreturn" id="mtDCReturn" onclick="selectSetupMoveType('DC_RETURN')">
-          <span class="mc-icon">↩️</span>
-          <div class="mc-label">DC Return</div>
-          <div class="mc-sub">Hospital returns unused stock</div>
-        </div>
-      </div>
-
-      <!-- PURCHASE: Invoice Number only -->
-      <div class="hospital-setup-block" id="purchaseSetupBlock">
-        <div class="fg">
-          <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
-          <input type="text" id="purchaseInvoiceInput" placeholder="e.g. INV-2026-0145">
-        </div>
-      </div>
-
-      <!-- SALE: Hospital/Customer Name + Invoice Number -->
-      <div class="hospital-setup-block" id="saleSetupBlock">
-        <div class="fg">
-          <label>Hospital / Customer Name <span style="color:var(--red)">*</span></label>
-          <input type="text" id="saleHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="saleHospitalSuggestions">
-          <datalist id="saleHospitalSuggestions"></datalist>
-        </div>
-        <div class="fg">
-          <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
-          <input type="text" id="saleInvoiceInput" placeholder="e.g. INV-2026-0145">
-        </div>
-      </div>
-
-      <!-- DC (outward): Hospital Name + DC Number (typed manually) -->
-      <div class="hospital-setup-block" id="dcSetupBlock">
-        <div class="fg">
-          <label>Hospital Name <span style="color:var(--red)">*</span></label>
-          <input type="text" id="dcHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcHospitalSuggestions">
-          <datalist id="dcHospitalSuggestions"></datalist>
-        </div>
-        <div class="fg">
-          <label>DC Number <span style="color:var(--red)">*</span></label>
-          <input type="text" id="dcNumberInput" placeholder="e.g. DC-2026-0032">
-        </div>
-      </div>
-
-      <!-- DC RETURN: Hospital Name, then DC Number dropdown (filtered to that hospital's open DCs) -->
-      <div class="hospital-setup-block" id="dcReturnSetupBlock">
-        <div class="fg">
-          <label>Hospital Name <span style="color:var(--red)">*</span></label>
-          <input type="text" id="dcReturnHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcReturnHospitalSuggestions">
-          <datalist id="dcReturnHospitalSuggestions"></datalist>
-        </div>
-        <div class="fg">
-          <label>DC Number being returned against <span style="color:var(--red)">*</span></label>
-          <select id="dcReturnNumberSelect" disabled>
-            <option value="">Enter hospital name first…</option>
-          </select>
-        </div>
-      </div>
-
+      <div class="section-label">1. Business Unit / Segment</div>
       <div class="fg">
-        <label>Scanned By</label>
-        <input type="text" id="setupScannedByInput" placeholder="Your name">
+        <select id="segmentSelect" onchange="onSegmentChanged()">
+          <option value="">Select segment…</option>
+        </select>
       </div>
 
-      <button class="btn btn-primary btn-full" id="startSessionBtn" onclick="startSession()" disabled>▶ Start Scanning</button>
+      <div id="movetypeGateBlock" class="movetype-gate-hint">Select a business unit above to continue.</div>
+
+      <div id="movetypeSection" style="display:none;">
+        <div class="section-label">2. Movement Type</div>
+        <div class="movetype-grid">
+          <div class="movetype-card sel-purchase" id="mtPurchase" onclick="selectSetupMoveType('PURCHASE')">
+            <span class="mc-icon">📥</span>
+            <div class="mc-label">Purchase / Inward</div>
+            <div class="mc-sub">Stock arriving at warehouse</div>
+          </div>
+          <div class="movetype-card sel-sale" id="mtSale" onclick="selectSetupMoveType('SALE')">
+            <span class="mc-icon">🧾</span>
+            <div class="mc-label">Sale</div>
+            <div class="mc-sub">Stock going out — sold</div>
+          </div>
+          <div class="movetype-card sel-dc" id="mtDC" onclick="selectSetupMoveType('DC')">
+            <span class="mc-icon">🏥</span>
+            <div class="mc-label">DC / Consignment</div>
+            <div class="mc-sub">Sent to hospital, unused part</div>
+          </div>
+          <div class="movetype-card sel-dcreturn" id="mtDCReturn" onclick="selectSetupMoveType('DC_RETURN')">
+            <span class="mc-icon">↩️</span>
+            <div class="mc-label">DC Return</div>
+            <div class="mc-sub">Hospital returns unused stock</div>
+          </div>
+        </div>
+
+        <!-- PURCHASE: Invoice Number only -->
+        <div class="hospital-setup-block" id="purchaseSetupBlock">
+          <div class="fg">
+            <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
+            <input type="text" id="purchaseInvoiceInput" placeholder="e.g. INV-2026-0145">
+          </div>
+        </div>
+
+        <!-- SALE: Hospital/Customer Name + Invoice Number -->
+        <div class="hospital-setup-block" id="saleSetupBlock">
+          <div class="fg">
+            <label>Hospital / Customer Name <span style="color:var(--red)">*</span></label>
+            <input type="text" id="saleHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="saleHospitalSuggestions">
+            <datalist id="saleHospitalSuggestions"></datalist>
+          </div>
+          <div class="fg">
+            <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
+            <input type="text" id="saleInvoiceInput" placeholder="e.g. INV-2026-0145">
+          </div>
+        </div>
+
+        <!-- DC (outward): Hospital Name + DC Number (typed manually) -->
+        <div class="hospital-setup-block" id="dcSetupBlock">
+          <div class="fg">
+            <label>Hospital Name <span style="color:var(--red)">*</span></label>
+            <input type="text" id="dcHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcHospitalSuggestions">
+            <datalist id="dcHospitalSuggestions"></datalist>
+          </div>
+          <div class="fg">
+            <label>DC Number <span style="color:var(--red)">*</span></label>
+            <input type="text" id="dcNumberInput" placeholder="e.g. DC-2026-0032">
+          </div>
+        </div>
+
+        <!-- DC RETURN: Hospital Name, then DC Number dropdown (filtered to that hospital's open DCs, scoped to this segment) -->
+        <div class="hospital-setup-block" id="dcReturnSetupBlock">
+          <div class="fg">
+            <label>Hospital Name <span style="color:var(--red)">*</span></label>
+            <input type="text" id="dcReturnHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcReturnHospitalSuggestions">
+            <datalist id="dcReturnHospitalSuggestions"></datalist>
+          </div>
+          <div class="fg">
+            <label>DC Number being returned against <span style="color:var(--red)">*</span></label>
+            <select id="dcReturnNumberSelect" disabled>
+              <option value="">Enter hospital name first…</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label>Scanned By</label>
+          <input type="text" id="setupScannedByInput" placeholder="Your name">
+        </div>
+
+        <button class="btn btn-primary btn-full" id="startSessionBtn" onclick="startSession()" disabled>▶ Start Scanning</button>
+      </div>
     </div>
 
     <!-- SUB-SCREEN 2: LIVE SESSION — scanner runs, list builds below, zero taps per scan -->
@@ -452,29 +468,41 @@
   <!-- ── INVENTORY VIEW ── -->
   <div class="view" id="view-inventory">
     <div class="page-title">📦 Inventory <span>Stock</span></div>
-    <div class="kpi-grid">
-      <div class="kpi-box red"><div class="kpi-num" id="invTotalScans">0</div><div class="kpi-label">Total Scans</div></div>
-      <div class="kpi-box green"><div class="kpi-num" id="invTotalIn">0</div><div class="kpi-label">Total In</div></div>
-      <div class="kpi-box"><div class="kpi-num" id="invTotalOut">0</div><div class="kpi-label">Total Out (Sale)</div></div>
-      <div class="kpi-box blue"><div class="kpi-num" id="invUniqueItems">0</div><div class="kpi-label">Unique Items</div></div>
-      <div class="kpi-box amber"><div class="kpi-num" id="invNegative">0</div><div class="kpi-label">Negative Bal.</div></div>
-      <div class="kpi-box green"><div class="kpi-num" id="invNetBal">0</div><div class="kpi-label">Net Balance</div></div>
+
+    <div class="section-label">Business Unit / Segment</div>
+    <div class="fg">
+      <select id="invSegmentSelect" onchange="onInvSegmentChanged()">
+        <option value="">Select segment…</option>
+      </select>
     </div>
-    <div class="card" style="padding:0;">
-      <div style="padding:14px 16px 0;">
-        <div class="card-header">
-          <div class="card-title" style="margin:0;">Live Stock Balance</div>
-          <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">⟳ Refresh</button>
-        </div>
-        <div class="fg" style="margin-bottom:12px;">
-          <input type="text" id="invSearchInput" placeholder="🔍 Search item name…" oninput="filterInventoryTable()">
-        </div>
+
+    <div id="invSegmentGateHint" class="movetype-gate-hint">Select a business unit to view its stock.</div>
+
+    <div id="invContentBlock" style="display:none;">
+      <div class="kpi-grid">
+        <div class="kpi-box red"><div class="kpi-num" id="invTotalScans">0</div><div class="kpi-label">Total Scans</div></div>
+        <div class="kpi-box green"><div class="kpi-num" id="invTotalIn">0</div><div class="kpi-label">Total In</div></div>
+        <div class="kpi-box"><div class="kpi-num" id="invTotalOut">0</div><div class="kpi-label">Total Out (Sale)</div></div>
+        <div class="kpi-box blue"><div class="kpi-num" id="invUniqueItems">0</div><div class="kpi-label">Unique Items</div></div>
+        <div class="kpi-box amber"><div class="kpi-num" id="invNegative">0</div><div class="kpi-label">Negative Bal.</div></div>
+        <div class="kpi-box green"><div class="kpi-num" id="invNetBal">0</div><div class="kpi-label">Net Balance</div></div>
       </div>
-      <div class="tbl-wrap" style="padding:0 16px 16px;">
-        <table>
-          <thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>In</th><th>Out</th><th>Balance</th><th>Last Scanned</th></tr></thead>
-          <tbody id="invTableBody"><tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><p>Loading…</p></div></td></tr></tbody>
-        </table>
+      <div class="card" style="padding:0;">
+        <div style="padding:14px 16px 0;">
+          <div class="card-header">
+            <div class="card-title" style="margin:0;">Live Stock Balance</div>
+            <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">⟳ Refresh</button>
+          </div>
+          <div class="fg" style="margin-bottom:12px;">
+            <input type="text" id="invSearchInput" placeholder="🔍 Search item name…" oninput="filterInventoryTable()">
+          </div>
+        </div>
+        <div class="tbl-wrap" style="padding:0 16px 16px;">
+          <table>
+            <thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>MRP</th><th>In</th><th>Out</th><th>Balance</th><th>Last Scanned</th></tr></thead>
+            <tbody id="invTableBody"><tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><p>Loading…</p></div></td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -483,20 +511,32 @@
   <div class="view" id="view-dc">
     <div class="page-title">🏥 DC <span>Stock</span></div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Delivery Challan consignment stock per hospital — Sent − Used − Returned = Balance at Hospital</p>
-    <div class="kpi-grid">
-      <div class="kpi-box blue"><div class="kpi-num" id="dcHospitals">0</div><div class="kpi-label">Hospitals</div></div>
-      <div class="kpi-box amber"><div class="kpi-num" id="dcTotalSent">0</div><div class="kpi-label">Total Sent</div></div>
-      <div class="kpi-box green"><div class="kpi-num" id="dcTotalUsed">0</div><div class="kpi-label">Total Used</div></div>
-      <div class="kpi-box red"><div class="kpi-num" id="dcBalance">0</div><div class="kpi-label">At Hospitals</div></div>
+
+    <div class="section-label">Business Unit / Segment</div>
+    <div class="fg">
+      <select id="dcSegmentSelect" onchange="onDCSegmentChanged()">
+        <option value="">Select segment…</option>
+      </select>
     </div>
-    <div class="card-header" style="margin-bottom:10px;">
-      <div class="section-label" style="margin:0;">By Hospital</div>
-      <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">⟳ Refresh</button>
+
+    <div id="dcSegmentGateHint" class="movetype-gate-hint">Select a business unit to view its DC stock.</div>
+
+    <div id="dcContentBlock" style="display:none;">
+      <div class="kpi-grid">
+        <div class="kpi-box blue"><div class="kpi-num" id="dcHospitals">0</div><div class="kpi-label">Hospitals</div></div>
+        <div class="kpi-box amber"><div class="kpi-num" id="dcTotalSent">0</div><div class="kpi-label">Total Sent</div></div>
+        <div class="kpi-box green"><div class="kpi-num" id="dcTotalUsed">0</div><div class="kpi-label">Total Used</div></div>
+        <div class="kpi-box red"><div class="kpi-num" id="dcBalance">0</div><div class="kpi-label">At Hospitals</div></div>
+      </div>
+      <div class="card-header" style="margin-bottom:10px;">
+        <div class="section-label" style="margin:0;">By Hospital</div>
+        <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">⟳ Refresh</button>
+      </div>
+      <div class="fg" style="margin-bottom:14px;">
+        <input type="text" id="dcSearchInput" placeholder="🔍 Search hospital name…" oninput="filterDCHospitals()">
+      </div>
+      <div id="dcHospitalsList"><div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Start a DC / Consignment session to send stock to a hospital</small></div></div>
     </div>
-    <div class="fg" style="margin-bottom:14px;">
-      <input type="text" id="dcSearchInput" placeholder="🔍 Search hospital name…" oninput="filterDCHospitals()">
-    </div>
-    <div id="dcHospitalsList"><div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Start a DC / Consignment session to send stock to a hospital</small></div></div>
   </div>
 
   <!-- ── REPORTS VIEW ── -->
@@ -641,8 +681,8 @@ function switchView(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
   document.getElementById('view-'+view).classList.add('active');
-  if(view==='inventory') loadInventory();
-  if(view==='dc') loadDC();
+  if(view==='inventory' && invSegment) loadInventory();
+  if(view==='dc' && dcSegment) loadDC();
   if(view==='reports') loadReports();
   if(view==='logs') loadLogs();
   if(view==='scan' && !sessionActive && !inReview) showSetupScreen();
@@ -650,10 +690,12 @@ function switchView(view){
 
 (async function warmup(){ try{ await ZXingWASM.prepareZXingModule({fireImmediately:true}); }catch(e){} })();
 checkApiConnection();
+populateSegmentDropdowns();
 
 // ════════════════════════════════════════════════════════
 //  SESSION STATE
 // ════════════════════════════════════════════════════════
+let setupSegment = '';
 let setupMoveType = null;          // 'PURCHASE' | 'SALE' | 'DC' | 'DC_RETURN'
 let setupHospital = '';
 let setupDCNumber = '';
@@ -661,9 +703,10 @@ let setupInvoiceNumber = '';
 let setupScannedBy = '';
 let sessionActive = false;
 let inReview = false;
-let sessionLines = [];             // [{gtin,lot,expiry,productionDate,itemName,brand,format,raw,qty,unmapped}]
+let sessionLines = [];             // [{gtin,lot,expiry,productionDate,itemName,brand,format,raw,qty,mrp,unmapped}]
 let camStream=null, isScanning=false, scanLoopHandle=null;
 let lastScanTime=0, lastScanCode='';
+let cachedSegments = [];
 
 const MOVE_TYPE_META = {
   PURCHASE:  { direction:'IN',  scanType:'SALE',       label:'📥 Purchase / Inward', dirLogLabel:'IN' },
@@ -671,6 +714,74 @@ const MOVE_TYPE_META = {
   DC:        { direction:'OUT', scanType:'DC',         label:'🏥 DC / Consignment',  dirLogLabel:'OUT · DC' },
   DC_RETURN: { direction:'IN',  scanType:'DC_RETURN',  label:'↩️ DC Return',         dirLogLabel:'IN · DC Return' }
 };
+
+// ──────────────────────────────────────────────────────
+//  SEGMENT PICKER — first layer, gates everything else
+// ──────────────────────────────────────────────────────
+function populateSegmentDropdowns(){
+  apiGet('getSegments',{}).then(res=>{
+    if(res && res.success && res.segments){
+      cachedSegments = res.segments;
+      const opts = '<option value="">Select segment…</option>' + res.segments.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+      document.getElementById('segmentSelect').innerHTML = opts;
+      const invSel = document.getElementById('invSegmentSelect');
+      const dcSel = document.getElementById('dcSegmentSelect');
+      if(invSel) invSel.innerHTML = '<option value="">Select segment…</option>' + res.segments.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+      if(dcSel) dcSel.innerHTML = '<option value="">Select segment…</option>' + res.segments.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    }
+  }).catch(()=>{});
+}
+
+function onSegmentChanged(){
+  setupSegment = document.getElementById('segmentSelect').value;
+  const gateHint = document.getElementById('movetypeGateBlock');
+  const mtSection = document.getElementById('movetypeSection');
+  if(!setupSegment){
+    gateHint.style.display='block';
+    mtSection.style.display='none';
+    return;
+  }
+  gateHint.style.display='none';
+  mtSection.style.display='block';
+  // Segment changed — clear any movement-type selection made under a
+  // different segment so hospital/DC-number lookups stay scoped correctly.
+  setupMoveType=null;
+  ['mtPurchase','mtSale','mtDC','mtDCReturn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
+  ['purchaseSetupBlock','saleSetupBlock','dcSetupBlock','dcReturnSetupBlock'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  document.getElementById('startSessionBtn').disabled=true;
+}
+
+// Inventory Stock view — segment gates the whole view, same pattern as scan setup
+let invSegment = '';
+function onInvSegmentChanged(){
+  invSegment = document.getElementById('invSegmentSelect').value;
+  const gateHint = document.getElementById('invSegmentGateHint');
+  const content = document.getElementById('invContentBlock');
+  if(!invSegment){
+    gateHint.style.display='block';
+    content.style.display='none';
+    return;
+  }
+  gateHint.style.display='none';
+  content.style.display='block';
+  loadInventory();
+}
+
+// DC Stock view — segment gates the whole view, hospital search applies within it
+let dcSegment = '';
+function onDCSegmentChanged(){
+  dcSegment = document.getElementById('dcSegmentSelect').value;
+  const gateHint = document.getElementById('dcSegmentGateHint');
+  const content = document.getElementById('dcContentBlock');
+  if(!dcSegment){
+    gateHint.style.display='block';
+    content.style.display='none';
+    return;
+  }
+  gateHint.style.display='none';
+  content.style.display='block';
+  loadDC();
+}
 
 // ──────────────────────────────────────────────────────
 //  SETUP SCREEN
@@ -683,6 +794,7 @@ function showSetupScreen(){
 }
 
 function selectSetupMoveType(type){
+  if(!setupSegment){ alert('Select a business unit / segment first.'); return; }
   setupMoveType=type;
   ['mtPurchase','mtSale','mtDC','mtDCReturn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
   const idMap={PURCHASE:'mtPurchase',SALE:'mtSale',DC:'mtDC',DC_RETURN:'mtDCReturn'};
@@ -693,9 +805,10 @@ function selectSetupMoveType(type){
   const blockIdMap={PURCHASE:'purchaseSetupBlock',SALE:'saleSetupBlock',DC:'dcSetupBlock',DC_RETURN:'dcReturnSetupBlock'};
   document.getElementById(blockIdMap[type]).classList.add('show');
 
-  // Pre-fill hospital suggestions for any type that uses a hospital field
+  // Pre-fill hospital suggestions, scoped to the selected segment, for any
+  // type that uses a hospital field
   if(type==='SALE' || type==='DC' || type==='DC_RETURN'){
-    apiGet('getDCHospitals',{}).then(res=>{
+    apiGet('getDCHospitals',{segment:setupSegment}).then(res=>{
       if(res&&res.hospitals){
         const opts=res.hospitals.map(h=>`<option value="${esc(h)}">`).join('');
         if(type==='SALE') document.getElementById('saleHospitalSuggestions').innerHTML=opts;
@@ -710,7 +823,7 @@ function selectSetupMoveType(type){
 
 function validateSetupForm(){
   const btn=document.getElementById('startSessionBtn');
-  if(!setupMoveType){ btn.disabled=true; return; }
+  if(!setupSegment || !setupMoveType){ btn.disabled=true; return; }
   if(setupMoveType==='PURCHASE'){
     btn.disabled=false; // invoice number optional
   } else if(setupMoveType==='SALE'){
@@ -753,7 +866,7 @@ function onDCReturnHospitalChanged(){
   sel.innerHTML='<option value="">Looking up open DC numbers…</option>';
   sel.disabled=true;
   dcReturnLookupTimer=setTimeout(()=>{
-    apiGet('getOpenDCNumbers',{hospital}).then(res=>{
+    apiGet('getOpenDCNumbers',{hospital, segment:setupSegment}).then(res=>{
       if(res && res.success){
         if(res.dcNumbers && res.dcNumbers.length){
           sel.innerHTML='<option value="">Select DC Number…</option>' +
@@ -809,7 +922,7 @@ function startSession(){
   document.getElementById('sessionScreen').classList.add('active');
 
   document.getElementById('sessionModeLabel').innerHTML = meta.label;
-  document.getElementById('sessionModeSubLabel').textContent = subLabel;
+  document.getElementById('sessionModeSubLabel').textContent = setupSegment + ' · ' + subLabel;
   renderSessionList();
   updateSessionCounters();
 }
@@ -1035,7 +1148,7 @@ function handleDecodedBarcode(text, fmt){
   const newLine = {
     gtin, lot, expiry, productionDate,
     itemName:'', brand:'', format:fmt||'Unknown', raw:text,
-    qty:1, unmapped:true
+    qty:1, mrp:'', unmapped:true
   };
   sessionLines.push(newLine);
   const idx = sessionLines.length-1;
@@ -1153,17 +1266,22 @@ function renderReview(){
           <label>Tally Item Name <span style="color:var(--red)">*</span></label>
           <input type="text" id="ric-name-${i}" placeholder="Enter name as per Tally" oninput="updateReviewLineName(${i}, this.value)">
         </div>
-        <div class="fg" style="margin-bottom:0;">
+        <div class="fg" style="margin-bottom:6px;">
           <label>Brand (optional)</label>
           <input type="text" id="ric-brand-${i}" placeholder="e.g. Stryker, Zeiss…" oninput="updateReviewLineBrand(${i}, this.value)">
         </div>
-      ` : `<div style="font-size:13px;font-weight:700;">${esc(l.itemName)}${l.brand?(' · '+esc(l.brand)):''}</div>`}
+      ` : `<div style="font-size:13px;font-weight:700;margin-bottom:6px;">${esc(l.itemName)}${l.brand?(' · '+esc(l.brand)):''}</div>`}
+      <div class="fg" style="margin-bottom:0;">
+        <label>MRP <span style="color:var(--text3);font-weight:600;">(optional, this lot)</span></label>
+        <input type="number" inputmode="decimal" step="0.01" min="0" id="ric-mrp-${i}" placeholder="e.g. 1250.00" value="${l.mrp||''}" oninput="updateReviewLineMRP(${i}, this.value)">
+      </div>
     </div>
   `).join('');
 }
 
 function updateReviewLineName(i,val){ sessionLines[i].itemName=val.trim(); }
 function updateReviewLineBrand(i,val){ sessionLines[i].brand=val.trim(); }
+function updateReviewLineMRP(i,val){ sessionLines[i].mrp=val.trim(); }
 
 // ──────────────────────────────────────────────────────
 //  SUBMIT SESSION — one batchLogScan call for everything
@@ -1183,7 +1301,7 @@ function submitSession(){
 
   // First save any new item-master entries (unmapped items just named)
   const newMasters = sessionLines.filter(l=>l.unmapped);
-  const masterSaves = newMasters.map(l=>apiPost('saveItemMaster',{gtin:l.gtin,itemName:l.itemName,brand:l.brand||'',notes:''}));
+  const masterSaves = newMasters.map(l=>apiPost('saveItemMaster',{gtin:l.gtin,itemName:l.itemName,brand:l.brand||'',segment:setupSegment,notes:''}));
 
   Promise.all(masterSaves).then(()=>{
     const entries = sessionLines.map(l=>({
@@ -1192,11 +1310,13 @@ function submitSession(){
       hospital: setupHospital,
       dcNumber: setupDCNumber,
       invoiceNumber: setupInvoiceNumber,
+      segment: setupSegment,
       gtin: l.gtin,
       itemName: l.itemName,
       lot: l.lot,
       expiry: l.expiry,
       productionDate: l.productionDate,
+      mrp: l.mrp || '',
       qty: l.qty,
       format: l.format,
       raw: l.raw,
@@ -1234,6 +1354,9 @@ function resetAfterSubmit(){
   ['mtPurchase','mtSale','mtDC','mtDCReturn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
   ['purchaseSetupBlock','saleSetupBlock','dcSetupBlock','dcReturnSetupBlock'].forEach(id=>document.getElementById(id).classList.remove('show'));
   document.getElementById('startSessionBtn').disabled=true;
+  // Keep the segment selected — most operators run several sessions in a
+  // row for the same business unit, so re-picking it every time is friction.
+  // The movement-type section stays visible since a segment is still set.
   inReview=false; sessionActive=false;
   document.getElementById('reviewScreen').classList.remove('active');
   showSetupScreen();
@@ -1319,7 +1442,8 @@ function fmtNum(n){ return (parseFloat(n)||0).toLocaleString('en-IN'); }
 let lastInventoryData = null;
 
 function loadInventory(){
-  apiGet('getDashboardData',{}).then(res=>{
+  if(!invSegment) return;
+  apiGet('getDashboardData',{segment:invSegment}).then(res=>{
     if(!res||!res.success) return;
     lastInventoryData = res;
     const k=res.kpis;
@@ -1336,13 +1460,14 @@ function loadInventory(){
 function renderInventoryTable(rows){
   const tbody=document.getElementById('invTableBody');
   if(!rows.length){
-    tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><p>No inventory scans yet</p></div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><p>No inventory scans yet for this segment</p></div></td></tr>';
   } else {
     tbody.innerHTML=rows.map(r=>`
       <tr class="${r.balance<0?'neg':''}">
         <td style="font-weight:700;">${esc(r.itemName)}</td>
         <td>${esc(r.lot||'—')}</td>
         <td>${cleanDate(r.expiry)}</td>
+        <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
         <td style="color:var(--green);font-weight:700;">${fmtNum(r.qtyIn)}</td>
         <td style="color:var(--red);font-weight:700;">${fmtNum(r.qtyOut)}</td>
         <td class="bal">${fmtNum(r.balance)}</td>
@@ -1358,7 +1483,7 @@ function filterInventoryTable(){
     : lastInventoryData.stockRows.filter(r => (r.itemName||'').toLowerCase().includes(q));
   if(q && !rows.length){
     document.getElementById('invTableBody').innerHTML =
-      `<tr><td colspan="7"><div class="empty"><div class="empty-icon">🔍</div><p>No items matching "${esc(q)}"</p></div></td></tr>`;
+      `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔍</div><p>No items matching "${esc(q)}"</p></div></td></tr>`;
   } else {
     renderInventoryTable(rows);
   }
@@ -1391,7 +1516,8 @@ function loadLogs(){
 let lastDCData = null;
 
 function loadDC(){
-  apiGet('getDCStockData',{}).then(res=>{
+  if(!dcSegment) return;
+  apiGet('getDCStockData',{segment:dcSegment}).then(res=>{
     if(!res||!res.success) return;
     lastDCData = res;
     document.getElementById('dcHospitals').textContent=res.kpis.hospitals;
@@ -1405,7 +1531,7 @@ function loadDC(){
 function renderDCHospitals(byHospital){
   const el=document.getElementById('dcHospitalsList');
   if(!byHospital||!Object.keys(byHospital).length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Start a DC / Consignment session to send stock to a hospital</small></div>';
+    el.innerHTML='<div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet for this segment</p><small>Start a DC / Consignment session to send stock to a hospital</small></div>';
     return;
   }
   el.innerHTML=Object.entries(byHospital).map(([hosp,rows])=>`
@@ -1413,7 +1539,7 @@ function renderDCHospitals(byHospital){
     <div class="hospital-body">
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>DC Number</th><th>Item</th><th>Lot</th><th>Expiry</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
+          <thead><tr><th>DC Number</th><th>Item</th><th>Lot</th><th>Expiry</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
           <tbody>
             ${rows.map(r=>`
               <tr class="${r.balance<=0?'neg':''}">
@@ -1421,6 +1547,7 @@ function renderDCHospitals(byHospital){
                 <td style="font-weight:700;">${esc(r.itemName)}</td>
                 <td>${esc(r.lot||'—')}</td>
                 <td>${cleanDate(r.expiry)}</td>
+                <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
                 <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
                 <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
                 <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
