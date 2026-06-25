@@ -197,8 +197,28 @@
   #camVideo { width:100%; display:block; }
   .scan-reticle {
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    width:70%; height:38%; border:3px solid rgba(255,255,255,.5); border-radius:14px; pointer-events:none;
+    width:70%; height:38%; border:3px solid rgba(255,255,255,.65); border-radius:14px; pointer-events:none;
+    box-shadow:0 0 0 2000px rgba(0,0,0,.35); /* dims everything outside the active decode zone */
   }
+  .scan-reticle::after {
+    content:'Center barcode here'; position:absolute; bottom:-26px; left:50%; transform:translateX(-50%);
+    font-size:10px; font-weight:700; color:rgba(255,255,255,.85); white-space:nowrap; text-shadow:0 1px 3px rgba(0,0,0,.6);
+  }
+  .torch-toggle {
+    position:absolute; top:10px; right:10px; z-index:5; width:40px; height:40px; border-radius:50%;
+    background:rgba(0,0,0,.45); border:1.5px solid rgba(255,255,255,.4); color:#fff; font-size:18px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s;
+  }
+  .torch-toggle.on { background:rgba(230,126,34,.85); border-color:#e67e22; }
+  .stuck-hint {
+    position:absolute; left:8px; right:8px; bottom:36px; z-index:5; display:none;
+    background:rgba(230,126,34,.92); color:#fff; border-radius:9px; padding:8px 10px;
+    font-size:11px; font-weight:700; text-align:center; line-height:1.3;
+    animation:stuckFadeIn .25s ease;
+  }
+  .stuck-hint.show { display:block; }
+  .stuck-hint-icon { margin-right:4px; }
+  @keyframes stuckFadeIn { from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
   .status-bar { padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:10px; }
   .s-ready { background:#e8f5e9; color:#1e8449; }
   .s-scanning { background:#fff3e0; color:#c0710f; }
@@ -309,11 +329,52 @@
         </div>
       </div>
 
-      <div class="hospital-setup-block" id="hospitalSetupBlock">
+      <!-- PURCHASE: Invoice Number only -->
+      <div class="hospital-setup-block" id="purchaseSetupBlock">
+        <div class="fg">
+          <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
+          <input type="text" id="purchaseInvoiceInput" placeholder="e.g. INV-2026-0145">
+        </div>
+      </div>
+
+      <!-- SALE: Hospital/Customer Name + Invoice Number -->
+      <div class="hospital-setup-block" id="saleSetupBlock">
+        <div class="fg">
+          <label>Hospital / Customer Name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="saleHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="saleHospitalSuggestions">
+          <datalist id="saleHospitalSuggestions"></datalist>
+        </div>
+        <div class="fg">
+          <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
+          <input type="text" id="saleInvoiceInput" placeholder="e.g. INV-2026-0145">
+        </div>
+      </div>
+
+      <!-- DC (outward): Hospital Name + DC Number (typed manually) -->
+      <div class="hospital-setup-block" id="dcSetupBlock">
         <div class="fg">
           <label>Hospital Name <span style="color:var(--red)">*</span></label>
-          <input type="text" id="setupHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="setupHospitalSuggestions">
-          <datalist id="setupHospitalSuggestions"></datalist>
+          <input type="text" id="dcHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcHospitalSuggestions">
+          <datalist id="dcHospitalSuggestions"></datalist>
+        </div>
+        <div class="fg">
+          <label>DC Number <span style="color:var(--red)">*</span></label>
+          <input type="text" id="dcNumberInput" placeholder="e.g. DC-2026-0032">
+        </div>
+      </div>
+
+      <!-- DC RETURN: Hospital Name, then DC Number dropdown (filtered to that hospital's open DCs) -->
+      <div class="hospital-setup-block" id="dcReturnSetupBlock">
+        <div class="fg">
+          <label>Hospital Name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="dcReturnHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcReturnHospitalSuggestions">
+          <datalist id="dcReturnHospitalSuggestions"></datalist>
+        </div>
+        <div class="fg">
+          <label>DC Number being returned against <span style="color:var(--red)">*</span></label>
+          <select id="dcReturnNumberSelect" disabled>
+            <option value="">Enter hospital name first…</option>
+          </select>
         </div>
       </div>
 
@@ -345,9 +406,17 @@
           <video id="camVideo" autoplay playsinline muted></video>
           <canvas id="camCanvas" style="display:none;"></canvas>
           <div class="scan-reticle"></div>
+          <button class="torch-toggle" id="torchToggleBtn" onclick="toggleTorch()" style="display:none;">🔦</button>
+          <div class="stuck-hint" id="stuckHint">
+            <span class="stuck-hint-icon">💡</span>
+            Not scanning? Tilt the packet slightly (15–30°) to cut glare, or try the torch.
+          </div>
         </div>
       </div>
-      <button class="btn btn-secondary btn-full" id="toggleCamBtn" onclick="toggleScanner()" style="margin-bottom:14px;">▶ Start Scanner</button>
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <button class="btn btn-secondary btn-full" id="toggleCamBtn" onclick="toggleScanner()">▶ Start Scanner</button>
+        <button class="btn btn-secondary" id="manualEntryBtn" onclick="openManualEntry()" style="white-space:nowrap;">⌨️ Type Instead</button>
+      </div>
 
       <div class="card session-list-card">
         <div class="session-list-head">
@@ -506,6 +575,28 @@
   </div>
 </div>
 
+<!-- ══ MANUAL BARCODE ENTRY MODAL — fallback when camera can't decode ══ -->
+<div class="modal-overlay" id="manualEntryModal">
+  <div class="modal">
+    <h3>Enter Barcode Manually</h3>
+    <p>For packets the camera can't read (glare, transparent film, etc). Paste or type the raw GS1 string if you have it, or just the GTIN.</p>
+    <div class="fg">
+      <label>Raw Barcode / GTIN <span style="color:var(--red)">*</span></label>
+      <input type="text" id="manualBarcodeInput" placeholder="e.g. 01089012345678901710260131234ABC or just the GTIN">
+    </div>
+    <div class="fg">
+      <label>Lot/Batch <span style="color:var(--text3);font-weight:600;">(optional, if not in barcode above)</span></label>
+      <input type="text" id="manualLotInput" placeholder="Lot/Batch number">
+    </div>
+    <div class="fg">
+      <label>Expiry Date <span style="color:var(--text3);font-weight:600;">(optional, DD/MM/YYYY)</span></label>
+      <input type="text" id="manualExpiryInput" placeholder="e.g. 31/12/2026">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="confirmManualEntry()" style="margin-bottom:8px;">✓ Add to Session</button>
+    <button class="modal-cancel" onclick="closeManualEntry()">Cancel</button>
+  </div>
+</div>
+
 <script>
 // ════════════════════════════════════════════════════════
 //  API
@@ -565,6 +656,8 @@ checkApiConnection();
 // ════════════════════════════════════════════════════════
 let setupMoveType = null;          // 'PURCHASE' | 'SALE' | 'DC' | 'DC_RETURN'
 let setupHospital = '';
+let setupDCNumber = '';
+let setupInvoiceNumber = '';
 let setupScannedBy = '';
 let sessionActive = false;
 let inReview = false;
@@ -573,10 +666,10 @@ let camStream=null, isScanning=false, scanLoopHandle=null;
 let lastScanTime=0, lastScanCode='';
 
 const MOVE_TYPE_META = {
-  PURCHASE:  { direction:'IN',  scanType:'SALE',       label:'📥 Purchase / Inward', needsHospital:false, dirLogLabel:'IN' },
-  SALE:      { direction:'OUT', scanType:'SALE',       label:'🧾 Sale',              needsHospital:false, dirLogLabel:'OUT · Sale' },
-  DC:        { direction:'OUT', scanType:'DC',         label:'🏥 DC / Consignment',  needsHospital:true,  dirLogLabel:'OUT · DC' },
-  DC_RETURN: { direction:'IN',  scanType:'DC_RETURN',  label:'↩️ DC Return',         needsHospital:true,  dirLogLabel:'IN · DC Return' }
+  PURCHASE:  { direction:'IN',  scanType:'SALE',       label:'📥 Purchase / Inward', dirLogLabel:'IN' },
+  SALE:      { direction:'OUT', scanType:'SALE',       label:'🧾 Sale',              dirLogLabel:'OUT · Sale' },
+  DC:        { direction:'OUT', scanType:'DC',         label:'🏥 DC / Consignment',  dirLogLabel:'OUT · DC' },
+  DC_RETURN: { direction:'IN',  scanType:'DC_RETURN',  label:'↩️ DC Return',         dirLogLabel:'IN · DC Return' }
 };
 
 // ──────────────────────────────────────────────────────
@@ -595,39 +688,119 @@ function selectSetupMoveType(type){
   const idMap={PURCHASE:'mtPurchase',SALE:'mtSale',DC:'mtDC',DC_RETURN:'mtDCReturn'};
   document.getElementById(idMap[type]).classList.add('selected');
 
-  const meta=MOVE_TYPE_META[type];
-  const hospBlock=document.getElementById('hospitalSetupBlock');
-  if(meta.needsHospital){
-    hospBlock.classList.add('show');
+  // Show only the field block relevant to this movement type
+  ['purchaseSetupBlock','saleSetupBlock','dcSetupBlock','dcReturnSetupBlock'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  const blockIdMap={PURCHASE:'purchaseSetupBlock',SALE:'saleSetupBlock',DC:'dcSetupBlock',DC_RETURN:'dcReturnSetupBlock'};
+  document.getElementById(blockIdMap[type]).classList.add('show');
+
+  // Pre-fill hospital suggestions for any type that uses a hospital field
+  if(type==='SALE' || type==='DC' || type==='DC_RETURN'){
     apiGet('getDCHospitals',{}).then(res=>{
       if(res&&res.hospitals){
-        document.getElementById('setupHospitalSuggestions').innerHTML=res.hospitals.map(h=>`<option value="${esc(h)}">`).join('');
+        const opts=res.hospitals.map(h=>`<option value="${esc(h)}">`).join('');
+        if(type==='SALE') document.getElementById('saleHospitalSuggestions').innerHTML=opts;
+        if(type==='DC') document.getElementById('dcHospitalSuggestions').innerHTML=opts;
+        if(type==='DC_RETURN') document.getElementById('dcReturnHospitalSuggestions').innerHTML=opts;
       }
     }).catch(()=>{});
-  } else {
-    hospBlock.classList.remove('show');
   }
+
   validateSetupForm();
 }
 
 function validateSetupForm(){
   const btn=document.getElementById('startSessionBtn');
   if(!setupMoveType){ btn.disabled=true; return; }
-  const meta=MOVE_TYPE_META[setupMoveType];
-  if(meta.needsHospital){
-    const h=document.getElementById('setupHospitalInput').value.trim();
+  if(setupMoveType==='PURCHASE'){
+    btn.disabled=false; // invoice number optional
+  } else if(setupMoveType==='SALE'){
+    const h=document.getElementById('saleHospitalInput').value.trim();
     btn.disabled = !h;
-  } else {
-    btn.disabled=false;
+  } else if(setupMoveType==='DC'){
+    const h=document.getElementById('dcHospitalInput').value.trim();
+    const dc=document.getElementById('dcNumberInput').value.trim();
+    btn.disabled = !(h && dc);
+  } else if(setupMoveType==='DC_RETURN'){
+    const h=document.getElementById('dcReturnHospitalInput').value.trim();
+    const dcSel=document.getElementById('dcReturnNumberSelect').value;
+    btn.disabled = !(h && dcSel);
   }
 }
-document.addEventListener('input', e=>{ if(e.target && e.target.id==='setupHospitalInput') validateSetupForm(); });
+
+document.addEventListener('input', e=>{
+  if(!e.target) return;
+  const id=e.target.id;
+  if(['saleHospitalInput','dcHospitalInput','dcNumberInput'].includes(id)) validateSetupForm();
+  if(id==='dcReturnHospitalInput') onDCReturnHospitalChanged();
+});
+document.addEventListener('change', e=>{
+  if(e.target && e.target.id==='dcReturnNumberSelect') validateSetupForm();
+});
+
+// When hospital changes on the DC Return screen, fetch that hospital's
+// open DC numbers (balance > 0) and populate the dropdown.
+let dcReturnLookupTimer=null;
+function onDCReturnHospitalChanged(){
+  clearTimeout(dcReturnLookupTimer);
+  const sel=document.getElementById('dcReturnNumberSelect');
+  const hospital=document.getElementById('dcReturnHospitalInput').value.trim();
+  if(!hospital){
+    sel.innerHTML='<option value="">Enter hospital name first…</option>';
+    sel.disabled=true;
+    validateSetupForm();
+    return;
+  }
+  sel.innerHTML='<option value="">Looking up open DC numbers…</option>';
+  sel.disabled=true;
+  dcReturnLookupTimer=setTimeout(()=>{
+    apiGet('getOpenDCNumbers',{hospital}).then(res=>{
+      if(res && res.success){
+        if(res.dcNumbers && res.dcNumbers.length){
+          sel.innerHTML='<option value="">Select DC Number…</option>' +
+            res.dcNumbers.map(dc=>`<option value="${esc(dc)}">${esc(dc)}</option>`).join('');
+          sel.disabled=false;
+        } else {
+          sel.innerHTML='<option value="">No open DC balance for this hospital</option>';
+          sel.disabled=true;
+        }
+      } else {
+        sel.innerHTML='<option value="">Could not load DC numbers</option>';
+        sel.disabled=true;
+      }
+      validateSetupForm();
+    }).catch(()=>{
+      sel.innerHTML='<option value="">Could not load DC numbers</option>';
+      sel.disabled=true;
+      validateSetupForm();
+    });
+  }, 400); // small debounce so it doesn't fire on every keystroke
+}
 
 function startSession(){
   if(!setupMoveType) return;
   const meta=MOVE_TYPE_META[setupMoveType];
-  setupHospital = meta.needsHospital ? document.getElementById('setupHospitalInput').value.trim() : '';
   setupScannedBy = document.getElementById('setupScannedByInput').value.trim();
+
+  setupHospital=''; setupDCNumber=''; setupInvoiceNumber='';
+  let subLabel='';
+
+  if(setupMoveType==='PURCHASE'){
+    setupInvoiceNumber = document.getElementById('purchaseInvoiceInput').value.trim();
+    subLabel = setupInvoiceNumber ? ('Invoice: '+setupInvoiceNumber) : 'No invoice number';
+  } else if(setupMoveType==='SALE'){
+    setupHospital = document.getElementById('saleHospitalInput').value.trim();
+    setupInvoiceNumber = document.getElementById('saleInvoiceInput').value.trim();
+    subLabel = setupHospital + (setupInvoiceNumber ? (' · Invoice: '+setupInvoiceNumber) : '');
+  } else if(setupMoveType==='DC'){
+    setupHospital = document.getElementById('dcHospitalInput').value.trim();
+    setupDCNumber = document.getElementById('dcNumberInput').value.trim();
+    subLabel = setupHospital + ' · DC# '+setupDCNumber;
+  } else if(setupMoveType==='DC_RETURN'){
+    setupHospital = document.getElementById('dcReturnHospitalInput').value.trim();
+    setupDCNumber = document.getElementById('dcReturnNumberSelect').value;
+    subLabel = setupHospital + ' · Returning against DC# '+setupDCNumber;
+  }
+
   sessionLines = [];
   sessionActive = true; inReview=false;
 
@@ -636,7 +809,7 @@ function startSession(){
   document.getElementById('sessionScreen').classList.add('active');
 
   document.getElementById('sessionModeLabel').innerHTML = meta.label;
-  document.getElementById('sessionModeSubLabel').textContent = meta.needsHospital ? ('Hospital: '+setupHospital) : '';
+  document.getElementById('sessionModeSubLabel').textContent = subLabel;
   renderSessionList();
   updateSessionCounters();
 }
@@ -675,6 +848,10 @@ function beep(kind){
   f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),200);
 }
 
+let torchOn=false, torchSupported=false;
+let stuckTimer=null;
+const STUCK_THRESHOLD_MS = 4000; // if no successful decode in this window while scanning, show the hint
+
 async function toggleScanner(){
   const btn=document.getElementById('toggleCamBtn'), sb=document.getElementById('statusBar');
   if(isScanning){ stopScanner(); btn.textContent='▶ Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera off'; return; }
@@ -687,6 +864,8 @@ async function toggleScanner(){
     camStream=stream; video.srcObject=stream; await video.play();
     isScanning=true; btn.disabled=false; btn.textContent='■ Stop Scanner';
     sb.className='status-bar s-ready'; sb.textContent='Scanning — point at next barcode';
+    setupTorchControl();
+    armStuckTimer();
     runScanLoop();
   }catch(err){ btn.disabled=false; btn.textContent='▶ Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera access denied'; alert('Camera error: '+err); }
 }
@@ -696,7 +875,66 @@ function stopScanner(){
   if(scanLoopHandle){cancelAnimationFrame(scanLoopHandle);scanLoopHandle=null;}
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   document.getElementById('camVideo').srcObject=null;
+  document.getElementById('torchToggleBtn').style.display='none';
+  torchOn=false; torchSupported=false;
+  clearTimeout(stuckTimer);
+  document.getElementById('stuckHint').classList.remove('show');
 }
+
+// ──────────────────────────────────────────────────────
+//  TORCH (flashlight) — most phones expose this as a track constraint.
+//  Steady, camera-aligned light often cuts through transparent-packet
+//  glare better than ambient light, since it matches the camera's angle.
+// ──────────────────────────────────────────────────────
+function setupTorchControl(){
+  const torchBtn=document.getElementById('torchToggleBtn');
+  if(!camStream){ torchBtn.style.display='none'; return; }
+  const track = camStream.getVideoTracks()[0];
+  if(!track) { torchBtn.style.display='none'; return; }
+  const caps = track.getCapabilities ? track.getCapabilities() : {};
+  torchSupported = !!(caps && caps.torch);
+  torchBtn.style.display = torchSupported ? 'flex' : 'none';
+  torchOn=false; torchBtn.classList.remove('on');
+}
+
+async function toggleTorch(){
+  if(!torchSupported || !camStream) return;
+  const track = camStream.getVideoTracks()[0];
+  if(!track) return;
+  torchOn = !torchOn;
+  try{
+    await track.applyConstraints({ advanced:[{ torch:torchOn }] });
+    document.getElementById('torchToggleBtn').classList.toggle('on', torchOn);
+  }catch(e){
+    torchOn=false; // revert state if the device rejects it
+  }
+}
+
+// ──────────────────────────────────────────────────────
+//  STUCK-SCAN DETECTOR — if nothing decodes for a while, surface the
+//  tilt/torch hint. Resets every time a barcode is successfully read.
+// ──────────────────────────────────────────────────────
+function armStuckTimer(){
+  clearTimeout(stuckTimer);
+  document.getElementById('stuckHint').classList.remove('show');
+  stuckTimer=setTimeout(()=>{
+    if(isScanning) document.getElementById('stuckHint').classList.add('show');
+  }, STUCK_THRESHOLD_MS);
+}
+function clearStuckHint(){
+  document.getElementById('stuckHint').classList.remove('show');
+  armStuckTimer(); // restart the countdown for the next item
+}
+
+// The reticle box is 70% width × 38% height, centered — drawn in CSS over
+// the video. Decoding the FULL frame was the root cause of "everything
+// becomes unmapped": any barcode anywhere in frame (shelf labels, nearby
+// boxes) got picked up even though the user was pointing at one specific
+// item. Cropping the actual pixels fed to the decoder to match what the
+// reticle visually shows fixes this — only the barcode under the reticle
+// can ever be read.
+const RETICLE_WIDTH_FRAC  = 0.70;
+const RETICLE_HEIGHT_FRAC = 0.38;
 
 async function runScanLoop(){
   const video=document.getElementById('camVideo'), canvas=document.getElementById('camCanvas');
@@ -704,10 +942,18 @@ async function runScanLoop(){
   async function tick(){
     if(!isScanning) return;
     if(video.readyState===video.HAVE_ENOUGH_DATA&&video.videoWidth>0){
-      canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      const vw=video.videoWidth, vh=video.videoHeight;
+      const cropW = Math.round(vw * RETICLE_WIDTH_FRAC);
+      const cropH = Math.round(vh * RETICLE_HEIGHT_FRAC);
+      const cropX = Math.round((vw - cropW) / 2);
+      const cropY = Math.round((vh - cropH) / 2);
+
+      canvas.width=cropW; canvas.height=cropH;
+      // Draw only the reticle region of the video frame into the canvas —
+      // this is the crop. Source rect = reticle area, dest rect = full canvas.
+      ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
       try{
-        const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+        const imgData=ctx.getImageData(0,0,cropW,cropH);
         const results=await ZXingWASM.readBarcodesFromImageData(imgData,{tryHarder:true,formats:['DataMatrix','Code128','Code39','EAN-13','EAN-8','QRCode','ITF','Codabar','UPC-A','UPC-E','PDF417','Aztec'],maxSymbols:1});
         if(results&&results.length>0&&results[0].text) handleDecodedBarcode(results[0].text,results[0].format);
       }catch(e){}
@@ -762,6 +1008,7 @@ function handleDecodedBarcode(text, fmt){
   const now=Date.now();
   if(now-lastScanTime<1200&&text===lastScanCode) return; // debounce same frame re-reads
   lastScanTime=now; lastScanCode=text;
+  clearStuckHint(); // a successful decode means the camera isn't stuck — reset the countdown
 
   const parsed=parseGS1(text);
   const gtinF=parsed.fields.find(f=>f.ai==='01');
@@ -943,6 +1190,8 @@ function submitSession(){
       direction: meta.direction,
       scanType: meta.scanType,
       hospital: setupHospital,
+      dcNumber: setupDCNumber,
+      invoiceNumber: setupInvoiceNumber,
       gtin: l.gtin,
       itemName: l.itemName,
       lot: l.lot,
@@ -972,11 +1221,18 @@ function submitSession(){
 }
 
 function resetAfterSubmit(){
-  sessionLines=[]; setupMoveType=null; setupHospital=''; setupScannedBy='';
-  document.getElementById('setupHospitalInput').value='';
+  sessionLines=[]; setupMoveType=null; setupHospital=''; setupDCNumber=''; setupInvoiceNumber=''; setupScannedBy='';
+  document.getElementById('purchaseInvoiceInput').value='';
+  document.getElementById('saleHospitalInput').value='';
+  document.getElementById('saleInvoiceInput').value='';
+  document.getElementById('dcHospitalInput').value='';
+  document.getElementById('dcNumberInput').value='';
+  document.getElementById('dcReturnHospitalInput').value='';
+  document.getElementById('dcReturnNumberSelect').innerHTML='<option value="">Enter hospital name first…</option>';
+  document.getElementById('dcReturnNumberSelect').disabled=true;
   document.getElementById('setupScannedByInput').value='';
   ['mtPurchase','mtSale','mtDC','mtDCReturn'].forEach(id=>document.getElementById(id).classList.remove('selected'));
-  document.getElementById('hospitalSetupBlock').classList.remove('show');
+  ['purchaseSetupBlock','saleSetupBlock','dcSetupBlock','dcReturnSetupBlock'].forEach(id=>document.getElementById(id).classList.remove('show'));
   document.getElementById('startSessionBtn').disabled=true;
   inReview=false; sessionActive=false;
   document.getElementById('reviewScreen').classList.remove('active');
@@ -987,14 +1243,54 @@ function resetAfterSubmit(){
 //  DC USAGE MODAL (manual usage logging from DC Stock view)
 // ════════════════════════════════════════════════════════
 let dcUsageData={};
-function openDCUsage(itemName, gtin, lot, hospital, maxQty){
-  dcUsageData={itemName,gtin,lot,hospital,qty:1,maxQty};
+// ════════════════════════════════════════════════════════
+//  MANUAL BARCODE ENTRY — fallback for packets the camera can't read
+//  (glare, transparent film, etc). Feeds straight into the same
+//  handleDecodedBarcode() pipeline as a camera scan, so dedup/qty-
+//  increment/unmapped-lookup all behave identically either way.
+// ════════════════════════════════════════════════════════
+function openManualEntry(){
+  if(!setupMoveType){ alert('Start a scan session first.'); return; }
+  document.getElementById('manualBarcodeInput').value='';
+  document.getElementById('manualLotInput').value='';
+  document.getElementById('manualExpiryInput').value='';
+  document.getElementById('manualEntryModal').classList.add('open');
+  setTimeout(()=>document.getElementById('manualBarcodeInput').focus(), 100);
+}
+function closeManualEntry(){
+  document.getElementById('manualEntryModal').classList.remove('open');
+}
+
+function confirmManualEntry(){
+  const raw = document.getElementById('manualBarcodeInput').value.trim();
+  const lotOverride = document.getElementById('manualLotInput').value.trim();
+  const expiryOverride = document.getElementById('manualExpiryInput').value.trim();
+  if(!raw){ alert('Please enter a barcode or GTIN.'); return; }
+
+  // Feed through the normal pipeline so dedup/qty-increment/lookup all work
+  // exactly as they would for a camera scan.
+  handleDecodedBarcode(raw, 'Manual');
+
+  // If the operator typed a separate lot/expiry (e.g. raw was just a bare
+  // GTIN with no GS1 structure), apply it to the line just created.
+  if((lotOverride || expiryOverride) && sessionLines.length){
+    const last = sessionLines[sessionLines.length-1];
+    if(lotOverride && !last.lot) last.lot = lotOverride;
+    if(expiryOverride && !last.expiry) last.expiry = expiryOverride;
+    renderSessionList();
+  }
+
+  closeManualEntry();
+}
+
+function openDCUsage(itemName, gtin, lot, hospital, dcNumber, maxQty){
+  dcUsageData={itemName,gtin,lot,hospital,dcNumber,qty:1,maxQty};
   document.getElementById('dcUsageItem').value=itemName;
   document.getElementById('dcUsageLot').value=lot||'—';
-  document.getElementById('dcUsageHospital').value=hospital;
+  document.getElementById('dcUsageHospital').value=hospital + (dcNumber ? (' · DC# '+dcNumber) : '');
   document.getElementById('dcQtyVal').textContent='1';
   document.getElementById('dcUsageRemarks').value='';
-  document.getElementById('dcUsageSubtext').textContent=`Consignment at ${hospital}`;
+  document.getElementById('dcUsageSubtext').textContent=`Consignment at ${hospital}`+(dcNumber?` (DC# ${dcNumber})`:'');
   document.getElementById('dcUsageModal').classList.add('open');
 }
 function closeDCModal(){ document.getElementById('dcUsageModal').classList.remove('open'); }
@@ -1007,7 +1303,7 @@ function submitDCUsage(){
   apiPost('logDCUsage',{
     itemName:dcUsageData.itemName, gtin:dcUsageData.gtin,
     lot:dcUsageData.lot, hospital:dcUsageData.hospital,
-    qty:dcUsageData.qty, remarks
+    dcNumber:dcUsageData.dcNumber, qty:dcUsageData.qty, remarks
   }).then(res=>{
     btn.disabled=false; btn.textContent='✓ Log Usage';
     if(res&&res.success){ closeDCModal(); loadDC(); }
@@ -1084,7 +1380,7 @@ function loadLogs(){
             <span class="log-name">${esc(l.itemName||(l.gtin?'GTIN: '+l.gtin:'Unknown'))}</span>
             <span class="log-dir ${dirCls}">${dirLabel}</span>
           </div>
-          <div class="log-meta">Qty: ${fmtNum(l.qty)}${l.lot?' · Lot: '+esc(l.lot):''}${l.hospital?' · Hospital: '+esc(l.hospital):''}${l.scannedBy?' · By: '+esc(l.scannedBy):''}</div>
+          <div class="log-meta">Qty: ${fmtNum(l.qty)}${l.lot?' · Lot: '+esc(l.lot):''}${l.hospital?' · Hospital: '+esc(l.hospital):''}${l.dcNumber?' · DC# '+esc(l.dcNumber):''}${l.invoiceNumber?' · Inv: '+esc(l.invoiceNumber):''}${l.scannedBy?' · By: '+esc(l.scannedBy):''}</div>
           <div class="log-time">${cleanDate(l.timestamp)}</div>
         </div>`;
       }).join('');
@@ -1117,10 +1413,11 @@ function renderDCHospitals(byHospital){
     <div class="hospital-body">
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Item</th><th>Lot</th><th>Expiry</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
+          <thead><tr><th>DC Number</th><th>Item</th><th>Lot</th><th>Expiry</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
           <tbody>
             ${rows.map(r=>`
               <tr class="${r.balance<=0?'neg':''}">
+                <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--text2);">${esc(r.dcNumber||'—')}</td>
                 <td style="font-weight:700;">${esc(r.itemName)}</td>
                 <td>${esc(r.lot||'—')}</td>
                 <td>${cleanDate(r.expiry)}</td>
@@ -1128,7 +1425,7 @@ function renderDCHospitals(byHospital){
                 <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
                 <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
                 <td class="bal">${fmtNum(r.balance)}</td>
-                <td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage('${esc(r.itemName).replace(/'/g,"\\'")}','${esc(r.gtin)}','${esc(r.lot||'')}','${esc(hosp).replace(/'/g,"\\'")}',${r.balance})">Log Use</button></td>
+                <td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage('${esc(r.itemName).replace(/'/g,"\\'")}','${esc(r.gtin)}','${esc(r.lot||'')}','${esc(hosp).replace(/'/g,"\\'")}','${esc(r.dcNumber||'').replace(/'/g,"\\'")}',${r.balance})">Log Use</button></td>
               </tr>`).join('')}
           </tbody>
         </table>
