@@ -223,6 +223,24 @@
   .stuck-hint.show { display:block; }
   .stuck-hint-icon { margin-right:4px; }
   @keyframes stuckFadeIn { from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .cooldown-overlay {
+    display:none; position:absolute; inset:0; z-index:8;
+    background:rgba(0,0,0,.55); flex-direction:column; align-items:center; justify-content:center;
+  }
+  .cooldown-overlay.show { display:flex; }
+  .cooldown-ring {
+    position:relative; width:64px; height:64px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; margin-bottom:10px;
+  }
+  .cooldown-ring::before {
+    content:''; position:absolute; inset:0; border-radius:50%;
+    border:4px solid rgba(255,255,255,.3); border-top-color:#e67e22;
+    animation:cooldownSpin 1s linear infinite;
+  }
+  .cooldown-ring span { font-size:18px; font-weight:800; color:#fff; position:relative; }
+  @keyframes cooldownSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .cooldown-label { font-size:12px; font-weight:700; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.5); }
   .status-bar { padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:10px; }
   .s-ready { background:#e8f5e9; color:#1e8449; }
   .s-scanning { background:#fff3e0; color:#c0710f; }
@@ -426,6 +444,12 @@
           <div class="stuck-hint" id="stuckHint">
             <span class="stuck-hint-icon">💡</span>
             Not scanning? Tilt the packet slightly (15–30°) to cut glare, or try the torch.
+          </div>
+          <div class="cooldown-overlay" id="cooldownOverlay">
+            <div class="cooldown-ring">
+              <span id="cooldownNum">2.0</span>
+            </div>
+            <div class="cooldown-label">Next scan ready in…</div>
           </div>
         </div>
       </div>
@@ -1009,6 +1033,11 @@ function stopScanner(){
   torchOn=false; torchSupported=false;
   clearTimeout(stuckTimer);
   document.getElementById('stuckHint').classList.remove('show');
+  // Clear any in-progress cooldown so restarting the scanner doesn't
+  // start in a blocked state from before it was stopped.
+  scanCooldownUntil = 0;
+  if(cooldownTickHandle){ clearInterval(cooldownTickHandle); cooldownTickHandle=null; }
+  document.getElementById('cooldownOverlay').classList.remove('show');
 }
 
 // ──────────────────────────────────────────────────────
@@ -1134,9 +1163,20 @@ function cleanDate(d){
 // ════════════════════════════════════════════════════════
 //  CORE: HANDLE A DECODED BARCODE — zero taps, one unit per scan
 // ════════════════════════════════════════════════════════
+// Global scan cooldown — after ANY successful scan (new item or qty++ on a
+// repeat), every decode is ignored until this timestamp passes. This is
+// deliberately global (not "same barcode only") because holding the camera
+// steady over one item, or having a neighbouring barcode drift into the
+// crop zone, both used to register as extra scans. One beep = one scan,
+// full stop, for COOLDOWN_MS afterwards.
+const COOLDOWN_MS = 2000;
+let scanCooldownUntil = 0;
+let cooldownTickHandle = null;
+
 function handleDecodedBarcode(text, fmt){
   const now=Date.now();
-  if(now-lastScanTime<1200&&text===lastScanCode) return; // debounce same frame re-reads
+  if(now < scanCooldownUntil) return; // still cooling down — ignore every decode, no beep, no action
+  if(now-lastScanTime<300 && text===lastScanCode) return; // guards against duplicate reads within the same camera frame
   lastScanTime=now; lastScanCode=text;
   clearStuckHint(); // a successful decode means the camera isn't stuck — reset the countdown
 
@@ -1158,6 +1198,7 @@ function handleDecodedBarcode(text, fmt){
     flashStatusBar('+1 — '+(sessionLines[existingIdx].itemName||'Unmapped item')+' (now '+sessionLines[existingIdx].qty+')');
     renderSessionList(existingIdx);
     updateSessionCounters();
+    startScanCooldown();
     return;
   }
 
@@ -1173,6 +1214,7 @@ function handleDecodedBarcode(text, fmt){
   flashStatusBar('Scanned — looking up item…');
   renderSessionList(idx);
   updateSessionCounters();
+  startScanCooldown();
 
   apiGet('lookupItemMaster',{gtin}).then(res=>{
     if(res && res.found){
@@ -1185,9 +1227,28 @@ function handleDecodedBarcode(text, fmt){
   }).catch(()=>{ /* stays unmapped, resolved at review */ });
 }
 
+// Starts the 2s global cooldown and drives the visible countdown overlay.
+function startScanCooldown(){
+  scanCooldownUntil = Date.now() + COOLDOWN_MS;
+  const el = document.getElementById('cooldownOverlay');
+  const numEl = document.getElementById('cooldownNum');
+  if(!el) return;
+  el.classList.add('show');
+  if(cooldownTickHandle) clearInterval(cooldownTickHandle);
+  cooldownTickHandle = setInterval(()=>{
+    const remaining = scanCooldownUntil - Date.now();
+    if(remaining <= 0){
+      clearInterval(cooldownTickHandle);
+      cooldownTickHandle = null;
+      el.classList.remove('show');
+      return;
+    }
+    numEl.textContent = (remaining/1000).toFixed(1);
+  }, 100);
+}
+
 function flashStatusBar(msg){
   const sb=document.getElementById('statusBar');
-  const prevClass = sb.className;
   sb.className='status-bar s-justscanned'; sb.textContent=msg;
   setTimeout(()=>{ if(isScanning){ sb.className='status-bar s-ready'; sb.textContent='Scanning — point at next barcode'; } }, 900);
 }
