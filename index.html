@@ -1202,10 +1202,12 @@ function handleDecodedBarcode(text, fmt){
   const lotF=parsed.fields.find(f=>f.ai==='10');
   const expF=parsed.fields.find(f=>f.ai==='17');
   const prodF=parsed.fields.find(f=>f.ai==='11');
+  const serialF = parsed.fields.find(f => f.ai === '21');
   const gtin = gtinF?gtinF.value:text;
   const lot = lotF?lotF.value:'';
   const expiry = expF?formatGS1Date(expF.value):'';
   const productionDate = prodF?formatGS1Date(prodF.value):'';
+  const serial      = serialF ? serialF.value : '';
 
   // Check if this GTIN+lot is already in this session's running list -> increment qty
   const existingIdx = sessionLines.findIndex(l => l.gtin===gtin && l.lot===lot);
@@ -1221,7 +1223,7 @@ function handleDecodedBarcode(text, fmt){
 
   // New line — look up item master in the background; don't block the scan loop
   const newLine = {
-    gtin, lot, expiry, productionDate,
+    gtin, lot, expiry, productionDate, serial,
     itemName:'', brand:'', format:fmt||'Unknown', raw:text,
     qty:1, mrp:'', unmapped:true
   };
@@ -1288,8 +1290,8 @@ function renderSessionList(flashIdx){
     return `<div class="sl-row ${l.unmapped?'unmapped':''} ${i===flashIdx?'flash-new':''}">
       <div class="sl-main">
         <div class="sl-name ${l.unmapped?'unmapped-name':''}">${esc(name)}</div>
-        <div class="sl-meta">${l.lot?('Lot: '+esc(l.lot)+' · '):''}${l.expiry?('Exp: '+esc(l.expiry)):''}${l.unmapped?' · ⚠️ needs name':''}</div>
-      </div>
+        <div class="sl-meta">${l.lot ? ('Lot: '+esc(l.lot)+' · ') : ''}${l.serial ? ('S/N: '+esc(l.serial)+' · ') : ''}${l.expiry ? ('Exp: '+esc(l.expiry)) : ''}${l.unmapped ? ' · ⚠️ needs name' : ''}</div>
+        </div>
       <div class="sl-qty">${l.qty}</div>
       <div class="sl-remove" onclick="removeSessionLine(${i})" title="Remove">✕</div>
     </div>`;
@@ -1352,7 +1354,7 @@ function renderReview(){
     <div class="review-item-card ${l.unmapped?'unmapped':''}" id="ric-${i}">
       <div class="ric-top">
         <div>
-          <div class="ric-gtin">GTIN ${esc(l.gtin)}${l.lot?(' · Lot '+esc(l.lot)):''}</div>
+         <div class="ric-gtin">GTIN ${esc(l.gtin)}${l.lot ? (' · Lot '+esc(l.lot)) : ''}${l.serial ? (' · S/N '+esc(l.serial)) : ''}</div>
         </div>
         <div class="ric-qty-badge">Qty: ${l.qty}</div>
       </div>
@@ -1409,6 +1411,7 @@ function submitSession(){
       gtin: l.gtin,
       itemName: l.itemName,
       lot: l.lot,
+      serial:    l.serial || '',
       expiry: l.expiry,
       productionDate: l.productionDate,
       mrp: l.mrp || '',
@@ -1600,7 +1603,7 @@ function loadLogs(){
             <span class="log-name">${esc(l.itemName||(l.gtin?'GTIN: '+l.gtin:'Unknown'))}</span>
             <span class="log-dir ${dirCls}">${dirLabel}</span>
           </div>
-          <div class="log-meta">Qty: ${fmtNum(l.qty)}${l.lot?' · Lot: '+esc(l.lot):''}${l.hospital?' · Hospital: '+esc(l.hospital):''}${l.dcNumber?' · DC# '+esc(l.dcNumber):''}${l.invoiceNumber?' · Inv: '+esc(l.invoiceNumber):''}${l.scannedBy?' · By: '+esc(l.scannedBy):''}</div>
+         <div class="log-meta">Qty: ${fmtNum(l.qty)}${l.lot?' · Lot: '+esc(l.lot):''}${l.serialno?' · S/N: '+esc(l.serialno):''}${l.hospital?' · Hospital: '+esc(l.hospital):''}${l.dcNumber?' · DC# '+esc(l.dcNumber):''}${l.invoiceNumber?' · Inv: '+esc(l.invoiceNumber):''}${l.scannedBy?' · By: '+esc(l.scannedBy):''}</div>
           <div class="log-time">${cleanDate(l.timestamp)}</div>
         </div>`;
       }).join('');
