@@ -282,6 +282,29 @@
   .ric-qty-badge { font-size:12px; font-weight:800; background:var(--surface2); padding:3px 9px; border-radius:8px; }
 
   .empty-session { text-align:center; padding:36px 16px; color:var(--text3); }
+
+  /* ══════════════ SUMMARY / GROUPING CONTROLS ══════════════ */
+  .toolbar-row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .view-toggle { display:inline-flex; border:1.5px solid var(--border2); border-radius:9px; overflow:hidden; }
+  .view-toggle button { padding:7px 14px; font-size:11px; font-weight:800; background:var(--surface); color:var(--text2); border:none; cursor:pointer; font-family:inherit; transition:all .15s; }
+  .view-toggle button.active { background:var(--red); color:#fff9f0; }
+  .toolbar-actions { display:flex; gap:8px; }
+
+  .hospital-header { cursor:pointer; user-select:none; }
+  .hospital-header .hh-chevron { font-size:10px; color:var(--text2); margin-right:6px; display:inline-block; transition:transform .15s; }
+  .hospital-header.collapsed .hh-chevron { transform:rotate(-90deg); }
+  .hospital-header .hh-chips { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+  .hh-chip { font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px; background:var(--surface2); color:var(--text2); white-space:nowrap; }
+  .hh-chip.amber { background:var(--amber-bg); color:var(--amber); }
+  .hh-chip.green { background:var(--green-bg); color:var(--green); }
+  .hh-chip.purple { background:var(--purple-bg); color:var(--purple); }
+  .hh-chip.red { background:var(--red-bg); color:var(--red); }
+  .hospital-body.collapsed { display:none; }
+
+  .reason-header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px 12px 0 0; border-bottom:none; cursor:pointer; user-select:none; gap:10px; }
+  .reason-header h4 { font-size:13px; font-weight:800; color:var(--text); white-space:nowrap; }
+  .reason-body { border:1px solid var(--border); border-radius:0 0 12px 12px; overflow:hidden; margin-bottom:12px; }
+  .reason-body.collapsed { display:none; }
 </style>
 </head>
 <body>
@@ -575,6 +598,12 @@
             <div class="card-title" style="margin:0;">Live Stock Balance</div>
             <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">⟳ Refresh</button>
           </div>
+          <div class="toolbar-row">
+            <div class="view-toggle" id="invViewToggle">
+              <button class="active" onclick="setInvGroupMode(true)">📦 By Item</button>
+              <button onclick="setInvGroupMode(false)">🔬 By Lot</button>
+            </div>
+          </div>
           <div class="fg" style="margin-bottom:12px;">
             <input type="text" id="invSearchInput" placeholder="🔍 Search item name…" oninput="filterInventoryTable()">
           </div>
@@ -614,6 +643,16 @@
         <div class="section-label" style="margin:0;">By Hospital</div>
         <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">⟳ Refresh</button>
       </div>
+      <div class="toolbar-row">
+        <div class="view-toggle" id="dcViewToggle">
+          <button class="active" onclick="setDcGroupMode(true)">📦 By Item</button>
+          <button onclick="setDcGroupMode(false)">🔬 By Lot</button>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="expandAllHospitals()">⬇ Expand All</button>
+          <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="collapseAllHospitals()">⬆ Collapse All</button>
+        </div>
+      </div>
       <div class="fg" style="margin-bottom:14px;">
         <input type="text" id="dcSearchInput" placeholder="🔍 Search hospital name…" oninput="filterDCHospitals()">
       </div>
@@ -647,11 +686,18 @@
             <div class="card-title" style="margin:0;">Movement History</div>
             <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">⟳ Refresh</button>
           </div>
+          <div class="toolbar-row">
+            <div class="view-toggle" id="matViewToggle">
+              <button class="active" onclick="setMatGroupMode(true)">🗂 By Reason</button>
+              <button onclick="setMatGroupMode(false)">📜 By Entry</button>
+            </div>
+          </div>
           <div class="fg" style="margin-bottom:12px;">
             <input type="text" id="matSearchInput" placeholder="🔍 Search item name or reason…" oninput="filterMaterialTable()">
           </div>
         </div>
-        <div class="tbl-wrap" style="padding:0 16px 16px;">
+        <div id="matGroupedWrap" style="padding:0 16px 16px;"></div>
+        <div id="matFlatWrap" class="tbl-wrap" style="padding:0 16px 16px; display:none;">
           <table>
             <thead><tr><th>Item Name</th><th>Lot</th><th>Dir.</th><th>Qty</th><th>Reason</th><th>Remarks</th><th>By</th><th>Timestamp</th></tr></thead>
             <tbody id="matTableBody"><tr><td colspan="8"><div class="empty"><div class="empty-icon">🔄</div><p>Loading…</p></div></td></tr></tbody>
@@ -832,6 +878,14 @@ let sessionLines = [];             // [{gtin,lot,expiry,productionDate,itemName,
 let camStream=null, isScanning=false, scanLoopHandle=null;
 let lastScanTime=0, lastScanCode='';
 let cachedSegments = [];
+
+// Summary/grouping UI state — default to the rolled-up view everywhere,
+// since per-lot/per-serial rows get long fast for implant-heavy segments.
+let invGroupByItem = true;
+let dcGroupByItem = true;
+let dcExpandedHospitals = new Set();
+let matGroupByReason = true;
+let matExpandedReasons = new Set();
 
 const MOVE_TYPE_META = {
   PURCHASE:     { direction:'IN',  scanType:'SALE',      label:'📥 Purchase / Inward', dirLogLabel:'IN' },
@@ -1692,8 +1746,59 @@ function loadInventory(){
     document.getElementById('invUniqueItems').textContent=fmtNum(k.uniqueItems);
     document.getElementById('invNegative').textContent=fmtNum(k.negativeCount);
     document.getElementById('invNetBal').textContent=fmtNum(k.totalIn-k.totalOut);
-    renderInventoryTable(res.stockRows);
+    filterInventoryTable();
   }).catch(()=>{});
+}
+
+function setInvGroupMode(grouped){
+  invGroupByItem = grouped;
+  document.querySelectorAll('#invViewToggle button').forEach((b,i)=>b.classList.toggle('active', (i===0)===grouped));
+  filterInventoryTable();
+}
+
+// DD/MM/YYYY string helpers — Stock Summary dates arrive pre-formatted as
+// strings, not Date objects, so grouping needs its own light parser.
+function parseDMY_(s){
+  if(!s || s==='—') return null;
+  const m = String(s).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if(!m) return null;
+  const d = new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
+  return isNaN(d) ? null : d;
+}
+function earliestDMY_(arr){
+  let best=null, bestStr='—';
+  arr.forEach(s=>{ const d=parseDMY_(s); if(d && (!best || d<best)){ best=d; bestStr=s; } });
+  return bestStr;
+}
+function latestDMY_(a,b){
+  const da=parseDMY_(a), db=parseDMY_(b);
+  if(!da) return b; if(!db) return a;
+  return db>da ? b : a;
+}
+
+// Rolls per-lot Stock Summary rows up to one row per item — sums In/Out/
+// Balance across lots, shows lot count instead of a single lot number,
+// earliest expiry across those lots, and the most recent scan timestamp.
+function groupRowsByItem(rows){
+  const map = {};
+  rows.forEach(r=>{
+    if(!map[r.itemName]) map[r.itemName] = { itemName:r.itemName, lots:0, qtyIn:0, qtyOut:0, balance:0, mrpSet:new Set(), expiries:[], lastScanned:'' };
+    const g = map[r.itemName];
+    g.lots++;
+    g.qtyIn += parseFloat(r.qtyIn)||0;
+    g.qtyOut += parseFloat(r.qtyOut)||0;
+    g.balance += parseFloat(r.balance)||0;
+    if(r.mrp) g.mrpSet.add(r.mrp);
+    if(r.expiry && r.expiry!=='—') g.expiries.push(r.expiry);
+    g.lastScanned = g.lastScanned ? latestDMY_(g.lastScanned, r.lastScanned) : r.lastScanned;
+  });
+  return Object.values(map).map(g=>({
+    itemName: g.itemName,
+    lot: g.lots>1 ? (g.lots+' lots') : '1 lot',
+    expiry: g.expiries.length ? earliestDMY_(g.expiries) : '—',
+    mrp: g.mrpSet.size===1 ? Array.from(g.mrpSet)[0] : '',
+    qtyIn:g.qtyIn, qtyOut:g.qtyOut, balance:g.balance, lastScanned:g.lastScanned
+  })).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
 }
 
 function renderInventoryTable(rows){
@@ -1718,14 +1823,15 @@ function renderInventoryTable(rows){
 function filterInventoryTable(){
   if(!lastInventoryData) return;
   const q = document.getElementById('invSearchInput').value.trim().toLowerCase();
-  const rows = !q ? lastInventoryData.stockRows
+  let rows = !q ? lastInventoryData.stockRows
     : lastInventoryData.stockRows.filter(r => (r.itemName||'').toLowerCase().includes(q));
   if(q && !rows.length){
     document.getElementById('invTableBody').innerHTML =
       `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔍</div><p>No items matching "${esc(q)}"</p></div></td></tr>`;
-  } else {
-    renderInventoryTable(rows);
+    return;
   }
+  if(invGroupByItem) rows = groupRowsByItem(rows);
+  renderInventoryTable(rows);
 }
 
 function loadLogs(){
@@ -1768,36 +1874,125 @@ function loadDC(){
   }).catch(()=>{});
 }
 
+function setDcGroupMode(grouped){
+  dcGroupByItem = grouped;
+  document.querySelectorAll('#dcViewToggle button').forEach((b,i)=>b.classList.toggle('active', (i===0)===grouped));
+  filterDCHospitals();
+}
+
+function toggleHospitalSection(hosp){
+  if(dcExpandedHospitals.has(hosp)) dcExpandedHospitals.delete(hosp);
+  else dcExpandedHospitals.add(hosp);
+  filterDCHospitals();
+}
+
+function expandAllHospitals(){
+  if(!lastDCData) return;
+  Object.keys(lastDCData.byHospital).forEach(h=>dcExpandedHospitals.add(h));
+  filterDCHospitals();
+}
+function collapseAllHospitals(){
+  dcExpandedHospitals.clear();
+  filterDCHospitals();
+}
+
+// Rolls per-lot DC Stock rows up to one row per item within a hospital —
+// sums Sent/Used/Returned/Balance across lots and DC Numbers. No "Log Use"
+// action here since usage has to be logged against a specific lot — switch
+// to By Lot for that.
+function groupDCRowsByItem(rows){
+  const map={};
+  rows.forEach(r=>{
+    if(!map[r.itemName]) map[r.itemName] = { itemName:r.itemName, dcNumbers:new Set(), lots:0, sent:0, used:0, returned:0, balance:0, mrpSet:new Set() };
+    const g=map[r.itemName];
+    if(r.dcNumber) g.dcNumbers.add(r.dcNumber);
+    g.lots++;
+    g.sent+=r.sent; g.used+=r.used; g.returned+=r.returned; g.balance+=r.balance;
+    if(r.mrp) g.mrpSet.add(r.mrp);
+  });
+  return Object.values(map).map(g=>({
+    itemName:g.itemName, dcCount:g.dcNumbers.size, lots:g.lots,
+    sent:g.sent, used:g.used, returned:g.returned, balance:g.balance,
+    mrp: g.mrpSet.size===1 ? Array.from(g.mrpSet)[0] : ''
+  })).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
+}
+
+function renderDCItemTable(rows){
+  return `<div class="tbl-wrap"><table>
+    <thead><tr><th>Item</th><th>DC#s</th><th>Lots</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th></tr></thead>
+    <tbody>
+      ${rows.map(r=>`
+        <tr class="${r.balance<=0?'neg':''}">
+          <td style="font-weight:700;">${esc(r.itemName)}</td>
+          <td>${r.dcCount}</td>
+          <td>${r.lots}</td>
+          <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
+          <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
+          <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
+          <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
+          <td class="bal">${fmtNum(r.balance)}</td>
+        </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+}
+
+function renderDCLotTable(rows, hosp){
+  return `<div class="tbl-wrap"><table>
+    <thead><tr><th>DC Number</th><th>Item</th><th>Lot</th><th>Expiry</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
+    <tbody>
+      ${rows.map(r=>`
+        <tr class="${r.balance<=0?'neg':''}">
+          <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--text2);">${esc(r.dcNumber||'—')}</td>
+          <td style="font-weight:700;">${esc(r.itemName)}</td>
+          <td>${esc(r.lot||'—')}</td>
+          <td>${cleanDate(r.expiry)}</td>
+          <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
+          <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
+          <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
+          <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
+          <td class="bal">${fmtNum(r.balance)}</td>
+          <td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage('${esc(r.itemName).replace(/'/g,"\\'")}','${esc(r.gtin)}','${esc(r.lot||'')}','${esc(hosp).replace(/'/g,"\\'")}','${esc(r.dcNumber||'').replace(/'/g,"\\'")}',${r.balance})">Log Use</button></td>
+        </tr>`).join('')}
+    </tbody>
+  </table></div>`;
+}
+
 function renderDCHospitals(byHospital){
   const el=document.getElementById('dcHospitalsList');
-  if(!byHospital||!Object.keys(byHospital).length){
+  const hospNames = Object.keys(byHospital);
+  if(!hospNames.length){
     el.innerHTML='<div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet for this segment</p><small>Start a DC / Consignment session to send stock to a hospital</small></div>';
     return;
   }
-  el.innerHTML=Object.entries(byHospital).map(([hosp,rows])=>`
-    <div class="hospital-header"><h4>🏥 ${esc(hosp)}</h4><span style="font-size:11px;color:var(--text2);">${rows.length} item${rows.length!==1?'s':''}</span></div>
-    <div class="hospital-body">
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>DC Number</th><th>Item</th><th>Lot</th><th>Expiry</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
-          <tbody>
-            ${rows.map(r=>`
-              <tr class="${r.balance<=0?'neg':''}">
-                <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--text2);">${esc(r.dcNumber||'—')}</td>
-                <td style="font-weight:700;">${esc(r.itemName)}</td>
-                <td>${esc(r.lot||'—')}</td>
-                <td>${cleanDate(r.expiry)}</td>
-                <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
-                <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
-                <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
-                <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
-                <td class="bal">${fmtNum(r.balance)}</td>
-                <td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage('${esc(r.itemName).replace(/'/g,"\\'")}','${esc(r.gtin)}','${esc(r.lot||'')}','${esc(hosp).replace(/'/g,"\\'")}','${esc(r.dcNumber||'').replace(/'/g,"\\'")}',${r.balance})">Log Use</button></td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
+  // First time we ever see exactly one hospital, auto-expand it — no point
+  // making someone click through a collapsed section when there's nothing
+  // else to compare it against.
+  if(hospNames.length===1 && dcExpandedHospitals.size===0) dcExpandedHospitals.add(hospNames[0]);
+
+  el.innerHTML = hospNames.map(hosp=>{
+    const rows = byHospital[hosp];
+    const itemCount = new Set(rows.map(r=>r.itemName)).size;
+    const totalSent = rows.reduce((a,r)=>a+r.sent,0);
+    const totalUsed = rows.reduce((a,r)=>a+r.used,0);
+    const totalReturned = rows.reduce((a,r)=>a+r.returned,0);
+    const totalBalance = rows.reduce((a,r)=>a+r.balance,0);
+    const expanded = dcExpandedHospitals.has(hosp);
+    const hospEsc = esc(hosp).replace(/'/g,"\\'");
+    return `
+    <div class="hospital-header ${expanded?'':'collapsed'}" onclick="toggleHospitalSection('${hospEsc}')">
+      <h4><span class="hh-chevron">▾</span>🏥 ${esc(hosp)}</h4>
+      <div class="hh-chips">
+        <span class="hh-chip">${itemCount} item${itemCount!==1?'s':''}</span>
+        <span class="hh-chip amber">Sent ${fmtNum(totalSent)}</span>
+        <span class="hh-chip green">Used ${fmtNum(totalUsed)}</span>
+        <span class="hh-chip purple">Ret. ${fmtNum(totalReturned)}</span>
+        <span class="hh-chip red">At Hosp. ${fmtNum(totalBalance)}</span>
       </div>
-    </div>`).join('');
+    </div>
+    <div class="hospital-body ${expanded?'':'collapsed'}">
+      ${dcGroupByItem ? renderDCItemTable(groupDCRowsByItem(rows)) : renderDCLotTable(rows, hosp)}
+    </div>`;
+  }).join('');
 }
 
 function filterDCHospitals(){
@@ -1826,8 +2021,86 @@ function loadMaterialLog(){
     document.getElementById('matTotalIn').textContent=fmtNum(res.kpis.totalIn);
     document.getElementById('matTotalOut').textContent=fmtNum(res.kpis.totalOut);
     document.getElementById('matNet').textContent=fmtNum(res.kpis.net);
-    renderMaterialTable(res.rows);
+    renderMaterialView(res.rows);
   }).catch(()=>{});
+}
+
+function setMatGroupMode(grouped){
+  matGroupByReason = grouped;
+  document.querySelectorAll('#matViewToggle button').forEach((b,i)=>b.classList.toggle('active', (i===0)===grouped));
+  renderMaterialView(lastMaterialData ? currentMaterialFilteredRows_() : []);
+}
+
+function toggleReasonSection(reason){
+  if(matExpandedReasons.has(reason)) matExpandedReasons.delete(reason);
+  else matExpandedReasons.add(reason);
+  renderMaterialView(currentMaterialFilteredRows_());
+}
+
+// Re-derives the currently-filtered row set from the search box, so toggling
+// group mode or expanding a reason section doesn't lose an active search.
+function currentMaterialFilteredRows_(){
+  if(!lastMaterialData) return [];
+  const q = document.getElementById('matSearchInput').value.trim().toLowerCase();
+  return !q ? lastMaterialData.rows
+    : lastMaterialData.rows.filter(r => (r.itemName||'').toLowerCase().includes(q) || (r.reason||'').toLowerCase().includes(q));
+}
+
+function renderMaterialView(rows){
+  document.getElementById('matFlatWrap').style.display = matGroupByReason ? 'none' : 'block';
+  document.getElementById('matGroupedWrap').style.display = matGroupByReason ? 'block' : 'none';
+  if(matGroupByReason) renderMaterialGrouped(rows);
+  else renderMaterialTable(rows);
+}
+
+function renderMaterialGrouped(rows){
+  const wrap = document.getElementById('matGroupedWrap');
+  if(!rows.length){
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">🔄</div><p>No material movements yet for this segment</p><small>Use Material In / Material Out from the Scan tab</small></div>';
+    return;
+  }
+  const groups = {};
+  rows.forEach(r=>{
+    const key = r.reason || '(No reason given)';
+    if(!groups[key]) groups[key]=[];
+    groups[key].push(r);
+  });
+  const reasonNames = Object.keys(groups);
+  if(reasonNames.length===1 && matExpandedReasons.size===0) matExpandedReasons.add(reasonNames[0]);
+
+  wrap.innerHTML = reasonNames.map(reason=>{
+    const items = groups[reason];
+    const totalIn = items.filter(r=>r.direction==='IN').reduce((a,r)=>a+r.qty,0);
+    const totalOut = items.filter(r=>r.direction==='OUT').reduce((a,r)=>a+r.qty,0);
+    const expanded = matExpandedReasons.has(reason);
+    const reasonEsc = esc(reason).replace(/'/g,"\\'");
+    return `
+    <div class="reason-header ${expanded?'':'collapsed'}" onclick="toggleReasonSection('${reasonEsc}')">
+      <h4><span class="hh-chevron">▾</span>🔄 ${esc(reason)}</h4>
+      <div class="hh-chips">
+        <span class="hh-chip">${items.length} entr${items.length!==1?'ies':'y'}</span>
+        <span class="hh-chip green">In ${fmtNum(totalIn)}</span>
+        <span class="hh-chip red">Out ${fmtNum(totalOut)}</span>
+      </div>
+    </div>
+    <div class="reason-body ${expanded?'':'collapsed'}">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Item Name</th><th>Lot</th><th>Dir.</th><th>Qty</th><th>Remarks</th><th>By</th><th>Timestamp</th></tr></thead>
+        <tbody>
+          ${items.map(r=>`
+            <tr>
+              <td style="font-weight:700;">${esc(r.itemName)}</td>
+              <td>${esc(r.lot||'—')}</td>
+              <td><span class="log-dir ${r.direction==='IN'?'in':'mat'}">${r.direction}</span></td>
+              <td style="font-weight:800;">${fmtNum(r.qty)}</td>
+              <td style="color:var(--text2);">${esc(r.remarks||'—')}</td>
+              <td style="font-size:11px;color:var(--text3);">${esc(r.scannedBy||'—')}</td>
+              <td style="font-size:10px;color:var(--text3);">${cleanDate(r.timestamp)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+  }).join('');
 }
 
 function renderMaterialTable(rows){
@@ -1851,15 +2124,16 @@ function renderMaterialTable(rows){
 
 function filterMaterialTable(){
   if(!lastMaterialData) return;
+  const rows = currentMaterialFilteredRows_();
   const q = document.getElementById('matSearchInput').value.trim().toLowerCase();
-  const rows = !q ? lastMaterialData.rows
-    : lastMaterialData.rows.filter(r => (r.itemName||'').toLowerCase().includes(q) || (r.reason||'').toLowerCase().includes(q));
   if(q && !rows.length){
+    document.getElementById('matFlatWrap').style.display='block';
+    document.getElementById('matGroupedWrap').style.display='none';
     document.getElementById('matTableBody').innerHTML =
       `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔍</div><p>No movements matching "${esc(q)}"</p></div></td></tr>`;
-  } else {
-    renderMaterialTable(rows);
+    return;
   }
+  renderMaterialView(rows);
 }
 
 function loadReports(){
