@@ -712,7 +712,7 @@ function switchView(view){
   if(view==='scan' && !sessionActive && !inReview) showSetupScreen();
 }
 
-(async function warmup(){ try{ await ZXingWASM.prepareZXingModule({fireImmediately:true}); }catch(e){} })();
+let zxingReady = false; (async function warmup(){   try{     await ZXingWASM.prepareZXingModule({ fireImmediately: true });     zxingReady = true;   }catch(e){ console.error('ZXing WASM warmup failed:', e); } })();
 checkApiConnection();
 populateSegmentDropdowns();
 
@@ -1025,7 +1025,8 @@ async function toggleScanner(){
 }
 
 function stopScanner(){
-  isScanning=false;
+  isScanning = false;
+  decoding = false;
   if(scanLoopHandle){cancelAnimationFrame(scanLoopHandle);scanLoopHandle=null;}
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   document.getElementById('camVideo').srcObject=null;
@@ -1095,31 +1096,47 @@ function clearStuckHint(){
 const RETICLE_WIDTH_FRAC  = 0.70;
 const RETICLE_HEIGHT_FRAC = 0.38;
 
-async function runScanLoop(){
-  const video=document.getElementById('camVideo'), canvas=document.getElementById('camCanvas');
-  const ctx=canvas.getContext('2d',{willReadFrequently:true});
-  async function tick(){
-    if(!isScanning) return;
-    if(video.readyState===video.HAVE_ENOUGH_DATA&&video.videoWidth>0){
-      const vw=video.videoWidth, vh=video.videoHeight;
-      const cropW = Math.round(vw * RETICLE_WIDTH_FRAC);
-      const cropH = Math.round(vh * RETICLE_HEIGHT_FRAC);
-      const cropX = Math.round((vw - cropW) / 2);
-      const cropY = Math.round((vh - cropH) / 2);
+// Replace the entire runScanLoop() function:
+let decoding = false; // semaphore — only one WASM call at a time
 
-      canvas.width=cropW; canvas.height=cropH;
-      // Draw only the reticle region of the video frame into the canvas —
-      // this is the crop. Source rect = reticle area, dest rect = full canvas.
-      ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-      try{
-        const imgData=ctx.getImageData(0,0,cropW,cropH);
-        const results=await ZXingWASM.readBarcodesFromImageData(imgData,{tryHarder:true,formats:['DataMatrix','Code128','Code39','EAN-13','EAN-8','QRCode','ITF','Codabar','UPC-A','UPC-E','PDF417','Aztec'],maxSymbols:1});
-        if(results&&results.length>0&&results[0].text) handleDecodedBarcode(results[0].text,results[0].format);
-      }catch(e){}
-    }
-    if(isScanning) scanLoopHandle=requestAnimationFrame(tick);
+async function runScanLoop(){
+  const video  = document.getElementById('camVideo');
+  const canvas = document.getElementById('camCanvas');
+  const ctx    = canvas.getContext('2d', {willReadFrequently: true});
+
+  function tick(){
+    if(!isScanning) return;
+    scanLoopHandle = requestAnimationFrame(tick);   // schedule next frame first, then maybe decode
+
+    if(decoding) return;                            // WASM is busy — skip this frame entirely
+    if(video.readyState !== video.HAVE_ENOUGH_DATA || video.videoWidth === 0) return;
+    if(!zxingReady) return;                         // WASM not initialised yet
+
+    const vw = video.videoWidth, vh = video.videoHeight;
+    const cropW = Math.round(vw * RETICLE_WIDTH_FRAC);
+    const cropH = Math.round(vh * RETICLE_HEIGHT_FRAC);
+    const cropX = Math.round((vw - cropW) / 2);
+    const cropY = Math.round((vh - cropH) / 2);
+
+    canvas.width  = cropW;
+    canvas.height = cropH;
+    ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+    const imgData = ctx.getImageData(0, 0, cropW, cropH);
+
+    decoding = true;
+    ZXingWASM.readBarcodesFromImageData(imgData, {
+      tryHarder: true,
+      formats: ['DataMatrix','Code128','Code39','EAN-13','EAN-8','QRCode','ITF','Codabar','UPC-A','UPC-E','PDF417','Aztec'],
+      maxNumberOfSymbols: 1
+    }).then(results => {
+      decoding = false;
+      if(results && results.length > 0 && results[0].text){
+        handleDecodedBarcode(results[0].text, results[0].format);
+      }
+    }).catch(() => { decoding = false; });
   }
-  scanLoopHandle=requestAnimationFrame(tick);
+
+  scanLoopHandle = requestAnimationFrame(tick);
 }
 
 // ════════════════════════════════════════════════════════
