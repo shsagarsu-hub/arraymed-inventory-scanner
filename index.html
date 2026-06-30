@@ -328,6 +328,15 @@
         <div class="kpi-box amber"><div class="kpi-num" id="invNegative">0</div><div class="kpi-label">Negative Bal.</div></div>
         <div class="kpi-box green"><div class="kpi-num" id="invNetBal">0</div><div class="kpi-label">Net Balance</div></div>
       </div>
+      <div class="section-label" style="margin-top:0;">Breakdown by Movement Type</div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi-box green"><div class="kpi-num" id="invPurchaseIn">0</div><div class="kpi-label">Purchase In</div></div>
+        <div class="kpi-box purple"><div class="kpi-num" id="invDcReturnIn">0</div><div class="kpi-label">DC Return In</div></div>
+        <div class="kpi-box teal"><div class="kpi-num" id="invMaterialIn">0</div><div class="kpi-label">Material In</div></div>
+        <div class="kpi-box blue"><div class="kpi-num" id="invDcOut">0</div><div class="kpi-label">DC Out</div></div>
+        <div class="kpi-box red"><div class="kpi-num" id="invSaleOut">0</div><div class="kpi-label">Sale Out</div></div>
+        <div class="kpi-box amber"><div class="kpi-num" id="invMaterialOut">0</div><div class="kpi-label">Material Out</div></div>
+      </div>
       <div class="card" style="padding:0;">
         <div style="padding:14px 16px 0;">
           <div class="card-header"><div class="card-title" style="margin:0;">Live Stock Balance</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">&#x27F3; Refresh</button></div>
@@ -335,7 +344,7 @@
           <div class="fg" style="margin-bottom:12px;"><input type="text" id="invSearchInput" placeholder="&#x1F50D; Search item name&hellip;" oninput="filterInventoryTable()"></div>
         </div>
         <div class="tbl-wrap" style="padding:0 16px 16px;">
-          <table><thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>MRP</th><th>In</th><th>Out</th><th>Balance</th><th>Last Scanned</th></tr></thead><tbody id="invTableBody"><tr><td colspan="8"><div class="empty"><div class="empty-icon">&#x1F4E6;</div><p>Loading&hellip;</p></div></td></tr></tbody></table>
+          <table><thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>MRP</th><th>Purchase In</th><th>DC Ret. In</th><th>Mat. In</th><th>DC Out</th><th>Sale Out</th><th>Mat. Out</th><th>Balance</th><th>Last Scanned</th></tr></thead><tbody id="invTableBody"><tr><td colspan="12"><div class="empty"><div class="empty-icon">&#x1F4E6;</div><p>Loading&hellip;</p></div></td></tr></tbody></table>
         </div>
       </div>
     </div>
@@ -1031,6 +1040,12 @@ function loadInventory(){
     document.getElementById('invUniqueItems').textContent=fmtNum(k.uniqueItems);
     document.getElementById('invNegative').textContent=fmtNum(k.negativeCount);
     document.getElementById('invNetBal').textContent=fmtNum(k.totalIn-k.totalOut);
+    document.getElementById('invPurchaseIn').textContent=fmtNum(k.totalPurchaseIn);
+    document.getElementById('invDcReturnIn').textContent=fmtNum(k.totalDcReturnIn);
+    document.getElementById('invMaterialIn').textContent=fmtNum(k.totalMaterialIn);
+    document.getElementById('invDcOut').textContent=fmtNum(k.totalDcOut);
+    document.getElementById('invSaleOut').textContent=fmtNum(k.totalSaleOut);
+    document.getElementById('invMaterialOut').textContent=fmtNum(k.totalMaterialOut);
     filterInventoryTable();
   }).catch(()=>{});
 }
@@ -1043,21 +1058,42 @@ function latestDMY_(a,b){ const da=parseDMY_(a),db=parseDMY_(b); if(!da) return 
 
 function groupRowsByItem(rows){
   const map={};
-  rows.forEach(r=>{ if(!map[r.itemName]) map[r.itemName]={itemName:r.itemName,lots:0,qtyIn:0,qtyOut:0,balance:0,mrpSet:new Set(),expiries:[],lastScanned:''}; const g=map[r.itemName]; g.lots++; g.qtyIn+=parseFloat(r.qtyIn)||0; g.qtyOut+=parseFloat(r.qtyOut)||0; g.balance+=parseFloat(r.balance)||0; if(r.mrp) g.mrpSet.add(r.mrp); if(r.expiry&&r.expiry!=='\u2014') g.expiries.push(r.expiry); g.lastScanned=g.lastScanned?latestDMY_(g.lastScanned,r.lastScanned):r.lastScanned; });
-  return Object.values(map).map(g=>({itemName:g.itemName,lot:g.lots>1?(g.lots+' lots'):'1 lot',expiry:g.expiries.length?earliestDMY_(g.expiries):'\u2014',mrp:g.mrpSet.size===1?Array.from(g.mrpSet)[0]:'',qtyIn:g.qtyIn,qtyOut:g.qtyOut,balance:g.balance,lastScanned:g.lastScanned})).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
+  rows.forEach(r=>{
+    if(!map[r.itemName]) map[r.itemName]={itemName:r.itemName,lots:0,purchaseIn:0,dcReturnIn:0,materialIn:0,dcOut:0,saleOut:0,materialOut:0,balance:0,mrpSet:new Set(),expiries:[],lastScanned:''};
+    const g=map[r.itemName];
+    g.lots++;
+    g.purchaseIn += parseFloat(r.purchaseIn)||0;
+    g.dcReturnIn += parseFloat(r.dcReturnIn)||0;
+    g.materialIn += parseFloat(r.materialIn)||0;
+    g.dcOut      += parseFloat(r.dcOut)||0;
+    g.saleOut    += parseFloat(r.saleOut)||0;
+    g.materialOut+= parseFloat(r.materialOut)||0;
+    g.balance    += parseFloat(r.balance)||0;
+    if(r.mrp) g.mrpSet.add(r.mrp);
+    if(r.expiry&&r.expiry!=='\u2014') g.expiries.push(r.expiry);
+    g.lastScanned=g.lastScanned?latestDMY_(g.lastScanned,r.lastScanned):r.lastScanned;
+  });
+  return Object.values(map).map(g=>({
+    itemName:g.itemName, lot:g.lots>1?(g.lots+' lots'):'1 lot',
+    expiry:g.expiries.length?earliestDMY_(g.expiries):'\u2014',
+    mrp:g.mrpSet.size===1?Array.from(g.mrpSet)[0]:'',
+    purchaseIn:g.purchaseIn, dcReturnIn:g.dcReturnIn, materialIn:g.materialIn,
+    dcOut:g.dcOut, saleOut:g.saleOut, materialOut:g.materialOut,
+    balance:g.balance, lastScanned:g.lastScanned
+  })).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
 }
 
 function renderInventoryTable(rows){
   const tbody=document.getElementById('invTableBody');
-  if(!rows.length){ tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83d\udce6</div><p>No inventory scans yet for this segment</p></div></td></tr>'; return; }
-  tbody.innerHTML=rows.map(r=>'<tr class="'+(r.balance<0?'neg':'')+'"><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td>'+cleanDate(r.expiry)+'</td><td>'+(r.mrp?('\u20b9'+fmtNum(r.mrp)):'\u2014')+'</td><td style="color:var(--green);font-weight:700;">'+fmtNum(r.qtyIn)+'</td><td style="color:var(--red);font-weight:700;">'+fmtNum(r.qtyOut)+'</td><td class="bal">'+fmtNum(r.balance)+'</td><td style="font-size:10px;color:var(--text3);">'+cleanDate(r.lastScanned)+'</td></tr>').join('');
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">\ud83d\udce6</div><p>No inventory scans yet for this segment</p></div></td></tr>'; return; }
+  tbody.innerHTML=rows.map(r=>'<tr class="'+(r.balance<0?'neg':'')+'"><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td>'+cleanDate(r.expiry)+'</td><td>'+(r.mrp?('\u20b9'+fmtNum(r.mrp)):'\u2014')+'</td><td style="color:var(--green);font-weight:700;">'+fmtNum(r.purchaseIn)+'</td><td style="color:var(--purple);font-weight:700;">'+fmtNum(r.dcReturnIn)+'</td><td style="color:var(--teal);font-weight:700;">'+fmtNum(r.materialIn)+'</td><td style="color:var(--blue);font-weight:700;">'+fmtNum(r.dcOut)+'</td><td style="color:var(--red);font-weight:700;">'+fmtNum(r.saleOut)+'</td><td style="color:var(--amber);font-weight:700;">'+fmtNum(r.materialOut)+'</td><td class="bal">'+fmtNum(r.balance)+'</td><td style="font-size:10px;color:var(--text3);">'+cleanDate(r.lastScanned)+'</td></tr>').join('');
 }
 
 function filterInventoryTable(){
   if(!lastInventoryData) return;
   const q=document.getElementById('invSearchInput').value.trim().toLowerCase();
   let rows=!q?lastInventoryData.stockRows:lastInventoryData.stockRows.filter(r=>(r.itemName||'').toLowerCase().includes(q));
-  if(q&&!rows.length){ document.getElementById('invTableBody').innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83d\udd0d</div><p>No items matching "'+esc(q)+'"</p></div></td></tr>'; return; }
+  if(q&&!rows.length){ document.getElementById('invTableBody').innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">\ud83d\udd0d</div><p>No items matching "'+esc(q)+'"</p></div></td></tr>'; return; }
   if(invGroupByItem) rows=groupRowsByItem(rows);
   renderInventoryTable(rows);
 }
