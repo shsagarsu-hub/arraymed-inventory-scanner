@@ -8,7 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/zxing-wasm@2.1.1/dist/iife/reader/index.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif; }
-
   :root {
     --bg:#f5efe6; --surface:#fffdf9; --surface2:#faf6f0;
     --hdr-bg:#2c2116; --border:#e8ddd0; --border2:#d9cfc0;
@@ -21,40 +20,21 @@
     --teal:#16a085; --teal-bg:rgba(22,160,133,.1);
     --sidebar-w:220px;
   }
-
   html, body { background:var(--bg); color:var(--text); min-height:100vh; }
-
   .app-shell { display:flex; min-height:100vh; }
-
-  .sidebar {
-    width:var(--sidebar-w); background:var(--hdr-bg); display:flex;
-    flex-direction:column; position:fixed; top:0; left:0; height:100vh;
-    z-index:30; transition:transform .2s;
-  }
+  .sidebar { width:var(--sidebar-w); background:var(--hdr-bg); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:30; transition:transform .2s; }
   .sidebar-logo { padding:20px 16px 16px; border-bottom:1px solid rgba(255,255,255,.1); }
   .sidebar-logo p { font-size:10px; color:rgba(255,249,240,.55); margin-top:3px; font-weight:600; }
   .api-badge { font-size:10px; font-weight:800; margin-top:8px; display:inline-block; }
-
   .nav { flex:1; padding:10px 0; overflow-y:auto; }
-  .nav-item {
-    display:flex; align-items:center; gap:10px; padding:11px 18px;
-    font-size:13px; font-weight:700; color:rgba(255,249,240,.65);
-    cursor:pointer; transition:all .15s; border-left:3px solid transparent;
-  }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:11px 18px; font-size:13px; font-weight:700; color:rgba(255,249,240,.65); cursor:pointer; transition:all .15s; border-left:3px solid transparent; }
   .nav-item:hover { color:#fff9f0; background:rgba(255,255,255,.06); }
   .nav-item.active { color:#fff9f0; background:rgba(181,69,27,.35); border-left-color:#b5451b; }
   .nav-item .icon { font-size:16px; width:20px; text-align:center; }
-
   .sidebar-footer { padding:12px 16px; border-top:1px solid rgba(255,255,255,.1); }
-  .cfg-btn {
-    width:100%; padding:9px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15);
-    border-radius:8px; color:rgba(255,249,240,.8); font-size:11px; font-weight:700;
-    cursor:pointer; font-family:inherit; transition:all .15s;
-  }
+  .cfg-btn { width:100%; padding:9px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:8px; color:rgba(255,249,240,.8); font-size:11px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; }
   .cfg-btn:hover { background:rgba(255,255,255,.15); }
-
   .main { margin-left:var(--sidebar-w); flex:1; padding:20px; max-width:900px; }
-
   @media (max-width:767px) {
     .sidebar { transform:translateX(-100%); }
     .main { margin-left:0; padding:12px 12px 80px; }
@@ -64,28 +44,19 @@
     .bottom-nav-item.active { color:#fff9f0; border-top-color:#b5451b; }
   }
   @media (min-width:768px) { .bottom-nav { display:none; } }
-
   .view { display:none; }
   .view.active { display:block; }
-
   .page-title { font-size:20px; font-weight:800; color:var(--text); margin-bottom:16px; letter-spacing:-.4px; }
   .page-title span { color:var(--red); }
-
   .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(90,70,50,.05); }
   .card-title { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:.6px; font-weight:800; margin-bottom:12px; }
   .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
   .card-header .card-title { margin-bottom:0; }
-
   .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
   .kpi-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 10px; text-align:center; border-top:3px solid var(--border2); }
-  .kpi-box.red { border-top-color:var(--red); }
-  .kpi-box.green { border-top-color:var(--green); }
-  .kpi-box.blue { border-top-color:var(--blue); }
-  .kpi-box.amber { border-top-color:var(--amber); }
-  .kpi-box.teal { border-top-color:var(--teal); }
+  .kpi-box.red { border-top-color:var(--red); } .kpi-box.green { border-top-color:var(--green); } .kpi-box.blue { border-top-color:var(--blue); } .kpi-box.amber { border-top-color:var(--amber); } .kpi-box.teal { border-top-color:var(--teal); }
   .kpi-num { font-size:22px; font-weight:800; color:var(--text); line-height:1; }
   .kpi-label { font-size:9px; color:var(--text2); margin-top:4px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; }
-
   .btn { padding:12px 16px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:all .15s; font-family:inherit; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
   .btn-primary { background:linear-gradient(135deg,#b5451b,#8b2a0e); color:#fff9f0; box-shadow:0 3px 10px rgba(181,69,27,.25); }
   .btn-primary:hover { transform:translateY(-1px); }
@@ -95,46 +66,30 @@
   .btn-danger { background:var(--red-bg); color:var(--red); border:1.5px solid var(--red); }
   .btn-green { background:var(--green); color:#fff; }
   .btn-full { width:100%; }
-
   .fg { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
   .fg label { font-size:10px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
   .fg input, .fg select { padding:10px 12px; background:var(--surface); border:2px solid var(--border); border-radius:9px; font-size:13px; color:var(--text); font-family:inherit; }
   .fg input:focus, .fg select:focus { outline:none; border-color:var(--red); box-shadow:0 0 0 3px var(--red-bg); }
-
   .tbl-wrap { overflow-x:auto; }
   table { width:100%; border-collapse:collapse; font-size:12px; }
   th { background:#f0e8dc; color:var(--text2); font-weight:800; padding:9px 10px; text-align:left; font-size:9px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; border-bottom:2px solid var(--border); }
   td { padding:9px 10px; border-bottom:1px solid #f0e8dc; color:var(--text); }
   tr:last-child td { border-bottom:none; }
-  tr.neg td { background:rgba(181,69,27,.05); }
-  tr.neg .bal { color:var(--red); font-weight:800; }
-  tr.expiring-soon td { background:rgba(230,126,34,.07); }
-  tr.expired td { background:rgba(181,69,27,.08); }
+  tr.neg td { background:rgba(181,69,27,.05); } tr.neg .bal { color:var(--red); font-weight:800; }
+  tr.expiring-soon td { background:rgba(230,126,34,.07); } tr.expired td { background:rgba(181,69,27,.08); }
   .bal { font-weight:800; }
-
   .log-entry { padding:10px 0; border-bottom:1px solid var(--border); }
   .log-entry:last-child { border-bottom:none; }
   .log-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
   .log-name { font-size:13px; font-weight:700; }
   .log-dir { font-size:9px; font-weight:800; padding:2px 8px; border-radius:10px; text-transform:uppercase; }
-  .log-dir.in { background:var(--green-bg); color:var(--green); }
-  .log-dir.out { background:var(--red-bg); color:var(--red); }
-  .log-dir.dc { background:var(--blue-bg); color:var(--blue); }
-  .log-dir.ret { background:var(--purple-bg); color:var(--purple); }
-  .log-dir.mat { background:var(--teal-bg); color:var(--teal); }
-  .log-meta { font-size:11px; color:var(--text2); }
-  .log-time { font-size:10px; color:var(--text3); margin-top:2px; }
-
+  .log-dir.in { background:var(--green-bg); color:var(--green); } .log-dir.out { background:var(--red-bg); color:var(--red); } .log-dir.dc { background:var(--blue-bg); color:var(--blue); } .log-dir.ret { background:var(--purple-bg); color:var(--purple); } .log-dir.mat { background:var(--teal-bg); color:var(--teal); }
+  .log-meta { font-size:11px; color:var(--text2); } .log-time { font-size:10px; color:var(--text3); margin-top:2px; }
   .exp-badge { display:inline-block; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:800; }
-  .exp-ok { background:var(--green-bg); color:var(--green); }
-  .exp-warn { background:var(--amber-bg); color:var(--amber); }
-  .exp-danger { background:var(--red-bg); color:var(--red); }
-  .exp-expired { background:#fde8e8; color:#8b1a1a; }
-
+  .exp-ok { background:var(--green-bg); color:var(--green); } .exp-warn { background:var(--amber-bg); color:var(--amber); } .exp-danger { background:var(--red-bg); color:var(--red); } .exp-expired { background:#fde8e8; color:#8b1a1a; }
   .hospital-header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px 12px 0 0; border-bottom:none; }
   .hospital-header h4 { font-size:14px; font-weight:800; color:var(--text); }
   .hospital-body { border:1px solid var(--border); border-radius:0 0 12px 12px; overflow:hidden; margin-bottom:12px; }
-
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(44,33,22,.55); z-index:100; align-items:center; justify-content:center; padding:16px; }
   .modal-overlay.open { display:flex; }
   .modal { background:var(--surface); border-radius:16px; padding:20px; width:100%; max-width:380px; box-shadow:0 8px 40px rgba(44,33,22,.25); animation:slideUp .2s ease; }
@@ -145,33 +100,15 @@
   .qty-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
   .qty-btn { width:38px; height:38px; border-radius:9px; border:2px solid var(--border2); background:var(--surface); font-size:18px; font-weight:800; cursor:pointer; color:var(--text2); }
   .qty-val { flex:1; text-align:center; font-size:18px; font-weight:800; }
-
   .flash-overlay { display:none; position:fixed; inset:0; background:rgba(39,174,96,.15); z-index:200; pointer-events:none; }
-  .flash-overlay.on { display:block; }
-  .flash-overlay.err { background:rgba(181,69,27,.18); }
-
+  .flash-overlay.on { display:block; } .flash-overlay.err { background:rgba(181,69,27,.18); }
   .empty { text-align:center; padding:28px 16px; color:var(--text3); }
-  .empty-icon { font-size:32px; margin-bottom:8px; }
-  .empty p { font-size:13px; font-weight:600; }
-  .empty small { font-size:11px; }
-
+  .empty-icon { font-size:32px; margin-bottom:8px; } .empty p { font-size:13px; font-weight:600; } .empty small { font-size:11px; }
   .section-label { font-size:10px; font-weight:800; color:var(--text3); text-transform:uppercase; letter-spacing:.8px; margin-bottom:10px; margin-top:4px; }
-
-  /* ══════════════ SESSION MODE (warehouse-style scanning) ══════════════ */
-
-  /* Setup screen: choose movement type before scanner ever turns on */
   .setup-screen { padding:4px 0; }
-  .setup-title { font-size:18px; font-weight:800; margin-bottom:4px; }
-  .setup-sub { font-size:12px; color:var(--text2); margin-bottom:18px; }
-  .movetype-gate-hint {
-    background:var(--surface2); border:1.5px dashed var(--border2); border-radius:10px;
-    padding:14px; text-align:center; font-size:12px; color:var(--text2); font-weight:600; margin-bottom:16px;
-  }
+  .movetype-gate-hint { background:var(--surface2); border:1.5px dashed var(--border2); border-radius:10px; padding:14px; text-align:center; font-size:12px; color:var(--text2); font-weight:600; margin-bottom:16px; }
   .movetype-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-  .movetype-card {
-    background:var(--surface); border:2px solid var(--border2); border-radius:14px;
-    padding:18px 12px; text-align:center; cursor:pointer; transition:all .15s;
-  }
+  .movetype-card { background:var(--surface); border:2px solid var(--border2); border-radius:14px; padding:18px 12px; text-align:center; cursor:pointer; transition:all .15s; }
   .movetype-card:hover { border-color:var(--text2); }
   .movetype-card .mc-icon { font-size:28px; display:block; margin-bottom:6px; }
   .movetype-card .mc-label { font-size:13px; font-weight:800; color:var(--text); }
@@ -180,79 +117,36 @@
   .movetype-card.sel-sale.selected { border-color:var(--red); background:var(--red-bg); }
   .movetype-card.sel-dc.selected { border-color:var(--blue); background:var(--blue-bg); }
   .movetype-card.sel-dcreturn.selected { border-color:var(--purple); background:var(--purple-bg); }
-  .movetype-card.sel-matin.selected { border-color:var(--teal); background:var(--teal-bg); }
-  .movetype-card.sel-matout.selected { border-color:var(--teal); background:var(--teal-bg); }
-
+  .movetype-card.sel-matin.selected,.movetype-card.sel-matout.selected { border-color:var(--teal); background:var(--teal-bg); }
   .hospital-setup-block { display:none; margin-bottom:14px; }
   .hospital-setup-block.show { display:block; }
-
-  /* Live session scan screen */
   .session-screen { display:none; }
   .session-screen.active { display:block; }
-  .session-header {
-    display:flex; justify-content:space-between; align-items:center;
-    background:var(--hdr-bg); color:#fff9f0; border-radius:14px; padding:12px 16px; margin-bottom:12px;
-  }
+  .session-header { display:flex; justify-content:space-between; align-items:center; background:var(--hdr-bg); color:#fff9f0; border-radius:14px; padding:12px 16px; margin-bottom:12px; }
   .session-header .sh-mode { font-size:13px; font-weight:800; }
   .session-header .sh-mode small { display:block; font-size:10px; font-weight:600; color:rgba(255,249,240,.6); margin-top:1px; }
   .session-header .sh-end { background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); color:#fff9f0; padding:8px 14px; border-radius:9px; font-size:11px; font-weight:800; cursor:pointer; }
-
   .session-counters { display:flex; gap:8px; margin-bottom:12px; }
   .sc-box { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px; text-align:center; }
-  .sc-num { font-size:20px; font-weight:800; }
-  .sc-label { font-size:9px; color:var(--text2); font-weight:700; text-transform:uppercase; margin-top:2px; }
-
+  .sc-num { font-size:20px; font-weight:800; } .sc-label { font-size:9px; color:var(--text2); font-weight:700; text-transform:uppercase; margin-top:2px; }
   .scanner-wrap { background:#000; border-radius:12px; overflow:hidden; margin-bottom:10px; position:relative; }
   #camVideo { width:100%; display:block; }
-  .scan-reticle {
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    width:70%; height:38%; border:3px solid rgba(255,255,255,.65); border-radius:14px; pointer-events:none;
-    box-shadow:0 0 0 2000px rgba(0,0,0,.35); /* dims everything outside the active decode zone */
-  }
-  .scan-reticle::after {
-    content:'Center barcode here'; position:absolute; bottom:-26px; left:50%; transform:translateX(-50%);
-    font-size:10px; font-weight:700; color:rgba(255,255,255,.85); white-space:nowrap; text-shadow:0 1px 3px rgba(0,0,0,.6);
-  }
-  .torch-toggle {
-    position:absolute; top:10px; right:10px; z-index:5; width:40px; height:40px; border-radius:50%;
-    background:rgba(0,0,0,.45); border:1.5px solid rgba(255,255,255,.4); color:#fff; font-size:18px;
-    cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s;
-  }
+  .scan-reticle { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:70%; height:38%; border:3px solid rgba(255,255,255,.65); border-radius:14px; pointer-events:none; box-shadow:0 0 0 2000px rgba(0,0,0,.35); }
+  .scan-reticle::after { content:'Center barcode here'; position:absolute; bottom:-26px; left:50%; transform:translateX(-50%); font-size:10px; font-weight:700; color:rgba(255,255,255,.85); white-space:nowrap; text-shadow:0 1px 3px rgba(0,0,0,.6); }
+  .torch-toggle { position:absolute; top:10px; right:10px; z-index:5; width:40px; height:40px; border-radius:50%; background:rgba(0,0,0,.45); border:1.5px solid rgba(255,255,255,.4); color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; }
   .torch-toggle.on { background:rgba(230,126,34,.85); border-color:#e67e22; }
-  .stuck-hint {
-    position:absolute; left:8px; right:8px; bottom:36px; z-index:5; display:none;
-    background:rgba(230,126,34,.92); color:#fff; border-radius:9px; padding:8px 10px;
-    font-size:11px; font-weight:700; text-align:center; line-height:1.3;
-    animation:stuckFadeIn .25s ease;
-  }
+  .stuck-hint { position:absolute; left:8px; right:8px; bottom:36px; z-index:5; display:none; background:rgba(230,126,34,.92); color:#fff; border-radius:9px; padding:8px 10px; font-size:11px; font-weight:700; text-align:center; line-height:1.3; animation:stuckFadeIn .25s ease; }
   .stuck-hint.show { display:block; }
-  .stuck-hint-icon { margin-right:4px; }
-  @keyframes stuckFadeIn { from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
-
-  .cooldown-overlay {
-    display:none; position:absolute; inset:0; z-index:8;
-    background:rgba(0,0,0,.55); flex-direction:column; align-items:center; justify-content:center;
-  }
+  @keyframes stuckFadeIn { from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);} }
+  .cooldown-overlay { display:none; position:absolute; inset:0; z-index:8; background:rgba(0,0,0,.55); flex-direction:column; align-items:center; justify-content:center; }
   .cooldown-overlay.show { display:flex; }
-  .cooldown-ring {
-    position:relative; width:64px; height:64px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center; margin-bottom:10px;
-  }
-  .cooldown-ring::before {
-    content:''; position:absolute; inset:0; border-radius:50%;
-    border:4px solid rgba(255,255,255,.3); border-top-color:#e67e22;
-    animation:cooldownSpin 1s linear infinite;
-  }
+  .cooldown-ring { position:relative; width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+  .cooldown-ring::before { content:''; position:absolute; inset:0; border-radius:50%; border:4px solid rgba(255,255,255,.3); border-top-color:#e67e22; animation:cooldownSpin 1s linear infinite; }
   .cooldown-ring span { font-size:18px; font-weight:800; color:#fff; position:relative; }
-  @keyframes cooldownSpin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  @keyframes cooldownSpin { from{transform:rotate(0deg);}to{transform:rotate(360deg);} }
   .cooldown-label { font-size:12px; font-weight:700; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.5); }
   .status-bar { padding:9px 14px; text-align:center; font-size:12px; font-weight:700; border-radius:9px; margin-bottom:10px; }
-  .s-ready { background:#e8f5e9; color:#1e8449; }
-  .s-scanning { background:#fff3e0; color:#c0710f; }
-  .s-off { background:var(--surface2); color:var(--text2); }
-  .s-justscanned { background:#d4f5e4; color:#145a32; }
-
-  /* Running session list — receipt style */
+  .s-ready { background:#e8f5e9; color:#1e8449; } .s-scanning { background:#fff3e0; color:#c0710f; } .s-off { background:var(--surface2); color:var(--text2); } .s-justscanned { background:#d4f5e4; color:#145a32; }
   .session-list-card { padding:0; }
   .session-list-head { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
   .session-list-head .slh-title { font-size:11px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
@@ -269,10 +163,7 @@
   .sl-qty { font-size:15px; font-weight:800; color:var(--text); min-width:34px; text-align:center; background:var(--surface2); border-radius:8px; padding:4px 8px; }
   .sl-remove { color:var(--text3); font-size:16px; cursor:pointer; padding:2px 6px; font-weight:800; }
   .sl-remove:hover { color:var(--red); }
-
-  /* Review screen */
-  .review-screen { display:none; }
-  .review-screen.active { display:block; }
+  .review-screen { display:none; } .review-screen.active { display:block; }
   .review-banner { background:var(--amber-bg); border:1px solid var(--amber); border-radius:10px; padding:10px 14px; font-size:12px; font-weight:700; color:#8a6313; margin-bottom:14px; display:none; }
   .review-banner.show { display:block; }
   .review-item-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; }
@@ -280,27 +171,19 @@
   .ric-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
   .ric-gtin { font-family:'Courier New',monospace; font-size:11px; color:var(--text3); }
   .ric-qty-badge { font-size:12px; font-weight:800; background:var(--surface2); padding:3px 9px; border-radius:8px; }
-
   .empty-session { text-align:center; padding:36px 16px; color:var(--text3); }
-
-  /* ══════════════ SUMMARY / GROUPING CONTROLS ══════════════ */
   .toolbar-row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
   .view-toggle { display:inline-flex; border:1.5px solid var(--border2); border-radius:9px; overflow:hidden; }
   .view-toggle button { padding:7px 14px; font-size:11px; font-weight:800; background:var(--surface); color:var(--text2); border:none; cursor:pointer; font-family:inherit; transition:all .15s; }
   .view-toggle button.active { background:var(--red); color:#fff9f0; }
   .toolbar-actions { display:flex; gap:8px; }
-
   .hospital-header { cursor:pointer; user-select:none; }
   .hospital-header .hh-chevron { font-size:10px; color:var(--text2); margin-right:6px; display:inline-block; transition:transform .15s; }
   .hospital-header.collapsed .hh-chevron { transform:rotate(-90deg); }
   .hospital-header .hh-chips { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
   .hh-chip { font-size:10px; font-weight:800; padding:3px 8px; border-radius:8px; background:var(--surface2); color:var(--text2); white-space:nowrap; }
-  .hh-chip.amber { background:var(--amber-bg); color:var(--amber); }
-  .hh-chip.green { background:var(--green-bg); color:var(--green); }
-  .hh-chip.purple { background:var(--purple-bg); color:var(--purple); }
-  .hh-chip.red { background:var(--red-bg); color:var(--red); }
+  .hh-chip.amber { background:var(--amber-bg); color:var(--amber); } .hh-chip.green { background:var(--green-bg); color:var(--green); } .hh-chip.purple { background:var(--purple-bg); color:var(--purple); } .hh-chip.red { background:var(--red-bg); color:var(--red); }
   .hospital-body.collapsed { display:none; }
-
   .reason-header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--surface); border:1px solid var(--border); border-radius:12px 12px 0 0; border-bottom:none; cursor:pointer; user-select:none; gap:10px; }
   .reason-header h4 { font-size:13px; font-weight:800; color:var(--text); white-space:nowrap; }
   .reason-body { border:1px solid var(--border); border-radius:0 0 12px 12px; overflow:hidden; margin-bottom:12px; }
@@ -308,10 +191,7 @@
 </style>
 </head>
 <body>
-
 <div class="flash-overlay" id="flashOverlay"></div>
-
-<!-- ══ SIDEBAR ══ -->
 <div class="sidebar">
   <div class="sidebar-logo">
     <div style="margin-bottom:6px;">
@@ -322,316 +202,150 @@
       </svg>
     </div>
     <p style="font-size:10px;color:rgba(255,249,240,.5);font-weight:600;letter-spacing:.3px;text-transform:uppercase;">Inventory Scanner</p>
-    <div class="api-badge" id="apiStatusBadge" style="color:#e67e22;">⚠️ Not configured</div>
+    <div class="api-badge" id="apiStatusBadge" style="color:#e67e22;">&#x1F504; Connecting&hellip;</div>
   </div>
   <nav class="nav">
-    <div class="nav-item active" data-view="scan" onclick="switchView('scan')"><span class="icon">📷</span>Scan</div>
-    <div class="nav-item" data-view="inventory" onclick="switchView('inventory')"><span class="icon">📦</span>Inventory Stock</div>
-    <div class="nav-item" data-view="dc" onclick="switchView('dc')"><span class="icon">🏥</span>DC Stock</div>
-    <div class="nav-item" data-view="material" onclick="switchView('material')"><span class="icon">🔄</span>Material Log</div>
-    <div class="nav-item" data-view="reports" onclick="switchView('reports')"><span class="icon">📋</span>Reports</div>
-    <div class="nav-item" data-view="logs" onclick="switchView('logs')"><span class="icon">🕒</span>Logs</div>
+    <div class="nav-item active" data-view="scan" onclick="switchView('scan')"><span class="icon">&#x1F4F7;</span>Scan</div>
+    <div class="nav-item" data-view="inventory" onclick="switchView('inventory')"><span class="icon">&#x1F4E6;</span>Inventory Stock</div>
+    <div class="nav-item" data-view="dc" onclick="switchView('dc')"><span class="icon">&#x1F3E5;</span>DC Stock</div>
+    <div class="nav-item" data-view="material" onclick="switchView('material')"><span class="icon">&#x1F504;</span>Material Log</div>
+    <div class="nav-item" data-view="reports" onclick="switchView('reports')"><span class="icon">&#x1F4CB;</span>Reports</div>
+    <div class="nav-item" data-view="logs" onclick="switchView('logs')"><span class="icon">&#x1F550;</span>Logs</div>
   </nav>
   <div class="sidebar-footer">
-    <button class="cfg-btn" onclick="openApiConfig()">⚙️ Configure API</button>
+    <button class="cfg-btn" onclick="overrideApiUrl()">&#x2699;&#xFE0F; Override API URL</button>
   </div>
 </div>
-
-<!-- ══ BOTTOM NAV (mobile) ══ -->
 <div class="bottom-nav">
-  <div class="bottom-nav-item active" data-view="scan" onclick="switchView('scan')"><span class="bn-icon">📷</span>Scan</div>
-  <div class="bottom-nav-item" data-view="inventory" onclick="switchView('inventory')"><span class="bn-icon">📦</span>Stock</div>
-  <div class="bottom-nav-item" data-view="dc" onclick="switchView('dc')"><span class="bn-icon">🏥</span>DC</div>
-  <div class="bottom-nav-item" data-view="material" onclick="switchView('material')"><span class="bn-icon">🔄</span>Material</div>
-  <div class="bottom-nav-item" data-view="reports" onclick="switchView('reports')"><span class="bn-icon">📋</span>Reports</div>
-  <div class="bottom-nav-item" data-view="logs" onclick="switchView('logs')"><span class="bn-icon">🕒</span>Logs</div>
+  <div class="bottom-nav-item active" data-view="scan" onclick="switchView('scan')"><span class="bn-icon">&#x1F4F7;</span>Scan</div>
+  <div class="bottom-nav-item" data-view="inventory" onclick="switchView('inventory')"><span class="bn-icon">&#x1F4E6;</span>Stock</div>
+  <div class="bottom-nav-item" data-view="dc" onclick="switchView('dc')"><span class="bn-icon">&#x1F3E5;</span>DC</div>
+  <div class="bottom-nav-item" data-view="material" onclick="switchView('material')"><span class="bn-icon">&#x1F504;</span>Material</div>
+  <div class="bottom-nav-item" data-view="reports" onclick="switchView('reports')"><span class="bn-icon">&#x1F4CB;</span>Reports</div>
+  <div class="bottom-nav-item" data-view="logs" onclick="switchView('logs')"><span class="bn-icon">&#x1F550;</span>Logs</div>
 </div>
-
-<!-- ══ MAIN ══ -->
 <div class="main">
-
-  <!-- ── SCAN VIEW (3 sub-screens: setup → session → review) ── -->
   <div class="view active" id="view-scan">
-
-    <!-- SUB-SCREEN 1: SETUP — pick Segment first, then movement type, before scanner turns on -->
     <div class="setup-screen" id="setupScreen">
-      <div class="page-title">📷 Start <span>Scan Session</span></div>
-      <p class="setup-sub">Pick the business unit, then what this session is for. You'll scan items one after another with no extra taps — exactly like a warehouse session.</p>
-
+      <div class="page-title">&#x1F4F7; Start <span>Scan Session</span></div>
+      <p class="setup-sub" style="font-size:12px;color:var(--text2);margin-bottom:18px;">Pick the business unit, then what this session is for.</p>
       <div class="section-label">1. Business Unit / Segment</div>
-      <div class="fg">
-        <select id="segmentSelect" onchange="onSegmentChanged()">
-          <option value="">Select segment…</option>
-        </select>
-      </div>
-
+      <div class="fg"><select id="segmentSelect" onchange="onSegmentChanged()"><option value="">Select segment&hellip;</option></select></div>
       <div id="movetypeGateBlock" class="movetype-gate-hint">Select a business unit above to continue.</div>
-
       <div id="movetypeSection" style="display:none;">
         <div class="section-label">2. Movement Type</div>
         <div class="movetype-grid">
-          <div class="movetype-card sel-purchase" id="mtPurchase" onclick="selectSetupMoveType('PURCHASE')">
-            <span class="mc-icon">📥</span>
-            <div class="mc-label">Purchase / Inward</div>
-            <div class="mc-sub">Stock arriving at warehouse</div>
-          </div>
-          <div class="movetype-card sel-sale" id="mtSale" onclick="selectSetupMoveType('SALE')">
-            <span class="mc-icon">🧾</span>
-            <div class="mc-label">Sale</div>
-            <div class="mc-sub">Stock going out — sold</div>
-          </div>
-          <div class="movetype-card sel-dc" id="mtDC" onclick="selectSetupMoveType('DC')">
-            <span class="mc-icon">🏥</span>
-            <div class="mc-label">DC / Consignment</div>
-            <div class="mc-sub">Sent to hospital, unused part</div>
-          </div>
-          <div class="movetype-card sel-dcreturn" id="mtDCReturn" onclick="selectSetupMoveType('DC_RETURN')">
-            <span class="mc-icon">↩️</span>
-            <div class="mc-label">DC Return</div>
-            <div class="mc-sub">Hospital returns unused stock</div>
-          </div>
-          <div class="movetype-card sel-matin" id="mtMaterialIn" onclick="selectSetupMoveType('MATERIAL_IN')">
-            <span class="mc-icon">🔄</span>
-            <div class="mc-label">Material In</div>
-            <div class="mc-sub">Internal — adds to warehouse</div>
-          </div>
-          <div class="movetype-card sel-matout" id="mtMaterialOut" onclick="selectSetupMoveType('MATERIAL_OUT')">
-            <span class="mc-icon">🔄</span>
-            <div class="mc-label">Material Out</div>
-            <div class="mc-sub">Internal — removes from warehouse</div>
-          </div>
+          <div class="movetype-card sel-purchase" id="mtPurchase" onclick="selectSetupMoveType('PURCHASE')"><span class="mc-icon">&#x1F4E5;</span><div class="mc-label">Purchase / Inward</div><div class="mc-sub">Stock arriving at warehouse</div></div>
+          <div class="movetype-card sel-sale" id="mtSale" onclick="selectSetupMoveType('SALE')"><span class="mc-icon">&#x1F9FE;</span><div class="mc-label">Sale</div><div class="mc-sub">Stock going out &mdash; sold</div></div>
+          <div class="movetype-card sel-dc" id="mtDC" onclick="selectSetupMoveType('DC')"><span class="mc-icon">&#x1F3E5;</span><div class="mc-label">DC / Consignment</div><div class="mc-sub">Sent to hospital, unused part</div></div>
+          <div class="movetype-card sel-dcreturn" id="mtDCReturn" onclick="selectSetupMoveType('DC_RETURN')"><span class="mc-icon">&#x21A9;&#xFE0F;</span><div class="mc-label">DC Return</div><div class="mc-sub">Hospital returns unused stock</div></div>
+          <div class="movetype-card sel-matin" id="mtMaterialIn" onclick="selectSetupMoveType('MATERIAL_IN')"><span class="mc-icon">&#x1F504;</span><div class="mc-label">Material In</div><div class="mc-sub">Internal &mdash; adds to warehouse</div></div>
+          <div class="movetype-card sel-matout" id="mtMaterialOut" onclick="selectSetupMoveType('MATERIAL_OUT')"><span class="mc-icon">&#x1F504;</span><div class="mc-label">Material Out</div><div class="mc-sub">Internal &mdash; removes from warehouse</div></div>
         </div>
-
-        <!-- PURCHASE: Invoice Number only -->
         <div class="hospital-setup-block" id="purchaseSetupBlock">
-          <div class="fg">
-            <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
-            <input type="text" id="purchaseInvoiceInput" placeholder="e.g. INV-2026-0145">
-          </div>
+          <div class="fg"><label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label><input type="text" id="purchaseInvoiceInput" placeholder="e.g. INV-2026-0145"></div>
         </div>
-
-        <!-- SALE: Hospital/Customer Name + Invoice Number -->
         <div class="hospital-setup-block" id="saleSetupBlock">
-          <div class="fg">
-            <label>Hospital / Customer Name <span style="color:var(--red)">*</span></label>
-            <input type="text" id="saleHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="saleHospitalSuggestions">
-            <datalist id="saleHospitalSuggestions"></datalist>
-          </div>
-          <div class="fg">
-            <label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
-            <input type="text" id="saleInvoiceInput" placeholder="e.g. INV-2026-0145">
-          </div>
+          <div class="fg"><label>Hospital / Customer Name <span style="color:var(--red)">*</span></label><input type="text" id="saleHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="saleHospitalSuggestions"><datalist id="saleHospitalSuggestions"></datalist></div>
+          <div class="fg"><label>Invoice Number <span style="color:var(--text3);font-weight:600;">(optional)</span></label><input type="text" id="saleInvoiceInput" placeholder="e.g. INV-2026-0145"></div>
         </div>
-
-        <!-- DC (outward): Hospital Name + DC Number (typed manually) -->
         <div class="hospital-setup-block" id="dcSetupBlock">
-          <div class="fg">
-            <label>Hospital Name <span style="color:var(--red)">*</span></label>
-            <input type="text" id="dcHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcHospitalSuggestions">
-            <datalist id="dcHospitalSuggestions"></datalist>
-          </div>
-          <div class="fg">
-            <label>DC Number <span style="color:var(--red)">*</span></label>
-            <input type="text" id="dcNumberInput" placeholder="e.g. DC-2026-0032">
-          </div>
+          <div class="fg"><label>Hospital Name <span style="color:var(--red)">*</span></label><input type="text" id="dcHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcHospitalSuggestions"><datalist id="dcHospitalSuggestions"></datalist></div>
+          <div class="fg"><label>DC Number <span style="color:var(--red)">*</span></label><input type="text" id="dcNumberInput" placeholder="e.g. DC-2026-0032"></div>
         </div>
-
-        <!-- DC RETURN: Hospital Name, then DC Number dropdown (filtered to that hospital's open DCs, scoped to this segment) -->
         <div class="hospital-setup-block" id="dcReturnSetupBlock">
-          <div class="fg">
-            <label>Hospital Name <span style="color:var(--red)">*</span></label>
-            <input type="text" id="dcReturnHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcReturnHospitalSuggestions">
-            <datalist id="dcReturnHospitalSuggestions"></datalist>
-          </div>
-          <div class="fg">
-            <label>DC Number being returned against <span style="color:var(--red)">*</span></label>
-            <select id="dcReturnNumberSelect" disabled>
-              <option value="">Enter hospital name first…</option>
-            </select>
-          </div>
+          <div class="fg"><label>Hospital Name <span style="color:var(--red)">*</span></label><input type="text" id="dcReturnHospitalInput" placeholder="e.g. Manipal Hospital, Whitefield" list="dcReturnHospitalSuggestions"><datalist id="dcReturnHospitalSuggestions"></datalist></div>
+          <div class="fg"><label>DC Number being returned against <span style="color:var(--red)">*</span></label><select id="dcReturnNumberSelect" disabled><option value="">Enter hospital name first&hellip;</option></select></div>
         </div>
-
-        <!-- MATERIAL IN: Reason + optional remarks. No hospital — purely internal. -->
         <div class="hospital-setup-block" id="materialInSetupBlock">
-          <div class="fg">
-            <label>Reason <span style="color:var(--red)">*</span></label>
-            <select id="materialInReasonSelect">
-              <option value="">Select reason…</option>
-              <option value="Stock Adjustment">Stock Adjustment</option>
-              <option value="Internal Transfer">Internal Transfer (from another location)</option>
-              <option value="Demo / Loan Stock Returned">Demo / Loan Stock Returned</option>
-              <option value="Found / Recount Correction">Found / Recount Correction</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="fg">
-            <label>Remarks <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
-            <input type="text" id="materialInRemarksInput" placeholder="Optional note">
-          </div>
+          <div class="fg"><label>Reason <span style="color:var(--red)">*</span></label><select id="materialInReasonSelect"><option value="">Select reason&hellip;</option><option>Stock Adjustment</option><option>Internal Transfer</option><option>Demo / Loan Stock Returned</option><option>Found / Recount Correction</option><option>Other</option></select></div>
+          <div class="fg"><label>Remarks <span style="color:var(--text3);font-weight:600;">(optional)</span></label><input type="text" id="materialInRemarksInput" placeholder="Optional note"></div>
         </div>
-
-        <!-- MATERIAL OUT: Reason + optional remarks. No hospital — purely internal. -->
         <div class="hospital-setup-block" id="materialOutSetupBlock">
-          <div class="fg">
-            <label>Reason <span style="color:var(--red)">*</span></label>
-            <select id="materialOutReasonSelect">
-              <option value="">Select reason…</option>
-              <option value="Damage / Breakage">Damage / Breakage</option>
-              <option value="Expired Write-off">Expired Write-off</option>
-              <option value="Internal Transfer">Internal Transfer (to another location)</option>
-              <option value="Demo / Loan Stock Sent">Demo / Loan Stock Sent</option>
-              <option value="Return to Vendor">Return to Vendor</option>
-              <option value="Stock Adjustment">Stock Adjustment</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="fg">
-            <label>Remarks <span style="color:var(--text3);font-weight:600;">(optional)</span></label>
-            <input type="text" id="materialOutRemarksInput" placeholder="Optional note">
-          </div>
+          <div class="fg"><label>Reason <span style="color:var(--red)">*</span></label><select id="materialOutReasonSelect"><option value="">Select reason&hellip;</option><option>Damage / Breakage</option><option>Expired Write-off</option><option>Internal Transfer</option><option>Demo / Loan Stock Sent</option><option>Return to Vendor</option><option>Stock Adjustment</option><option>Other</option></select></div>
+          <div class="fg"><label>Remarks <span style="color:var(--text3);font-weight:600;">(optional)</span></label><input type="text" id="materialOutRemarksInput" placeholder="Optional note"></div>
         </div>
-
-        <div class="fg">
-          <label>Scanned By</label>
-          <input type="text" id="setupScannedByInput" placeholder="Your name">
-        </div>
-
-        <button class="btn btn-primary btn-full" id="startSessionBtn" onclick="startSession()" disabled>▶ Start Scanning</button>
+        <div class="fg"><label>Scanned By</label><input type="text" id="setupScannedByInput" placeholder="Your name"></div>
+        <button class="btn btn-primary btn-full" id="startSessionBtn" onclick="startSession()" disabled>&#x25B6; Start Scanning</button>
       </div>
     </div>
-
-    <!-- SUB-SCREEN 2: LIVE SESSION — scanner runs, list builds below, zero taps per scan -->
     <div class="session-screen" id="sessionScreen">
       <div class="session-header">
-        <div class="sh-mode" id="sessionModeLabel">—<small id="sessionModeSubLabel"></small></div>
-        <button class="sh-end" onclick="endSession()">⏹ End Session</button>
+        <div class="sh-mode" id="sessionModeLabel">&mdash;<small id="sessionModeSubLabel"></small></div>
+        <button class="sh-end" onclick="endSession()">&#x23F9; End Session</button>
       </div>
-
       <div class="session-counters">
         <div class="sc-box"><div class="sc-num" id="scLines">0</div><div class="sc-label">Line Items</div></div>
         <div class="sc-box"><div class="sc-num" id="scUnits">0</div><div class="sc-label">Total Units</div></div>
         <div class="sc-box"><div class="sc-num" id="scUnmapped">0</div><div class="sc-label">Unmapped</div></div>
       </div>
-
-      <div id="statusBar" class="status-bar s-off">Camera off — tap Start to begin</div>
-
+      <div id="statusBar" class="status-bar s-off">Camera off &mdash; tap Start to begin</div>
       <div class="card" style="padding:0;overflow:hidden;">
         <div class="scanner-wrap">
           <video id="camVideo" autoplay playsinline muted></video>
           <canvas id="camCanvas" style="display:none;"></canvas>
           <div class="scan-reticle"></div>
-          <button class="torch-toggle" id="torchToggleBtn" onclick="toggleTorch()" style="display:none;">🔦</button>
-          <div class="stuck-hint" id="stuckHint">
-            <span class="stuck-hint-icon">💡</span>
-            Not scanning? Tilt the packet slightly (15–30°) to cut glare, or try the torch.
-          </div>
-          <div class="cooldown-overlay" id="cooldownOverlay">
-            <div class="cooldown-ring">
-              <span id="cooldownNum">2.0</span>
-            </div>
-            <div class="cooldown-label">Next scan ready in…</div>
-          </div>
+          <button class="torch-toggle" id="torchToggleBtn" onclick="toggleTorch()" style="display:none;">&#x1F526;</button>
+          <div class="stuck-hint" id="stuckHint"><span class="stuck-hint-icon">&#x1F4A1;</span>Not scanning? Tilt the packet slightly (15&ndash;30&deg;) to cut glare, or try the torch.</div>
+          <div class="cooldown-overlay" id="cooldownOverlay"><div class="cooldown-ring"><span id="cooldownNum">2.0</span></div><div class="cooldown-label">Next scan ready in&hellip;</div></div>
         </div>
       </div>
-      <div style="display:flex; gap:8px; margin-bottom:14px;">
-        <button class="btn btn-secondary btn-full" id="toggleCamBtn" onclick="toggleScanner()">▶ Start Scanner</button>
-        <button class="btn btn-secondary" id="manualEntryBtn" onclick="openManualEntry()" style="white-space:nowrap;">⌨️ Type Instead</button>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="btn btn-secondary btn-full" id="toggleCamBtn" onclick="toggleScanner()">&#x25B6; Start Scanner</button>
+        <button class="btn btn-secondary" id="manualEntryBtn" onclick="openManualEntry()" style="white-space:nowrap;">&#x2328;&#xFE0F; Type Instead</button>
       </div>
-
       <div class="card session-list-card">
-        <div class="session-list-head">
-          <span class="slh-title">This Session</span>
-          <span class="slh-title" id="sessionListCount">0 items</span>
-        </div>
-        <div class="session-list-body" id="sessionListBody">
-          <div class="empty-session"><div class="empty-icon">📭</div><p>No scans yet — point camera at a barcode</p></div>
-        </div>
+        <div class="session-list-head"><span class="slh-title">This Session</span><span class="slh-title" id="sessionListCount">0 items</span></div>
+        <div class="session-list-body" id="sessionListBody"><div class="empty-session"><div class="empty-icon">&#x1F4ED;</div><p>No scans yet &mdash; point camera at a barcode</p></div></div>
       </div>
     </div>
-
-    <!-- SUB-SCREEN 3: REVIEW — name unmapped items, confirm, submit all at once -->
     <div class="review-screen" id="reviewScreen">
-      <div class="page-title">📋 Review <span>& Submit</span></div>
-      <div class="review-banner" id="reviewBanner">⚠️ Some items are unmapped — enter their Tally Item Name before submitting.</div>
-
+      <div class="page-title">&#x1F4CB; Review <span>&amp; Submit</span></div>
+      <div class="review-banner" id="reviewBanner">&#x26A0;&#xFE0F; Some items are unmapped &mdash; enter their Tally Item Name before submitting.</div>
       <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
         <div class="kpi-box blue"><div class="kpi-num" id="reviewLines">0</div><div class="kpi-label">Line Items</div></div>
         <div class="kpi-box green"><div class="kpi-num" id="reviewUnits">0</div><div class="kpi-label">Total Units</div></div>
       </div>
-
       <div id="reviewListBody"></div>
-
-      <div style="display:flex; gap:10px; margin-top:6px;">
-        <button class="btn btn-secondary btn-full" onclick="backToSession()">← Back to Scanning</button>
-        <button class="btn btn-primary btn-full" id="submitSessionBtn" onclick="submitSession()">✓ Submit All</button>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button class="btn btn-secondary btn-full" onclick="backToSession()">&larr; Back to Scanning</button>
+        <button class="btn btn-primary btn-full" id="submitSessionBtn" onclick="submitSession()">&#x2713; Submit All</button>
       </div>
     </div>
-
   </div>
-
-  <!-- ── INVENTORY VIEW ── -->
   <div class="view" id="view-inventory">
-    <div class="page-title">📦 Inventory <span>Stock</span></div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Warehouse balance = Purchase − DC − Material Out − Sale + DC Return + Material In</p>
-
+    <div class="page-title">&#x1F4E6; Inventory <span>Stock</span></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Warehouse balance = Purchase &minus; DC &minus; Material Out &minus; Sale + DC Return + Material In</p>
     <div class="section-label">Business Unit / Segment</div>
-    <div class="fg">
-      <select id="invSegmentSelect" onchange="onInvSegmentChanged()">
-        <option value="">Select segment…</option>
-      </select>
-    </div>
-
+    <div class="fg"><select id="invSegmentSelect" onchange="onInvSegmentChanged()"><option value="">Select segment&hellip;</option></select></div>
     <div id="invSegmentGateHint" class="movetype-gate-hint">Select a business unit to view its stock.</div>
-
     <div id="invContentBlock" style="display:none;">
       <div class="kpi-grid">
         <div class="kpi-box red"><div class="kpi-num" id="invTotalScans">0</div><div class="kpi-label">Total Scans</div></div>
         <div class="kpi-box green"><div class="kpi-num" id="invTotalIn">0</div><div class="kpi-label">Total In</div></div>
-        <div class="kpi-box" ><div class="kpi-num" id="invTotalOut">0</div><div class="kpi-label">Total Out</div></div>
+        <div class="kpi-box"><div class="kpi-num" id="invTotalOut">0</div><div class="kpi-label">Total Out</div></div>
         <div class="kpi-box blue"><div class="kpi-num" id="invUniqueItems">0</div><div class="kpi-label">Unique Items</div></div>
         <div class="kpi-box amber"><div class="kpi-num" id="invNegative">0</div><div class="kpi-label">Negative Bal.</div></div>
         <div class="kpi-box green"><div class="kpi-num" id="invNetBal">0</div><div class="kpi-label">Net Balance</div></div>
       </div>
       <div class="card" style="padding:0;">
         <div style="padding:14px 16px 0;">
-          <div class="card-header">
-            <div class="card-title" style="margin:0;">Live Stock Balance</div>
-            <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">⟳ Refresh</button>
-          </div>
-          <div class="toolbar-row">
-            <div class="view-toggle" id="invViewToggle">
-              <button class="active" onclick="setInvGroupMode(true)">📦 By Item</button>
-              <button onclick="setInvGroupMode(false)">🔬 By Lot</button>
-            </div>
-          </div>
-          <div class="fg" style="margin-bottom:12px;">
-            <input type="text" id="invSearchInput" placeholder="🔍 Search item name…" oninput="filterInventoryTable()">
-          </div>
+          <div class="card-header"><div class="card-title" style="margin:0;">Live Stock Balance</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">&#x27F3; Refresh</button></div>
+          <div class="toolbar-row"><div class="view-toggle" id="invViewToggle"><button class="active" onclick="setInvGroupMode(true)">&#x1F4E6; By Item</button><button onclick="setInvGroupMode(false)">&#x1F52C; By Lot</button></div></div>
+          <div class="fg" style="margin-bottom:12px;"><input type="text" id="invSearchInput" placeholder="&#x1F50D; Search item name&hellip;" oninput="filterInventoryTable()"></div>
         </div>
         <div class="tbl-wrap" style="padding:0 16px 16px;">
-          <table>
-            <thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>MRP</th><th>In</th><th>Out</th><th>Balance</th><th>Last Scanned</th></tr></thead>
-            <tbody id="invTableBody"><tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><p>Loading…</p></div></td></tr></tbody>
-          </table>
+          <table><thead><tr><th>Item Name</th><th>Lot/Batch</th><th>Expiry</th><th>MRP</th><th>In</th><th>Out</th><th>Balance</th><th>Last Scanned</th></tr></thead><tbody id="invTableBody"><tr><td colspan="8"><div class="empty"><div class="empty-icon">&#x1F4E6;</div><p>Loading&hellip;</p></div></td></tr></tbody></table>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- ── DC STOCK VIEW ── -->
   <div class="view" id="view-dc">
-    <div class="page-title">🏥 DC <span>Stock</span></div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Delivery Challan consignment stock per hospital — Sent − Used − Returned = Balance at Hospital</p>
-
+    <div class="page-title">&#x1F3E5; DC <span>Stock</span></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Delivery Challan consignment stock per hospital &mdash; Sent &minus; Used &minus; Returned = Balance at Hospital</p>
     <div class="section-label">Business Unit / Segment</div>
-    <div class="fg">
-      <select id="dcSegmentSelect" onchange="onDCSegmentChanged()">
-        <option value="">Select segment…</option>
-      </select>
-    </div>
-
+    <div class="fg"><select id="dcSegmentSelect" onchange="onDCSegmentChanged()"><option value="">Select segment&hellip;</option></select></div>
     <div id="dcSegmentGateHint" class="movetype-gate-hint">Select a business unit to view its DC stock.</div>
-
     <div id="dcContentBlock" style="display:none;">
       <div class="kpi-grid">
         <div class="kpi-box blue"><div class="kpi-num" id="dcHospitals">0</div><div class="kpi-label">Hospitals</div></div>
@@ -639,41 +353,21 @@
         <div class="kpi-box green"><div class="kpi-num" id="dcTotalUsed">0</div><div class="kpi-label">Total Used</div></div>
         <div class="kpi-box red"><div class="kpi-num" id="dcBalance">0</div><div class="kpi-label">At Hospitals</div></div>
       </div>
-      <div class="card-header" style="margin-bottom:10px;">
-        <div class="section-label" style="margin:0;">By Hospital</div>
-        <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">⟳ Refresh</button>
-      </div>
+      <div class="card-header" style="margin-bottom:10px;"><div class="section-label" style="margin:0;">By Hospital</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">&#x27F3; Refresh</button></div>
       <div class="toolbar-row">
-        <div class="view-toggle" id="dcViewToggle">
-          <button class="active" onclick="setDcGroupMode(true)">📦 By Item</button>
-          <button onclick="setDcGroupMode(false)">🔬 By Lot</button>
-        </div>
-        <div class="toolbar-actions">
-          <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="expandAllHospitals()">⬇ Expand All</button>
-          <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="collapseAllHospitals()">⬆ Collapse All</button>
-        </div>
+        <div class="view-toggle" id="dcViewToggle"><button class="active" onclick="setDcGroupMode(true)">&#x1F4E6; By Item</button><button onclick="setDcGroupMode(false)">&#x1F52C; By Lot</button></div>
+        <div class="toolbar-actions"><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="expandAllHospitals()">&#x2B07; Expand All</button><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="collapseAllHospitals()">&#x2B06; Collapse All</button></div>
       </div>
-      <div class="fg" style="margin-bottom:14px;">
-        <input type="text" id="dcSearchInput" placeholder="🔍 Search hospital name…" oninput="filterDCHospitals()">
-      </div>
-      <div id="dcHospitalsList"><div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet</p><small>Start a DC / Consignment session to send stock to a hospital</small></div></div>
+      <div class="fg" style="margin-bottom:14px;"><input type="text" id="dcSearchInput" placeholder="&#x1F50D; Search hospital name&hellip;" oninput="filterDCHospitals()"></div>
+      <div id="dcHospitalsList"><div class="empty"><div class="empty-icon">&#x1F3E5;</div><p>No DC stock yet</p><small>Start a DC / Consignment session to send stock to a hospital</small></div></div>
     </div>
   </div>
-
-  <!-- ── MATERIAL LOG VIEW ── -->
   <div class="view" id="view-material">
-    <div class="page-title">🔄 Material <span>Log</span></div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Internal stock movements that aren't a Purchase/Sale/DC — adjustments, breakage write-offs, internal transfers, demo stock. Feeds straight into the warehouse Inventory Stock balance.</p>
-
+    <div class="page-title">&#x1F504; Material <span>Log</span></div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Internal stock movements &mdash; adjustments, breakage write-offs, internal transfers, demo stock.</p>
     <div class="section-label">Business Unit / Segment</div>
-    <div class="fg">
-      <select id="materialSegmentSelect" onchange="onMaterialSegmentChanged()">
-        <option value="">Select segment…</option>
-      </select>
-    </div>
-
+    <div class="fg"><select id="materialSegmentSelect" onchange="onMaterialSegmentChanged()"><option value="">Select segment&hellip;</option></select></div>
     <div id="materialSegmentGateHint" class="movetype-gate-hint">Select a business unit to view its material movements.</div>
-
     <div id="materialContentBlock" style="display:none;">
       <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
         <div class="kpi-box green"><div class="kpi-num" id="matTotalIn">0</div><div class="kpi-label">Material In</div></div>
@@ -682,145 +376,90 @@
       </div>
       <div class="card" style="padding:0;">
         <div style="padding:14px 16px 0;">
-          <div class="card-header">
-            <div class="card-title" style="margin:0;">Movement History</div>
-            <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">⟳ Refresh</button>
-          </div>
-          <div class="toolbar-row">
-            <div class="view-toggle" id="matViewToggle">
-              <button class="active" onclick="setMatGroupMode(true)">🗂 By Reason</button>
-              <button onclick="setMatGroupMode(false)">📜 By Entry</button>
-            </div>
-          </div>
-          <div class="fg" style="margin-bottom:12px;">
-            <input type="text" id="matSearchInput" placeholder="🔍 Search item name or reason…" oninput="filterMaterialTable()">
-          </div>
+          <div class="card-header"><div class="card-title" style="margin:0;">Movement History</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">&#x27F3; Refresh</button></div>
+          <div class="toolbar-row"><div class="view-toggle" id="matViewToggle"><button class="active" onclick="setMatGroupMode(true)">&#x1F5C2; By Reason</button><button onclick="setMatGroupMode(false)">&#x1F4DC; By Entry</button></div></div>
+          <div class="fg" style="margin-bottom:12px;"><input type="text" id="matSearchInput" placeholder="&#x1F50D; Search item name or reason&hellip;" oninput="filterMaterialTable()"></div>
         </div>
         <div id="matGroupedWrap" style="padding:0 16px 16px;"></div>
-        <div id="matFlatWrap" class="tbl-wrap" style="padding:0 16px 16px; display:none;">
-          <table>
-            <thead><tr><th>Item Name</th><th>Lot</th><th>Dir.</th><th>Qty</th><th>Reason</th><th>Remarks</th><th>By</th><th>Timestamp</th></tr></thead>
-            <tbody id="matTableBody"><tr><td colspan="8"><div class="empty"><div class="empty-icon">🔄</div><p>Loading…</p></div></td></tr></tbody>
-          </table>
-        </div>
+        <div id="matFlatWrap" class="tbl-wrap" style="padding:0 16px 16px;display:none;"><table><thead><tr><th>Item Name</th><th>Lot</th><th>Dir.</th><th>Qty</th><th>Reason</th><th>Remarks</th><th>By</th><th>Timestamp</th></tr></thead><tbody id="matTableBody"><tr><td colspan="8"><div class="empty"><p>Loading&hellip;</p></div></td></tr></tbody></table></div>
       </div>
     </div>
   </div>
-
-  <!-- ── REPORTS VIEW ── -->
   <div class="view" id="view-reports">
-    <div class="page-title">📋 <span>Reports</span></div>
+    <div class="page-title">&#x1F4CB; <span>Reports</span></div>
     <div class="card">
-      <div class="card-header">
-        <div class="card-title" style="margin:0;">⏰ Expiry Tracker — Next 180 Days</div>
-        <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadReports()">⟳ Refresh</button>
-      </div>
+      <div class="card-header"><div class="card-title" style="margin:0;">&#x23F0; Expiry Tracker &mdash; Next 180 Days</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadReports()">&#x27F3; Refresh</button></div>
       <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">Covers both Inventory and DC stock. Items expiring within 180 days from today.</p>
-      <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>Item Name</th><th>Lot</th><th>Expiry</th><th>Days Left</th><th>Location</th><th>Balance</th><th>Status</th></tr></thead>
-          <tbody id="expiryTableBody"><tr><td colspan="7"><div class="empty"><p>Loading…</p></div></td></tr></tbody>
-        </table>
-      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Item Name</th><th>Lot</th><th>Expiry</th><th>Days Left</th><th>Location</th><th>Balance</th><th>Status</th></tr></thead><tbody id="expiryTableBody"><tr><td colspan="7"><div class="empty"><p>Loading&hellip;</p></div></td></tr></tbody></table></div>
     </div>
   </div>
-
-  <!-- ── LOGS VIEW ── -->
   <div class="view" id="view-logs">
-    <div class="page-title">🕒 Scan <span>Logs</span></div>
+    <div class="page-title">&#x1F550; Scan <span>Logs</span></div>
     <div class="card">
-      <div class="card-header">
-        <div class="card-title" style="margin:0;">Recent Activity (last 25)</div>
-        <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadLogs()">⟳ Refresh</button>
-      </div>
-      <div id="recentLogsList"><div class="empty"><p>Loading…</p></div></div>
+      <div class="card-header"><div class="card-title" style="margin:0;">Recent Activity (last 25)</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadLogs()">&#x27F3; Refresh</button></div>
+      <div id="recentLogsList"><div class="empty"><p>Loading&hellip;</p></div></div>
     </div>
   </div>
-
-</div><!-- /main -->
-
-<!-- ══ DC USAGE MODAL ══ -->
+</div>
 <div class="modal-overlay" id="dcUsageModal">
-  <div class="modal">
-    <h3>Log DC Usage</h3>
-    <p id="dcUsageSubtext">Record items consumed at hospital</p>
-    <div class="fg">
-      <label>Item Name</label>
-      <input type="text" id="dcUsageItem" readonly style="background:var(--surface2);">
-    </div>
+  <div class="modal"><h3>Log DC Usage</h3><p id="dcUsageSubtext">Record items consumed at hospital</p>
+    <div class="fg"><label>Item Name</label><input type="text" id="dcUsageItem" readonly style="background:var(--surface2);"></div>
     <div style="display:flex;gap:10px;">
-      <div class="fg" style="flex:1;">
-        <label>Lot / Batch</label>
-        <input type="text" id="dcUsageLot" readonly style="background:var(--surface2);">
-      </div>
-      <div class="fg" style="flex:1;">
-        <label>Hospital</label>
-        <input type="text" id="dcUsageHospital" readonly style="background:var(--surface2);">
-      </div>
+      <div class="fg" style="flex:1;"><label>Lot / Batch</label><input type="text" id="dcUsageLot" readonly style="background:var(--surface2);"></div>
+      <div class="fg" style="flex:1;"><label>Hospital</label><input type="text" id="dcUsageHospital" readonly style="background:var(--surface2);"></div>
     </div>
-    <div class="qty-row">
-      <label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;">Qty Used</label>
-      <button class="qty-btn" onclick="adjustDcQty(-1)">−</button>
-      <div class="qty-val" id="dcQtyVal">1</div>
-      <button class="qty-btn" onclick="adjustDcQty(1)">+</button>
-    </div>
-    <div class="fg">
-      <label>Remarks (case ref, surgeon…)</label>
-      <input type="text" id="dcUsageRemarks" placeholder="Optional">
-    </div>
-    <button class="btn btn-primary btn-full" id="dcUsageConfirmBtn" onclick="submitDCUsage()">✓ Log Usage</button>
+    <div class="qty-row"><label style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;">Qty Used</label><button class="qty-btn" onclick="adjustDcQty(-1)">&minus;</button><div class="qty-val" id="dcQtyVal">1</div><button class="qty-btn" onclick="adjustDcQty(1)">+</button></div>
+    <div class="fg"><label>Remarks (case ref, surgeon&hellip;)</label><input type="text" id="dcUsageRemarks" placeholder="Optional"></div>
+    <button class="btn btn-primary btn-full" id="dcUsageConfirmBtn" onclick="submitDCUsage()">&#x2713; Log Usage</button>
     <button class="modal-cancel" onclick="closeDCModal()">Cancel</button>
   </div>
 </div>
-
-<!-- ══ END-SESSION CONFIRM MODAL ══ -->
 <div class="modal-overlay" id="endSessionModal">
-  <div class="modal">
-    <h3>End this session?</h3>
-    <p>You'll move to the review screen to check items and submit. The camera will stop.</p>
-    <button class="btn btn-primary btn-full" onclick="confirmEndSession()" style="margin-bottom:8px;">Yes, Review & Submit</button>
+  <div class="modal"><h3>End this session?</h3><p>You'll move to the review screen to check items and submit. The camera will stop.</p>
+    <button class="btn btn-primary btn-full" onclick="confirmEndSession()" style="margin-bottom:8px;">Yes, Review &amp; Submit</button>
     <button class="modal-cancel" onclick="document.getElementById('endSessionModal').classList.remove('open')">Keep Scanning</button>
   </div>
 </div>
-
-<!-- ══ MANUAL BARCODE ENTRY MODAL — fallback when camera can't decode ══ -->
 <div class="modal-overlay" id="manualEntryModal">
-  <div class="modal">
-    <h3>Enter Barcode Manually</h3>
-    <p>For packets the camera can't read (glare, transparent film, etc). Paste or type the raw GS1 string if you have it, or just the GTIN.</p>
-    <div class="fg">
-      <label>Raw Barcode / GTIN <span style="color:var(--red)">*</span></label>
-      <input type="text" id="manualBarcodeInput" placeholder="e.g. 01089012345678901710260131234ABC or just the GTIN">
-    </div>
-    <div class="fg">
-      <label>Lot/Batch <span style="color:var(--text3);font-weight:600;">(optional, if not in barcode above)</span></label>
-      <input type="text" id="manualLotInput" placeholder="Lot/Batch number">
-    </div>
-    <div class="fg">
-      <label>Expiry Date <span style="color:var(--text3);font-weight:600;">(optional, DD/MM/YYYY)</span></label>
-      <input type="text" id="manualExpiryInput" placeholder="e.g. 31/12/2026">
-    </div>
-    <button class="btn btn-primary btn-full" onclick="confirmManualEntry()" style="margin-bottom:8px;">✓ Add to Session</button>
+  <div class="modal"><h3>Enter Barcode Manually</h3><p>For packets the camera can't read. Paste the raw GS1 string or just the GTIN.</p>
+    <div class="fg"><label>Raw Barcode / GTIN <span style="color:var(--red)">*</span></label><input type="text" id="manualBarcodeInput" placeholder="e.g. GS1/DataMatrix or bare GTIN"></div>
+    <div class="fg"><label>Lot/Batch <span style="color:var(--text3);font-weight:600;">(optional)</span></label><input type="text" id="manualLotInput" placeholder="Lot/Batch number"></div>
+    <div class="fg"><label>Expiry Date <span style="color:var(--text3);font-weight:600;">(optional, DD/MM/YYYY)</span></label><input type="text" id="manualExpiryInput" placeholder="e.g. 31/12/2026"></div>
+    <button class="btn btn-primary btn-full" onclick="confirmManualEntry()" style="margin-bottom:8px;">&#x2713; Add to Session</button>
     <button class="modal-cancel" onclick="closeManualEntry()">Cancel</button>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════════════
-//  API
-// ════════════════════════════════════════════════════════
-let API_BASE_URL = (function(){ try { return localStorage.getItem('arraymed_inv_api_url') || ''; } catch(e){ return ''; } })();
+// ====== API \u2014 HARDCODED, NO CONFIGURATION NEEDED ======
+const HARDCODED_API_URL = 'https://script.google.com/macros/s/AKfycbzkrSeKdI_Q9M554ij4XjY3KkyqE5YpDAC9sf0ysOebpvY2RAxvIlsdSKEVu2dVbkVO/exec';
 
-function setApiUrl(url){ API_BASE_URL = url.trim(); try{ localStorage.setItem('arraymed_inv_api_url', API_BASE_URL); }catch(e){} }
+// Optional per-session override (sessionStorage only, resets on tab close).
+// Default is always the hardcoded URL above.
+let API_BASE_URL = (function(){
+  try { return sessionStorage.getItem('arraymed_api_override') || HARDCODED_API_URL; }
+  catch(e){ return HARDCODED_API_URL; }
+})();
+
+function overrideApiUrl(){
+  const url = prompt('Override API URL for this session (blank = reset to default):', API_BASE_URL);
+  if(url === null) return;
+  if(!url.trim()){
+    API_BASE_URL = HARDCODED_API_URL;
+    try{ sessionStorage.removeItem('arraymed_api_override'); }catch(e){}
+  } else {
+    API_BASE_URL = url.trim();
+    try{ sessionStorage.setItem('arraymed_api_override', API_BASE_URL); }catch(e){}
+  }
+  checkApiConnection();
+}
 
 function apiGet(action, params){
-  if(!API_BASE_URL) return Promise.reject('API URL not configured');
   const qs = Object.keys(params||{}).map(k=>encodeURIComponent(k)+'='+encodeURIComponent(params[k])).join('&');
   return fetch(API_BASE_URL+'?action='+encodeURIComponent(action)+(qs?'&'+qs:'')).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
 }
 
 function apiPost(action, body){
-  if(!API_BASE_URL) return Promise.reject('API URL not configured');
   return fetch(API_BASE_URL,{
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -828,23 +467,14 @@ function apiPost(action, body){
   }).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
 }
 
-function openApiConfig(){
-  const url = prompt('Paste your Apps Script Web App /exec URL:', API_BASE_URL||'');
-  if(url !== null && url.trim()){ setApiUrl(url); checkApiConnection(); }
-}
-
 function checkApiConnection(){
   const badge = document.getElementById('apiStatusBadge');
-  if(!API_BASE_URL){ badge.textContent='⚠️ Not configured'; badge.style.color='#e67e22'; return; }
-  badge.textContent='🔄 Checking…'; badge.style.color='#f0c040';
+  badge.textContent='Checking\u2026'; badge.style.color='#f0c040';
   apiGet('ping',{})
-    .then(res=>{ if(res&&res.success){ badge.textContent='✅ Connected'; badge.style.color='#2ecc71'; } else { badge.textContent='⚠️ Unexpected'; badge.style.color='#e67e22'; } })
-    .catch(()=>{ badge.textContent='❌ Not reachable'; badge.style.color='#e74c3c'; });
+    .then(res=>{ if(res&&res.success){ badge.textContent='Connected'; badge.style.color='#2ecc71'; } else { badge.textContent='Unexpected response'; badge.style.color='#e67e22'; } })
+    .catch(()=>{ badge.textContent='Not reachable'; badge.style.color='#e74c3c'; });
 }
 
-// ════════════════════════════════════════════════════════
-//  NAVIGATION
-// ════════════════════════════════════════════════════════
 function switchView(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
@@ -857,15 +487,17 @@ function switchView(view){
   if(view==='scan' && !sessionActive && !inReview) showSetupScreen();
 }
 
-let zxingReady = false; (async function warmup(){   try{     await ZXingWASM.prepareZXingModule({ fireImmediately: true });     zxingReady = true;   }catch(e){ console.error('ZXing WASM warmup failed:', e); } })();
+let zxingReady = false;
+(async function warmup(){
+  try{ await ZXingWASM.prepareZXingModule({ fireImmediately: true }); zxingReady = true; }
+  catch(e){ console.error('ZXing WASM warmup failed:', e); }
+})();
+
 checkApiConnection();
 populateSegmentDropdowns();
 
-// ════════════════════════════════════════════════════════
-//  SESSION STATE
-// ════════════════════════════════════════════════════════
 let setupSegment = '';
-let setupMoveType = null;          // 'PURCHASE' | 'SALE' | 'DC' | 'DC_RETURN' | 'MATERIAL_IN' | 'MATERIAL_OUT'
+let setupMoveType = null;
 let setupHospital = '';
 let setupDCNumber = '';
 let setupInvoiceNumber = '';
@@ -874,13 +506,11 @@ let setupRemarks = '';
 let setupScannedBy = '';
 let sessionActive = false;
 let inReview = false;
-let sessionLines = [];             // [{gtin,lot,expiry,productionDate,itemName,brand,format,raw,qty,mrp,unmapped}]
+let sessionLines = [];
 let camStream=null, isScanning=false, scanLoopHandle=null;
 let lastScanTime=0, lastScanCode='';
 let cachedSegments = [];
 
-// Summary/grouping UI state — default to the rolled-up view everywhere,
-// since per-lot/per-serial rows get long fast for implant-heavy segments.
 let invGroupByItem = true;
 let dcGroupByItem = true;
 let dcExpandedHospitals = new Set();
@@ -888,47 +518,36 @@ let matGroupByReason = true;
 let matExpandedReasons = new Set();
 
 const MOVE_TYPE_META = {
-  PURCHASE:     { direction:'IN',  scanType:'SALE',      label:'📥 Purchase / Inward', dirLogLabel:'IN' },
-  SALE:         { direction:'OUT', scanType:'SALE',      label:'🧾 Sale',              dirLogLabel:'OUT · Sale' },
-  DC:           { direction:'OUT', scanType:'DC',        label:'🏥 DC / Consignment',  dirLogLabel:'OUT · DC' },
-  DC_RETURN:    { direction:'IN',  scanType:'DC_RETURN', label:'↩️ DC Return',         dirLogLabel:'IN · DC Return' },
-  MATERIAL_IN:  { direction:'IN',  scanType:'MATERIAL',  label:'🔄 Material In',       dirLogLabel:'IN · Material' },
-  MATERIAL_OUT: { direction:'OUT', scanType:'MATERIAL',  label:'🔄 Material Out',      dirLogLabel:'OUT · Material' }
+  PURCHASE:     { direction:'IN',  scanType:'SALE',      label:'Purchase / Inward' },
+  SALE:         { direction:'OUT', scanType:'SALE',      label:'Sale' },
+  DC:           { direction:'OUT', scanType:'DC',        label:'DC / Consignment' },
+  DC_RETURN:    { direction:'IN',  scanType:'DC_RETURN', label:'DC Return' },
+  MATERIAL_IN:  { direction:'IN',  scanType:'MATERIAL',  label:'Material In' },
+  MATERIAL_OUT: { direction:'OUT', scanType:'MATERIAL',  label:'Material Out' }
 };
 
-// ──────────────────────────────────────────────────────
-//  SEGMENT PICKER — first layer, gates everything else
-// ──────────────────────────────────────────────────────
 function populateSegmentDropdowns(){
   apiGet('getSegments',{}).then(res=>{
     if(res && res.success && res.segments && res.segments.length){
       cachedSegments = res.segments;
-      const opts = '<option value="">Select segment…</option>' + res.segments.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
-      const segSel = document.getElementById('segmentSelect');
-      const invSel = document.getElementById('invSegmentSelect');
-      const dcSel = document.getElementById('dcSegmentSelect');
-      const matSel = document.getElementById('materialSegmentSelect');
-      if(segSel) segSel.innerHTML = opts;
-      if(invSel) invSel.innerHTML = opts;
-      if(dcSel) dcSel.innerHTML = opts;
-      if(matSel) matSel.innerHTML = opts;
+      const opts = '<option value="">Select segment\u2026</option>' + res.segments.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join('');
+      ['segmentSelect','invSegmentSelect','dcSegmentSelect','materialSegmentSelect'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.innerHTML = opts;
+      });
     } else {
-      // Backend reached but returned no segments — surface this instead of
-      // silently leaving the dropdown empty, so it's obvious what's wrong.
       const msg = (res && res.message) ? res.message : 'No segments returned by backend.';
-      console.error('populateSegmentDropdowns: ', msg, res);
-      setSegmentDropdownError('⚠️ Could not load segments: ' + msg);
+      setSegmentDropdownError('Could not load segments: ' + msg);
     }
   }).catch(err=>{
-    console.error('populateSegmentDropdowns failed:', err);
-    setSegmentDropdownError('⚠️ Could not reach backend to load segments. Check API URL in ⚙️ Configure API.');
+    setSegmentDropdownError('Could not reach backend. Check your connection.');
   });
 }
 
 function setSegmentDropdownError(msg){
   ['segmentSelect','invSegmentSelect','dcSegmentSelect','materialSegmentSelect'].forEach(id=>{
     const el = document.getElementById(id);
-    if(el) el.innerHTML = `<option value="">${esc(msg)}</option>`;
+    if(el) el.innerHTML = '<option value="">'+esc(msg)+'</option>';
   });
 }
 
@@ -936,72 +555,41 @@ function onSegmentChanged(){
   setupSegment = document.getElementById('segmentSelect').value;
   const gateHint = document.getElementById('movetypeGateBlock');
   const mtSection = document.getElementById('movetypeSection');
-  if(!setupSegment){
-    gateHint.style.display='block';
-    mtSection.style.display='none';
-    return;
-  }
-  gateHint.style.display='none';
-  mtSection.style.display='block';
-  // Segment changed — clear any movement-type selection made under a
-  // different segment so hospital/DC-number lookups stay scoped correctly.
+  if(!setupSegment){ gateHint.style.display='block'; mtSection.style.display='none'; return; }
+  gateHint.style.display='none'; mtSection.style.display='block';
   setupMoveType=null;
   ['mtPurchase','mtSale','mtDC','mtDCReturn','mtMaterialIn','mtMaterialOut'].forEach(id=>document.getElementById(id).classList.remove('selected'));
   ['purchaseSetupBlock','saleSetupBlock','dcSetupBlock','dcReturnSetupBlock','materialInSetupBlock','materialOutSetupBlock'].forEach(id=>document.getElementById(id).classList.remove('show'));
   document.getElementById('startSessionBtn').disabled=true;
 }
 
-// Inventory Stock view — segment gates the whole view, same pattern as scan setup
 let invSegment = '';
 function onInvSegmentChanged(){
   invSegment = document.getElementById('invSegmentSelect').value;
-  const gateHint = document.getElementById('invSegmentGateHint');
-  const content = document.getElementById('invContentBlock');
-  if(!invSegment){
-    gateHint.style.display='block';
-    content.style.display='none';
-    return;
-  }
-  gateHint.style.display='none';
-  content.style.display='block';
-  loadInventory();
+  const show = !!invSegment;
+  document.getElementById('invSegmentGateHint').style.display = show?'none':'block';
+  document.getElementById('invContentBlock').style.display = show?'block':'none';
+  if(show) loadInventory();
 }
 
-// DC Stock view — segment gates the whole view, hospital search applies within it
 let dcSegment = '';
 function onDCSegmentChanged(){
   dcSegment = document.getElementById('dcSegmentSelect').value;
-  const gateHint = document.getElementById('dcSegmentGateHint');
-  const content = document.getElementById('dcContentBlock');
-  if(!dcSegment){
-    gateHint.style.display='block';
-    content.style.display='none';
-    return;
-  }
-  gateHint.style.display='none';
-  content.style.display='block';
-  loadDC();
+  const show = !!dcSegment;
+  document.getElementById('dcSegmentGateHint').style.display = show?'none':'block';
+  document.getElementById('dcContentBlock').style.display = show?'block':'none';
+  if(show) loadDC();
 }
 
-// Material Log view — segment gates the whole view, same pattern as DC/Inventory
 let materialSegment = '';
 function onMaterialSegmentChanged(){
   materialSegment = document.getElementById('materialSegmentSelect').value;
-  const gateHint = document.getElementById('materialSegmentGateHint');
-  const content = document.getElementById('materialContentBlock');
-  if(!materialSegment){
-    gateHint.style.display='block';
-    content.style.display='none';
-    return;
-  }
-  gateHint.style.display='none';
-  content.style.display='block';
-  loadMaterialLog();
+  const show = !!materialSegment;
+  document.getElementById('materialSegmentGateHint').style.display = show?'none':'block';
+  document.getElementById('materialContentBlock').style.display = show?'block':'none';
+  if(show) loadMaterialLog();
 }
 
-// ──────────────────────────────────────────────────────
-//  SETUP SCREEN
-// ──────────────────────────────────────────────────────
 function showSetupScreen(){
   document.getElementById('setupScreen').style.display='block';
   document.getElementById('sessionScreen').classList.remove('active');
@@ -1015,51 +603,32 @@ function selectSetupMoveType(type){
   ['mtPurchase','mtSale','mtDC','mtDCReturn','mtMaterialIn','mtMaterialOut'].forEach(id=>document.getElementById(id).classList.remove('selected'));
   const idMap={PURCHASE:'mtPurchase',SALE:'mtSale',DC:'mtDC',DC_RETURN:'mtDCReturn',MATERIAL_IN:'mtMaterialIn',MATERIAL_OUT:'mtMaterialOut'};
   document.getElementById(idMap[type]).classList.add('selected');
-
-  // Show only the field block relevant to this movement type
   ['purchaseSetupBlock','saleSetupBlock','dcSetupBlock','dcReturnSetupBlock','materialInSetupBlock','materialOutSetupBlock'].forEach(id=>document.getElementById(id).classList.remove('show'));
   const blockIdMap={PURCHASE:'purchaseSetupBlock',SALE:'saleSetupBlock',DC:'dcSetupBlock',DC_RETURN:'dcReturnSetupBlock',MATERIAL_IN:'materialInSetupBlock',MATERIAL_OUT:'materialOutSetupBlock'};
   document.getElementById(blockIdMap[type]).classList.add('show');
 
-  // Pre-fill hospital suggestions, scoped to the selected segment, for any
-  // type that uses a hospital field
   if(type==='SALE' || type==='DC' || type==='DC_RETURN'){
     apiGet('getDCHospitals',{segment:setupSegment}).then(res=>{
       if(res&&res.hospitals){
-        const opts=res.hospitals.map(h=>`<option value="${esc(h)}">`).join('');
+        const opts=res.hospitals.map(h=>'<option value="'+esc(h)+'">').join('');
         if(type==='SALE') document.getElementById('saleHospitalSuggestions').innerHTML=opts;
         if(type==='DC') document.getElementById('dcHospitalSuggestions').innerHTML=opts;
         if(type==='DC_RETURN') document.getElementById('dcReturnHospitalSuggestions').innerHTML=opts;
       }
     }).catch(()=>{});
   }
-
   validateSetupForm();
 }
 
 function validateSetupForm(){
   const btn=document.getElementById('startSessionBtn');
   if(!setupSegment || !setupMoveType){ btn.disabled=true; return; }
-  if(setupMoveType==='PURCHASE'){
-    btn.disabled=false; // invoice number optional
-  } else if(setupMoveType==='SALE'){
-    const h=document.getElementById('saleHospitalInput').value.trim();
-    btn.disabled = !h;
-  } else if(setupMoveType==='DC'){
-    const h=document.getElementById('dcHospitalInput').value.trim();
-    const dc=document.getElementById('dcNumberInput').value.trim();
-    btn.disabled = !(h && dc);
-  } else if(setupMoveType==='DC_RETURN'){
-    const h=document.getElementById('dcReturnHospitalInput').value.trim();
-    const dcSel=document.getElementById('dcReturnNumberSelect').value;
-    btn.disabled = !(h && dcSel);
-  } else if(setupMoveType==='MATERIAL_IN'){
-    const r=document.getElementById('materialInReasonSelect').value;
-    btn.disabled = !r;
-  } else if(setupMoveType==='MATERIAL_OUT'){
-    const r=document.getElementById('materialOutReasonSelect').value;
-    btn.disabled = !r;
-  }
+  if(setupMoveType==='PURCHASE'){ btn.disabled=false; }
+  else if(setupMoveType==='SALE'){ btn.disabled = !document.getElementById('saleHospitalInput').value.trim(); }
+  else if(setupMoveType==='DC'){ const h=document.getElementById('dcHospitalInput').value.trim(); const dc=document.getElementById('dcNumberInput').value.trim(); btn.disabled=!(h&&dc); }
+  else if(setupMoveType==='DC_RETURN'){ const h=document.getElementById('dcReturnHospitalInput').value.trim(); const dcSel=document.getElementById('dcReturnNumberSelect').value; btn.disabled=!(h&&dcSel); }
+  else if(setupMoveType==='MATERIAL_IN'){ btn.disabled=!document.getElementById('materialInReasonSelect').value; }
+  else if(setupMoveType==='MATERIAL_OUT'){ btn.disabled=!document.getElementById('materialOutReasonSelect').value; }
 }
 
 document.addEventListener('input', e=>{
@@ -1073,105 +642,54 @@ document.addEventListener('change', e=>{
   if(e.target && (e.target.id==='materialInReasonSelect' || e.target.id==='materialOutReasonSelect')) validateSetupForm();
 });
 
-// When hospital changes on the DC Return screen, fetch that hospital's
-// open DC numbers (balance > 0) and populate the dropdown.
 let dcReturnLookupTimer=null;
 function onDCReturnHospitalChanged(){
   clearTimeout(dcReturnLookupTimer);
   const sel=document.getElementById('dcReturnNumberSelect');
   const hospital=document.getElementById('dcReturnHospitalInput').value.trim();
-  if(!hospital){
-    sel.innerHTML='<option value="">Enter hospital name first…</option>';
-    sel.disabled=true;
-    validateSetupForm();
-    return;
-  }
-  sel.innerHTML='<option value="">Looking up open DC numbers…</option>';
-  sel.disabled=true;
+  if(!hospital){ sel.innerHTML='<option value="">Enter hospital name first\u2026</option>'; sel.disabled=true; validateSetupForm(); return; }
+  sel.innerHTML='<option value="">Looking up open DC numbers\u2026</option>'; sel.disabled=true;
   dcReturnLookupTimer=setTimeout(()=>{
     apiGet('getOpenDCNumbers',{hospital, segment:setupSegment}).then(res=>{
       if(res && res.success){
         if(res.dcNumbers && res.dcNumbers.length){
-          sel.innerHTML='<option value="">Select DC Number…</option>' +
-            res.dcNumbers.map(dc=>`<option value="${esc(dc)}">${esc(dc)}</option>`).join('');
+          sel.innerHTML='<option value="">Select DC Number\u2026</option>'+res.dcNumbers.map(dc=>'<option value="'+esc(dc)+'">'+esc(dc)+'</option>').join('');
           sel.disabled=false;
-        } else {
-          sel.innerHTML='<option value="">No open DC balance for this hospital</option>';
-          sel.disabled=true;
-        }
-      } else {
-        sel.innerHTML='<option value="">Could not load DC numbers</option>';
-        sel.disabled=true;
-      }
+        } else { sel.innerHTML='<option value="">No open DC balance for this hospital</option>'; sel.disabled=true; }
+      } else { sel.innerHTML='<option value="">Could not load DC numbers</option>'; sel.disabled=true; }
       validateSetupForm();
-    }).catch(()=>{
-      sel.innerHTML='<option value="">Could not load DC numbers</option>';
-      sel.disabled=true;
-      validateSetupForm();
-    });
-  }, 400); // small debounce so it doesn't fire on every keystroke
+    }).catch(()=>{ sel.innerHTML='<option value="">Could not load DC numbers</option>'; sel.disabled=true; validateSetupForm(); });
+  }, 400);
 }
 
 function startSession(){
   if(!setupMoveType) return;
   const meta=MOVE_TYPE_META[setupMoveType];
   setupScannedBy = document.getElementById('setupScannedByInput').value.trim();
-
   setupHospital=''; setupDCNumber=''; setupInvoiceNumber=''; setupReason=''; setupRemarks='';
   let subLabel='';
 
-  if(setupMoveType==='PURCHASE'){
-    setupInvoiceNumber = document.getElementById('purchaseInvoiceInput').value.trim();
-    subLabel = setupInvoiceNumber ? ('Invoice: '+setupInvoiceNumber) : 'No invoice number';
-  } else if(setupMoveType==='SALE'){
-    setupHospital = document.getElementById('saleHospitalInput').value.trim();
-    setupInvoiceNumber = document.getElementById('saleInvoiceInput').value.trim();
-    subLabel = setupHospital + (setupInvoiceNumber ? (' · Invoice: '+setupInvoiceNumber) : '');
-  } else if(setupMoveType==='DC'){
-    setupHospital = document.getElementById('dcHospitalInput').value.trim();
-    setupDCNumber = document.getElementById('dcNumberInput').value.trim();
-    subLabel = setupHospital + ' · DC# '+setupDCNumber;
-  } else if(setupMoveType==='DC_RETURN'){
-    setupHospital = document.getElementById('dcReturnHospitalInput').value.trim();
-    setupDCNumber = document.getElementById('dcReturnNumberSelect').value;
-    subLabel = setupHospital + ' · Returning against DC# '+setupDCNumber;
-  } else if(setupMoveType==='MATERIAL_IN'){
-    setupReason = document.getElementById('materialInReasonSelect').value;
-    setupRemarks = document.getElementById('materialInRemarksInput').value.trim();
-    subLabel = setupReason + (setupRemarks ? (' · '+setupRemarks) : '');
-  } else if(setupMoveType==='MATERIAL_OUT'){
-    setupReason = document.getElementById('materialOutReasonSelect').value;
-    setupRemarks = document.getElementById('materialOutRemarksInput').value.trim();
-    subLabel = setupReason + (setupRemarks ? (' · '+setupRemarks) : '');
-  }
+  if(setupMoveType==='PURCHASE'){ setupInvoiceNumber=document.getElementById('purchaseInvoiceInput').value.trim(); subLabel=setupInvoiceNumber?('Invoice: '+setupInvoiceNumber):'No invoice number'; }
+  else if(setupMoveType==='SALE'){ setupHospital=document.getElementById('saleHospitalInput').value.trim(); setupInvoiceNumber=document.getElementById('saleInvoiceInput').value.trim(); subLabel=setupHospital+(setupInvoiceNumber?(' \u00b7 Invoice: '+setupInvoiceNumber):''); }
+  else if(setupMoveType==='DC'){ setupHospital=document.getElementById('dcHospitalInput').value.trim(); setupDCNumber=document.getElementById('dcNumberInput').value.trim(); subLabel=setupHospital+' \u00b7 DC# '+setupDCNumber; }
+  else if(setupMoveType==='DC_RETURN'){ setupHospital=document.getElementById('dcReturnHospitalInput').value.trim(); setupDCNumber=document.getElementById('dcReturnNumberSelect').value; subLabel=setupHospital+' \u00b7 Returning against DC# '+setupDCNumber; }
+  else if(setupMoveType==='MATERIAL_IN'){ setupReason=document.getElementById('materialInReasonSelect').value; setupRemarks=document.getElementById('materialInRemarksInput').value.trim(); subLabel=setupReason+(setupRemarks?(' \u00b7 '+setupRemarks):''); }
+  else if(setupMoveType==='MATERIAL_OUT'){ setupReason=document.getElementById('materialOutReasonSelect').value; setupRemarks=document.getElementById('materialOutRemarksInput').value.trim(); subLabel=setupReason+(setupRemarks?(' \u00b7 '+setupRemarks):''); }
 
-  sessionLines = [];
-  sessionActive = true; inReview=false;
-
+  sessionLines=[]; sessionActive=true; inReview=false;
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('reviewScreen').classList.remove('active');
   document.getElementById('sessionScreen').classList.add('active');
-
-  document.getElementById('sessionModeLabel').innerHTML = meta.label;
-  document.getElementById('sessionModeSubLabel').textContent = setupSegment + ' · ' + subLabel;
-  renderSessionList();
-  updateSessionCounters();
+  document.getElementById('sessionModeLabel').innerHTML=meta.label;
+  document.getElementById('sessionModeSubLabel').textContent=setupSegment+' \u00b7 '+subLabel;
+  renderSessionList(); updateSessionCounters();
 }
+</script>
 
-// ──────────────────────────────────────────────────────
-//  CAMERA / SCAN LOOP
-// ──────────────────────────────────────────────────────
-// Persistent AudioContext, unlocked by a real user gesture (the Start
-// Scanner button click). Creating a fresh AudioContext per beep — and
-// never resuming a suspended one — is why beeps silently failed before:
-// most browsers start any AudioContext in 'suspended' state until a
-// user gesture explicitly resumes it.
+<script>
 let audioCtx = null;
 function unlockAudio(){
-  try{
-    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-  }catch(e){}
+  try{ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }catch(e){}
 }
 
 function beep(kind){
@@ -1182,41 +700,38 @@ function beep(kind){
     osc.connect(g); g.connect(audioCtx.destination);
     if(kind==='dup') osc.frequency.value=1100;
     else if(kind==='unmapped') osc.frequency.value=700;
-    else osc.frequency.value = MOVE_TYPE_META[setupMoveType].direction==='IN' ? 1400 : 900;
+    else osc.frequency.value=MOVE_TYPE_META[setupMoveType].direction==='IN'?1400:900;
     g.gain.value=0.35;
     const now=audioCtx.currentTime;
     osc.start(now); osc.stop(now+0.12);
   }catch(e){}
   const f=document.getElementById('flashOverlay');
-  f.classList.toggle('err', kind==='unmapped');
+  f.classList.toggle('err',kind==='unmapped');
   f.classList.add('on'); setTimeout(()=>f.classList.remove('on'),200);
 }
 
 let torchOn=false, torchSupported=false;
 let stuckTimer=null;
-const STUCK_THRESHOLD_MS = 4000; // if no successful decode in this window while scanning, show the hint
+const STUCK_THRESHOLD_MS=4000;
 
 async function toggleScanner(){
   const btn=document.getElementById('toggleCamBtn'), sb=document.getElementById('statusBar');
-  if(isScanning){ stopScanner(); btn.textContent='▶ Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera off'; return; }
-  unlockAudio(); // must happen directly inside this click handler — the real user gesture
-  btn.disabled=true; btn.textContent='Starting camera…';
-  sb.className='status-bar s-scanning'; sb.textContent='Requesting camera access…';
+  if(isScanning){ stopScanner(); btn.textContent='Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera off'; return; }
+  unlockAudio();
+  btn.disabled=true; btn.textContent='Starting camera\u2026';
+  sb.className='status-bar s-scanning'; sb.textContent='Requesting camera access\u2026';
   const video=document.getElementById('camVideo');
   try{
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});
     camStream=stream; video.srcObject=stream; await video.play();
-    isScanning=true; btn.disabled=false; btn.textContent='■ Stop Scanner';
-    sb.className='status-bar s-ready'; sb.textContent='Scanning — point at next barcode';
-    setupTorchControl();
-    armStuckTimer();
-    runScanLoop();
-  }catch(err){ btn.disabled=false; btn.textContent='▶ Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera access denied'; alert('Camera error: '+err); }
+    isScanning=true; btn.disabled=false; btn.textContent='Stop Scanner';
+    sb.className='status-bar s-ready'; sb.textContent='Scanning \u2014 point at next barcode';
+    setupTorchControl(); armStuckTimer(); runScanLoop();
+  }catch(err){ btn.disabled=false; btn.textContent='Start Scanner'; sb.className='status-bar s-off'; sb.textContent='Camera access denied'; alert('Camera error: '+err); }
 }
 
 function stopScanner(){
-  isScanning = false;
-  decoding = false;
+  isScanning=false; decoding=false;
   if(scanLoopHandle){cancelAnimationFrame(scanLoopHandle);scanLoopHandle=null;}
   if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
   document.getElementById('camVideo').srcObject=null;
@@ -1224,114 +739,65 @@ function stopScanner(){
   torchOn=false; torchSupported=false;
   clearTimeout(stuckTimer);
   document.getElementById('stuckHint').classList.remove('show');
-  // Clear any in-progress cooldown so restarting the scanner doesn't
-  // start in a blocked state from before it was stopped.
-  scanCooldownUntil = 0;
-  if(cooldownTickHandle){ clearInterval(cooldownTickHandle); cooldownTickHandle=null; }
+  scanCooldownUntil=0;
+  if(cooldownTickHandle){clearInterval(cooldownTickHandle);cooldownTickHandle=null;}
   document.getElementById('cooldownOverlay').classList.remove('show');
 }
 
-// ──────────────────────────────────────────────────────
-//  TORCH (flashlight) — most phones expose this as a track constraint.
-//  Steady, camera-aligned light often cuts through transparent-packet
-//  glare better than ambient light, since it matches the camera's angle.
-// ──────────────────────────────────────────────────────
 function setupTorchControl(){
   const torchBtn=document.getElementById('torchToggleBtn');
-  if(!camStream){ torchBtn.style.display='none'; return; }
-  const track = camStream.getVideoTracks()[0];
-  if(!track) { torchBtn.style.display='none'; return; }
-  const caps = track.getCapabilities ? track.getCapabilities() : {};
-  torchSupported = !!(caps && caps.torch);
-  torchBtn.style.display = torchSupported ? 'flex' : 'none';
+  if(!camStream){torchBtn.style.display='none';return;}
+  const track=camStream.getVideoTracks()[0];
+  if(!track){torchBtn.style.display='none';return;}
+  const caps=track.getCapabilities?track.getCapabilities():{};
+  torchSupported=!!(caps&&caps.torch);
+  torchBtn.style.display=torchSupported?'flex':'none';
   torchOn=false; torchBtn.classList.remove('on');
 }
 
 async function toggleTorch(){
-  if(!torchSupported || !camStream) return;
-  const track = camStream.getVideoTracks()[0];
+  if(!torchSupported||!camStream) return;
+  const track=camStream.getVideoTracks()[0];
   if(!track) return;
-  torchOn = !torchOn;
-  try{
-    await track.applyConstraints({ advanced:[{ torch:torchOn }] });
-    document.getElementById('torchToggleBtn').classList.toggle('on', torchOn);
-  }catch(e){
-    torchOn=false; // revert state if the device rejects it
-  }
+  torchOn=!torchOn;
+  try{ await track.applyConstraints({advanced:[{torch:torchOn}]}); document.getElementById('torchToggleBtn').classList.toggle('on',torchOn); }
+  catch(e){ torchOn=false; }
 }
 
-// ──────────────────────────────────────────────────────
-//  STUCK-SCAN DETECTOR — if nothing decodes for a while, surface the
-//  tilt/torch hint. Resets every time a barcode is successfully read.
-// ──────────────────────────────────────────────────────
 function armStuckTimer(){
   clearTimeout(stuckTimer);
   document.getElementById('stuckHint').classList.remove('show');
-  stuckTimer=setTimeout(()=>{
-    if(isScanning) document.getElementById('stuckHint').classList.add('show');
-  }, STUCK_THRESHOLD_MS);
+  stuckTimer=setTimeout(()=>{ if(isScanning) document.getElementById('stuckHint').classList.add('show'); },STUCK_THRESHOLD_MS);
 }
-function clearStuckHint(){
-  document.getElementById('stuckHint').classList.remove('show');
-  armStuckTimer(); // restart the countdown for the next item
-}
+function clearStuckHint(){ document.getElementById('stuckHint').classList.remove('show'); armStuckTimer(); }
 
-// The reticle box is 70% width × 38% height, centered — drawn in CSS over
-// the video. Decoding the FULL frame was the root cause of "everything
-// becomes unmapped": any barcode anywhere in frame (shelf labels, nearby
-// boxes) got picked up even though the user was pointing at one specific
-// item. Cropping the actual pixels fed to the decoder to match what the
-// reticle visually shows fixes this — only the barcode under the reticle
-// can ever be read.
-const RETICLE_WIDTH_FRAC  = 0.70;
-const RETICLE_HEIGHT_FRAC = 0.38;
-
-// Replace the entire runScanLoop() function:
-let decoding = false; // semaphore — only one WASM call at a time
+const RETICLE_WIDTH_FRAC=0.70, RETICLE_HEIGHT_FRAC=0.38;
+let decoding=false;
 
 async function runScanLoop(){
-  const video  = document.getElementById('camVideo');
-  const canvas = document.getElementById('camCanvas');
-  const ctx    = canvas.getContext('2d', {willReadFrequently: true});
-
+  const video=document.getElementById('camVideo');
+  const canvas=document.getElementById('camCanvas');
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
   function tick(){
     if(!isScanning) return;
-    scanLoopHandle = requestAnimationFrame(tick);   // schedule next frame first, then maybe decode
-
-    if(decoding) return;                            // WASM is busy — skip this frame entirely
-    if(video.readyState !== video.HAVE_ENOUGH_DATA || video.videoWidth === 0) return;
-    if(!zxingReady) return;                         // WASM not initialised yet
-
-    const vw = video.videoWidth, vh = video.videoHeight;
-    const cropW = Math.round(vw * RETICLE_WIDTH_FRAC);
-    const cropH = Math.round(vh * RETICLE_HEIGHT_FRAC);
-    const cropX = Math.round((vw - cropW) / 2);
-    const cropY = Math.round((vh - cropH) / 2);
-
-    canvas.width  = cropW;
-    canvas.height = cropH;
-    ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-    const imgData = ctx.getImageData(0, 0, cropW, cropH);
-
-    decoding = true;
-    ZXingWASM.readBarcodesFromImageData(imgData, {
-      tryHarder: true,
-      formats: ['DataMatrix','Code128','Code39','EAN-13','EAN-8','QRCode','ITF','Codabar','UPC-A','UPC-E','PDF417','Aztec'],
-      maxNumberOfSymbols: 1
-    }).then(results => {
-      decoding = false;
-      if(results && results.length > 0 && results[0].text){
-        handleDecodedBarcode(results[0].text, results[0].format);
-      }
-    }).catch(() => { decoding = false; });
+    scanLoopHandle=requestAnimationFrame(tick);
+    if(decoding) return;
+    if(video.readyState!==video.HAVE_ENOUGH_DATA||video.videoWidth===0) return;
+    if(!zxingReady) return;
+    const vw=video.videoWidth, vh=video.videoHeight;
+    const cropW=Math.round(vw*RETICLE_WIDTH_FRAC), cropH=Math.round(vh*RETICLE_HEIGHT_FRAC);
+    const cropX=Math.round((vw-cropW)/2), cropY=Math.round((vh-cropH)/2);
+    canvas.width=cropW; canvas.height=cropH;
+    ctx.drawImage(video,cropX,cropY,cropW,cropH,0,0,cropW,cropH);
+    const imgData=ctx.getImageData(0,0,cropW,cropH);
+    decoding=true;
+    ZXingWASM.readBarcodesFromImageData(imgData,{tryHarder:true,formats:['DataMatrix','Code128','Code39','EAN-13','EAN-8','QRCode','ITF','Codabar','UPC-A','UPC-E','PDF417','Aztec'],maxNumberOfSymbols:1})
+      .then(results=>{decoding=false;if(results&&results.length>0&&results[0].text) handleDecodedBarcode(results[0].text,results[0].format);})
+      .catch(()=>{decoding=false;});
   }
-
-  scanLoopHandle = requestAnimationFrame(tick);
+  scanLoopHandle=requestAnimationFrame(tick);
 }
 
-// ════════════════════════════════════════════════════════
-//  GS1 PARSER
-// ════════════════════════════════════════════════════════
 const GS1_AIS={'01':{label:'GTIN',len:14},'02':{label:'Content GTIN',len:14},'10':{label:'Lot/Batch',len:null},'11':{label:'Production Date',len:6},'13':{label:'Pack Date',len:6},'15':{label:'Best Before',len:6},'17':{label:'Expiry Date',len:6},'21':{label:'Serial No.',len:null},'30':{label:'Quantity',len:null},'37':{label:'Count',len:null},'240':{label:'Product Variant',len:null},'241':{label:'Customer Part No.',len:null},'250':{label:'Secondary Serial',len:null}};
 
 function parseGS1(raw){
@@ -1346,399 +812,218 @@ function parseGS1(raw){
   return {isGS1:false,fields:[{ai:'',label:'Barcode',value:data}]};
 }
 
-function formatGS1Date(val){
-  if(!val||val.length!==6) return val;
-  const yy=val.substring(0,2),mm=val.substring(2,4),dd=val.substring(4,6);
-  return dd+'/'+mm+'/'+(parseInt(yy)>50?'19':'20')+yy;
-}
+function formatGS1Date(val){ if(!val||val.length!==6) return val; const yy=val.substring(0,2),mm=val.substring(2,4),dd=val.substring(4,6); return dd+'/'+mm+'/'+(parseInt(yy)>50?'19':'20')+yy; }
 
 function cleanDate(d){
-  if(!d) return '—';
+  if(!d) return '\u2014';
   const s=String(d);
   if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
-  try{
-    const dt=new Date(s);
-    if(!isNaN(dt)){
-      const dd=String(dt.getDate()).padStart(2,'0');
-      const mm=String(dt.getMonth()+1).padStart(2,'0');
-      return dd+'/'+mm+'/'+dt.getFullYear();
-    }
-  }catch(e){}
+  try{ const dt=new Date(s); if(!isNaN(dt)){ return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear(); } }catch(e){}
   return s;
 }
 
-// ════════════════════════════════════════════════════════
-//  CORE: HANDLE A DECODED BARCODE — zero taps, one unit per scan
-// ════════════════════════════════════════════════════════
-// Global scan cooldown — after ANY successful scan (new item or qty++ on a
-// repeat), every decode is ignored until this timestamp passes. This is
-// deliberately global (not "same barcode only") because holding the camera
-// steady over one item, or having a neighbouring barcode drift into the
-// crop zone, both used to register as extra scans. One beep = one scan,
-// full stop, for COOLDOWN_MS afterwards.
-const COOLDOWN_MS = 2000;
-let scanCooldownUntil = 0;
-let cooldownTickHandle = null;
+const COOLDOWN_MS=2000;
+let scanCooldownUntil=0, cooldownTickHandle=null;
 
-function handleDecodedBarcode(text, fmt){
+function handleDecodedBarcode(text,fmt){
   const now=Date.now();
-  if(now < scanCooldownUntil) return; // still cooling down — ignore every decode, no beep, no action
-  if(now-lastScanTime<300 && text===lastScanCode) return; // guards against duplicate reads within the same camera frame
+  if(now<scanCooldownUntil) return;
+  if(now-lastScanTime<300&&text===lastScanCode) return;
   lastScanTime=now; lastScanCode=text;
-  clearStuckHint(); // a successful decode means the camera isn't stuck — reset the countdown
-
+  clearStuckHint();
   const parsed=parseGS1(text);
   const gtinF=parsed.fields.find(f=>f.ai==='01');
   const lotF=parsed.fields.find(f=>f.ai==='10');
   const expF=parsed.fields.find(f=>f.ai==='17');
   const prodF=parsed.fields.find(f=>f.ai==='11');
-  const serialF = parsed.fields.find(f => f.ai === '21');
-  const gtin = gtinF?gtinF.value:text;
-  const lot = lotF?lotF.value:'';
-  const expiry = expF?formatGS1Date(expF.value):'';
-  const productionDate = prodF?formatGS1Date(prodF.value):'';
-  const serial      = serialF ? serialF.value : '';
+  const serialF=parsed.fields.find(f=>f.ai==='21');
+  const gtin=gtinF?gtinF.value:text;
+  const lot=lotF?lotF.value:'';
+  const expiry=expF?formatGS1Date(expF.value):'';
+  const productionDate=prodF?formatGS1Date(prodF.value):'';
+  const serial=serialF?serialF.value:'';
 
-  // Check if this GTIN+lot is already in this session's running list -> increment qty
-  const existingIdx = sessionLines.findIndex(l => l.gtin===gtin && l.lot===lot);
-  if(existingIdx !== -1){
-    sessionLines[existingIdx].qty += 1;
+  const existingIdx=sessionLines.findIndex(l=>l.gtin===gtin&&l.lot===lot);
+  if(existingIdx!==-1){
+    sessionLines[existingIdx].qty+=1;
     beep('dup');
-    flashStatusBar('+1 — '+(sessionLines[existingIdx].itemName||'Unmapped item')+' (now '+sessionLines[existingIdx].qty+')');
-    renderSessionList(existingIdx);
-    updateSessionCounters();
-    startScanCooldown();
+    flashStatusBar('+1 \u2014 '+(sessionLines[existingIdx].itemName||'Unmapped item')+' (now '+sessionLines[existingIdx].qty+')');
+    renderSessionList(existingIdx); updateSessionCounters(); startScanCooldown();
     return;
   }
 
-  // New line — look up item master in the background; don't block the scan loop
-  const newLine = {
-    gtin, lot, expiry, productionDate, serial,
-    itemName:'', brand:'', format:fmt||'Unknown', raw:text,
-    qty:1, mrp:'', unmapped:true
-  };
+  const newLine={gtin,lot,expiry,productionDate,serial,itemName:'',brand:'',format:fmt||'Unknown',raw:text,qty:1,mrp:'',unmapped:true};
   sessionLines.push(newLine);
-  const idx = sessionLines.length-1;
+  const idx=sessionLines.length-1;
   beep('new');
-  flashStatusBar('Scanned — looking up item…');
-  renderSessionList(idx);
-  updateSessionCounters();
-  startScanCooldown();
+  flashStatusBar('Scanned \u2014 looking up item\u2026');
+  renderSessionList(idx); updateSessionCounters(); startScanCooldown();
 
   apiGet('lookupItemMaster',{gtin}).then(res=>{
-    if(res && res.found){
-      newLine.itemName = res.itemName || '';
-      newLine.brand = res.brand || '';
-      newLine.unmapped = false;
-    }
-    renderSessionList();
-    updateSessionCounters();
-  }).catch(()=>{ /* stays unmapped, resolved at review */ });
+    if(res&&res.found){ newLine.itemName=res.itemName||''; newLine.brand=res.brand||''; newLine.unmapped=false; }
+    renderSessionList(); updateSessionCounters();
+  }).catch(()=>{});
 }
 
-// Starts the 2s global cooldown and drives the visible countdown overlay.
 function startScanCooldown(){
-  scanCooldownUntil = Date.now() + COOLDOWN_MS;
-  const el = document.getElementById('cooldownOverlay');
-  const numEl = document.getElementById('cooldownNum');
+  scanCooldownUntil=Date.now()+COOLDOWN_MS;
+  const el=document.getElementById('cooldownOverlay');
+  const numEl=document.getElementById('cooldownNum');
   if(!el) return;
   el.classList.add('show');
   if(cooldownTickHandle) clearInterval(cooldownTickHandle);
-  cooldownTickHandle = setInterval(()=>{
-    const remaining = scanCooldownUntil - Date.now();
-    if(remaining <= 0){
-      clearInterval(cooldownTickHandle);
-      cooldownTickHandle = null;
-      el.classList.remove('show');
-      return;
-    }
-    numEl.textContent = (remaining/1000).toFixed(1);
-  }, 100);
+  cooldownTickHandle=setInterval(()=>{
+    const remaining=scanCooldownUntil-Date.now();
+    if(remaining<=0){ clearInterval(cooldownTickHandle); cooldownTickHandle=null; el.classList.remove('show'); return; }
+    numEl.textContent=(remaining/1000).toFixed(1);
+  },100);
 }
 
 function flashStatusBar(msg){
   const sb=document.getElementById('statusBar');
   sb.className='status-bar s-justscanned'; sb.textContent=msg;
-  setTimeout(()=>{ if(isScanning){ sb.className='status-bar s-ready'; sb.textContent='Scanning — point at next barcode'; } }, 900);
+  setTimeout(()=>{ if(isScanning){sb.className='status-bar s-ready';sb.textContent='Scanning \u2014 point at next barcode';} },900);
 }
 
-// ──────────────────────────────────────────────────────
-//  SESSION LIST RENDER
-// ──────────────────────────────────────────────────────
 function renderSessionList(flashIdx){
   const body=document.getElementById('sessionListBody');
-  document.getElementById('sessionListCount').textContent = sessionLines.length + ' item' + (sessionLines.length!==1?'s':'');
-  if(!sessionLines.length){
-    body.innerHTML='<div class="empty-session"><div class="empty-icon">📭</div><p>No scans yet — point camera at a barcode</p></div>';
-    return;
-  }
-  // newest first
-  const order = sessionLines.map((l,i)=>i).reverse();
-  body.innerHTML = order.map(i=>{
+  document.getElementById('sessionListCount').textContent=sessionLines.length+' item'+(sessionLines.length!==1?'s':'');
+  if(!sessionLines.length){ body.innerHTML='<div class="empty-session"><div class="empty-icon">\ud83d\udced</div><p>No scans yet \u2014 point camera at a barcode</p></div>'; return; }
+  const order=sessionLines.map((_,i)=>i).reverse();
+  body.innerHTML=order.map(i=>{
     const l=sessionLines[i];
-    const name = l.itemName || ('Unmapped — GTIN '+l.gtin);
-    return `<div class="sl-row ${l.unmapped?'unmapped':''} ${i===flashIdx?'flash-new':''}">
-      <div class="sl-main">
-        <div class="sl-name ${l.unmapped?'unmapped-name':''}">${esc(name)}</div>
-        <div class="sl-meta">${l.lot ? ('Lot: '+esc(l.lot)+' · ') : ''}${l.serial ? ('S/N: '+esc(l.serial)+' · ') : ''}${l.expiry ? ('Exp: '+esc(l.expiry)) : ''}${l.unmapped ? ' · ⚠️ needs name' : ''}</div>
-        </div>
-      <div class="sl-qty">${l.qty}</div>
-      <div class="sl-remove" onclick="removeSessionLine(${i})" title="Remove">✕</div>
-    </div>`;
+    const name=l.itemName||('Unmapped \u2014 GTIN '+l.gtin);
+    return '<div class="sl-row '+(l.unmapped?'unmapped':'')+' '+(i===flashIdx?'flash-new':'')+'">'+
+      '<div class="sl-main"><div class="sl-name '+(l.unmapped?'unmapped-name':'')+'">'+esc(name)+'</div>'+
+      '<div class="sl-meta">'+(l.lot?('Lot: '+esc(l.lot)+' \u00b7 '):'')+(l.serial?('S/N: '+esc(l.serial)+' \u00b7 '):'')+(l.expiry?('Exp: '+esc(l.expiry)):'')+(l.unmapped?' \u00b7 needs name':'')+'</div></div>'+
+      '<div class="sl-qty">'+l.qty+'</div>'+
+      '<div class="sl-remove" onclick="removeSessionLine('+i+')" title="Remove">\u2715</div></div>';
   }).join('');
 }
 
-function removeSessionLine(idx){
-  sessionLines.splice(idx,1);
-  renderSessionList();
-  updateSessionCounters();
-}
-
+function removeSessionLine(idx){ sessionLines.splice(idx,1); renderSessionList(); updateSessionCounters(); }
 function updateSessionCounters(){
-  document.getElementById('scLines').textContent = sessionLines.length;
-  document.getElementById('scUnits').textContent = sessionLines.reduce((a,l)=>a+l.qty,0);
-  document.getElementById('scUnmapped').textContent = sessionLines.filter(l=>l.unmapped).length;
+  document.getElementById('scLines').textContent=sessionLines.length;
+  document.getElementById('scUnits').textContent=sessionLines.reduce((a,l)=>a+l.qty,0);
+  document.getElementById('scUnmapped').textContent=sessionLines.filter(l=>l.unmapped).length;
 }
 
-// ──────────────────────────────────────────────────────
-//  END SESSION → REVIEW
-// ──────────────────────────────────────────────────────
-function endSession(){
-  if(!sessionLines.length){ confirmEndSession(); return; }
-  document.getElementById('endSessionModal').classList.add('open');
-}
-function confirmEndSession(){
-  document.getElementById('endSessionModal').classList.remove('open');
-  stopScanner();
-  document.getElementById('toggleCamBtn').textContent='▶ Start Scanner';
-  document.getElementById('statusBar').className='status-bar s-off';
-  document.getElementById('statusBar').textContent='Camera off';
-  goToReview();
-}
+function endSession(){ if(!sessionLines.length){confirmEndSession();return;} document.getElementById('endSessionModal').classList.add('open'); }
+function confirmEndSession(){ document.getElementById('endSessionModal').classList.remove('open'); stopScanner(); document.getElementById('toggleCamBtn').textContent='Start Scanner'; document.getElementById('statusBar').className='status-bar s-off'; document.getElementById('statusBar').textContent='Camera off'; goToReview(); }
+function backToSession(){ inReview=false; document.getElementById('reviewScreen').classList.remove('active'); document.getElementById('sessionScreen').classList.add('active'); }
 
-function backToSession(){
-  inReview=false;
-  document.getElementById('reviewScreen').classList.remove('active');
-  document.getElementById('sessionScreen').classList.add('active');
-}
-
-function goToReview(){
-  sessionActive=false; inReview=true;
-  document.getElementById('sessionScreen').classList.remove('active');
-  document.getElementById('reviewScreen').classList.add('active');
-  renderReview();
-}
+function goToReview(){ sessionActive=false; inReview=true; document.getElementById('sessionScreen').classList.remove('active'); document.getElementById('reviewScreen').classList.add('active'); renderReview(); }
 
 function renderReview(){
-  const unmappedCount = sessionLines.filter(l=>l.unmapped).length;
-  document.getElementById('reviewBanner').classList.toggle('show', unmappedCount>0);
-  document.getElementById('reviewLines').textContent = sessionLines.length;
-  document.getElementById('reviewUnits').textContent = sessionLines.reduce((a,l)=>a+l.qty,0);
-
+  const unmappedCount=sessionLines.filter(l=>l.unmapped).length;
+  document.getElementById('reviewBanner').classList.toggle('show',unmappedCount>0);
+  document.getElementById('reviewLines').textContent=sessionLines.length;
+  document.getElementById('reviewUnits').textContent=sessionLines.reduce((a,l)=>a+l.qty,0);
   const body=document.getElementById('reviewListBody');
-  if(!sessionLines.length){
-    body.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>No items in this session</p></div>';
-    return;
-  }
-  body.innerHTML = sessionLines.map((l,i)=>`
-    <div class="review-item-card ${l.unmapped?'unmapped':''}" id="ric-${i}">
-      <div class="ric-top">
-        <div>
-         <div class="ric-gtin">GTIN ${esc(l.gtin)}${l.lot ? (' · Lot '+esc(l.lot)) : ''}${l.serial ? (' · S/N '+esc(l.serial)) : ''}</div>
-        </div>
-        <div class="ric-qty-badge">Qty: ${l.qty}</div>
-      </div>
-      ${l.unmapped ? `
-        <div class="fg" style="margin-bottom:6px;">
-          <label>Tally Item Name <span style="color:var(--red)">*</span></label>
-          <input type="text" id="ric-name-${i}" placeholder="Enter name as per Tally" oninput="updateReviewLineName(${i}, this.value)">
-        </div>
-        <div class="fg" style="margin-bottom:6px;">
-          <label>Brand (optional)</label>
-          <input type="text" id="ric-brand-${i}" placeholder="e.g. Stryker, Zeiss…" oninput="updateReviewLineBrand(${i}, this.value)">
-        </div>
-      ` : `<div style="font-size:13px;font-weight:700;margin-bottom:6px;">${esc(l.itemName)}${l.brand?(' · '+esc(l.brand)):''}</div>`}
-      <div class="fg" style="margin-bottom:0;">
-        <label>MRP <span style="color:var(--text3);font-weight:600;">(optional, this lot)</span></label>
-        <input type="number" inputmode="decimal" step="0.01" min="0" id="ric-mrp-${i}" placeholder="e.g. 1250.00" value="${l.mrp||''}" oninput="updateReviewLineMRP(${i}, this.value)">
-      </div>
-    </div>
-  `).join('');
+  if(!sessionLines.length){ body.innerHTML='<div class="empty"><div class="empty-icon">\ud83d\udced</div><p>No items in this session</p></div>'; return; }
+  body.innerHTML=sessionLines.map((l,i)=>{
+    let inner = '<div class="review-item-card '+(l.unmapped?'unmapped':'')+'" id="ric-'+i+'">'+
+      '<div class="ric-top"><div><div class="ric-gtin">GTIN '+esc(l.gtin)+(l.lot?(' \u00b7 Lot '+esc(l.lot)):'')+(l.serial?(' \u00b7 S/N '+esc(l.serial)):'')+'</div></div>'+
+      '<div class="ric-qty-badge">Qty: '+l.qty+'</div></div>';
+    if(l.unmapped){
+      inner += '<div class="fg" style="margin-bottom:6px;"><label>Tally Item Name <span style="color:var(--red)">*</span></label><input type="text" id="ric-name-'+i+'" placeholder="Enter name as per Tally" oninput="updateReviewLineName('+i+', this.value)"></div>'+
+        '<div class="fg" style="margin-bottom:6px;"><label>Brand (optional)</label><input type="text" id="ric-brand-'+i+'" placeholder="e.g. Stryker, Zeiss\u2026" oninput="updateReviewLineBrand('+i+', this.value)"></div>';
+    } else {
+      inner += '<div style="font-size:13px;font-weight:700;margin-bottom:6px;">'+esc(l.itemName)+(l.brand?(' \u00b7 '+esc(l.brand)):'')+'</div>';
+    }
+    inner += '<div class="fg" style="margin-bottom:0;"><label>MRP <span style="color:var(--text3);font-weight:600;">(optional, this lot)</span></label><input type="number" inputmode="decimal" step="0.01" min="0" id="ric-mrp-'+i+'" placeholder="e.g. 1250.00" value="'+(l.mrp||'')+'" oninput="updateReviewLineMRP('+i+', this.value)"></div></div>';
+    return inner;
+  }).join('');
 }
 
 function updateReviewLineName(i,val){ sessionLines[i].itemName=val.trim(); }
 function updateReviewLineBrand(i,val){ sessionLines[i].brand=val.trim(); }
 function updateReviewLineMRP(i,val){ sessionLines[i].mrp=val.trim(); }
+</script>
 
-// ──────────────────────────────────────────────────────
-//  SUBMIT SESSION — one batchLogScan call for everything
-// ──────────────────────────────────────────────────────
+<script>
 function submitSession(){
-  const stillUnmapped = sessionLines.filter(l=>l.unmapped && !l.itemName.trim());
-  if(stillUnmapped.length){
-    alert('Please enter the Tally Item Name for all unmapped items ('+stillUnmapped.length+' remaining) before submitting.');
-    return;
-  }
+  const stillUnmapped=sessionLines.filter(l=>l.unmapped&&!l.itemName.trim());
+  if(stillUnmapped.length){ alert('Please enter the Tally Item Name for all unmapped items ('+stillUnmapped.length+' remaining) before submitting.'); return; }
   if(!sessionLines.length){ alert('No items to submit.'); return; }
-
   const btn=document.getElementById('submitSessionBtn');
-  btn.disabled=true; btn.textContent='…Submitting';
-
+  btn.disabled=true; btn.textContent='Submitting\u2026';
   const meta=MOVE_TYPE_META[setupMoveType];
-
-  // First save any new item-master entries (unmapped items just named)
-  const newMasters = sessionLines.filter(l=>l.unmapped);
-  const masterSaves = newMasters.map(l=>apiPost('saveItemMaster',{gtin:l.gtin,itemName:l.itemName,brand:l.brand||'',segment:setupSegment,notes:''}));
-
+  const newMasters=sessionLines.filter(l=>l.unmapped);
+  const masterSaves=newMasters.map(l=>apiPost('saveItemMaster',{gtin:l.gtin,itemName:l.itemName,brand:l.brand||'',segment:setupSegment,notes:''}));
   Promise.all(masterSaves).then(()=>{
-    const entries = sessionLines.map(l=>({
-      direction: meta.direction,
-      scanType: meta.scanType,
-      hospital: setupHospital,
-      dcNumber: setupDCNumber,
-      invoiceNumber: setupInvoiceNumber,
-      segment: setupSegment,
-      reason: setupReason,
-      gtin: l.gtin,
-      itemName: l.itemName,
-      lot: l.lot,
-      serial:    l.serial || '',
-      expiry: l.expiry,
-      productionDate: l.productionDate,
-      mrp: l.mrp || '',
-      qty: l.qty,
-      format: l.format,
-      raw: l.raw,
-      scannedBy: setupScannedBy,
-      remarks: setupRemarks || ''
+    const entries=sessionLines.map(l=>({
+      direction:meta.direction, scanType:meta.scanType, hospital:setupHospital, dcNumber:setupDCNumber,
+      invoiceNumber:setupInvoiceNumber, segment:setupSegment, reason:setupReason,
+      gtin:l.gtin, itemName:l.itemName, lot:l.lot, serial:l.serial||'', expiry:l.expiry,
+      productionDate:l.productionDate, mrp:l.mrp||'', qty:l.qty, format:l.format,
+      raw:l.raw, scannedBy:setupScannedBy, remarks:setupRemarks||''
     }));
     return apiPost('batchLogScan',{entries});
   }).then(res=>{
-    btn.disabled=false; btn.textContent='✓ Submit All';
-    if(res && res.success){
-      alert('✅ Session submitted — '+res.written+' line item(s) logged.');
-      resetAfterSubmit();
-    } else {
-      const errMsg = (res && res.message) || (res && res.errors && JSON.stringify(res.errors)) || 'Some items failed to log.';
-      alert('⚠️ '+errMsg+(res&&res.written?(' ('+res.written+'/'+res.total+' succeeded)'):''));
-      if(res && res.written) resetAfterSubmit(); // partial success — don't resubmit good rows
-    }
-  }).catch(e=>{
-    btn.disabled=false; btn.textContent='✓ Submit All';
-    alert('❌ Connection error: '+e);
-  });
+    btn.disabled=false; btn.textContent='Submit All';
+    if(res&&res.success){ alert('Session submitted \u2014 '+res.written+' line item(s) logged.'); resetAfterSubmit(); }
+    else { const errMsg=(res&&res.message)||(res&&res.errors&&JSON.stringify(res.errors))||'Some items failed to log.'; alert(errMsg+(res&&res.written?(' ('+res.written+'/'+res.total+' succeeded)'):'')); if(res&&res.written) resetAfterSubmit(); }
+  }).catch(e=>{ btn.disabled=false; btn.textContent='Submit All'; alert('Connection error: '+e); });
 }
 
 function resetAfterSubmit(){
   sessionLines=[]; setupMoveType=null; setupHospital=''; setupDCNumber=''; setupInvoiceNumber=''; setupReason=''; setupRemarks=''; setupScannedBy='';
-  document.getElementById('purchaseInvoiceInput').value='';
-  document.getElementById('saleHospitalInput').value='';
-  document.getElementById('saleInvoiceInput').value='';
-  document.getElementById('dcHospitalInput').value='';
-  document.getElementById('dcNumberInput').value='';
-  document.getElementById('dcReturnHospitalInput').value='';
-  document.getElementById('dcReturnNumberSelect').innerHTML='<option value="">Enter hospital name first…</option>';
+  ['purchaseInvoiceInput','saleHospitalInput','saleInvoiceInput','dcHospitalInput','dcNumberInput','dcReturnHospitalInput','materialInRemarksInput','materialOutRemarksInput','setupScannedByInput'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('dcReturnNumberSelect').innerHTML='<option value="">Enter hospital name first\u2026</option>';
   document.getElementById('dcReturnNumberSelect').disabled=true;
   document.getElementById('materialInReasonSelect').value='';
-  document.getElementById('materialInRemarksInput').value='';
   document.getElementById('materialOutReasonSelect').value='';
-  document.getElementById('materialOutRemarksInput').value='';
-  document.getElementById('setupScannedByInput').value='';
   ['mtPurchase','mtSale','mtDC','mtDCReturn','mtMaterialIn','mtMaterialOut'].forEach(id=>document.getElementById(id).classList.remove('selected'));
   ['purchaseSetupBlock','saleSetupBlock','dcSetupBlock','dcReturnSetupBlock','materialInSetupBlock','materialOutSetupBlock'].forEach(id=>document.getElementById(id).classList.remove('show'));
   document.getElementById('startSessionBtn').disabled=true;
-  // Keep the segment selected — most operators run several sessions in a
-  // row for the same business unit, so re-picking it every time is friction.
-  // The movement-type section stays visible since a segment is still set.
   inReview=false; sessionActive=false;
   document.getElementById('reviewScreen').classList.remove('active');
   showSetupScreen();
 }
 
-// ════════════════════════════════════════════════════════
-//  DC USAGE MODAL (manual usage logging from DC Stock view)
-// ════════════════════════════════════════════════════════
-let dcUsageData={};
-// ════════════════════════════════════════════════════════
-//  MANUAL BARCODE ENTRY — fallback for packets the camera can't read
-//  (glare, transparent film, etc). Feeds straight into the same
-//  handleDecodedBarcode() pipeline as a camera scan, so dedup/qty-
-//  increment/unmapped-lookup all behave identically either way.
-// ════════════════════════════════════════════════════════
-function openManualEntry(){
-  if(!setupMoveType){ alert('Start a scan session first.'); return; }
-  document.getElementById('manualBarcodeInput').value='';
-  document.getElementById('manualLotInput').value='';
-  document.getElementById('manualExpiryInput').value='';
-  document.getElementById('manualEntryModal').classList.add('open');
-  setTimeout(()=>document.getElementById('manualBarcodeInput').focus(), 100);
-}
-function closeManualEntry(){
-  document.getElementById('manualEntryModal').classList.remove('open');
-}
-
+function openManualEntry(){ if(!setupMoveType){alert('Start a scan session first.');return;} document.getElementById('manualBarcodeInput').value=''; document.getElementById('manualLotInput').value=''; document.getElementById('manualExpiryInput').value=''; document.getElementById('manualEntryModal').classList.add('open'); setTimeout(()=>document.getElementById('manualBarcodeInput').focus(),100); }
+function closeManualEntry(){ document.getElementById('manualEntryModal').classList.remove('open'); }
 function confirmManualEntry(){
-  const raw = document.getElementById('manualBarcodeInput').value.trim();
-  const lotOverride = document.getElementById('manualLotInput').value.trim();
-  const expiryOverride = document.getElementById('manualExpiryInput').value.trim();
-  if(!raw){ alert('Please enter a barcode or GTIN.'); return; }
-
-  // Feed through the normal pipeline so dedup/qty-increment/lookup all work
-  // exactly as they would for a camera scan.
-  handleDecodedBarcode(raw, 'Manual');
-
-  // If the operator typed a separate lot/expiry (e.g. raw was just a bare
-  // GTIN with no GS1 structure), apply it to the line just created.
-  if((lotOverride || expiryOverride) && sessionLines.length){
-    const last = sessionLines[sessionLines.length-1];
-    if(lotOverride && !last.lot) last.lot = lotOverride;
-    if(expiryOverride && !last.expiry) last.expiry = expiryOverride;
-    renderSessionList();
-  }
-
+  const raw=document.getElementById('manualBarcodeInput').value.trim();
+  const lotOverride=document.getElementById('manualLotInput').value.trim();
+  const expiryOverride=document.getElementById('manualExpiryInput').value.trim();
+  if(!raw){alert('Please enter a barcode or GTIN.');return;}
+  handleDecodedBarcode(raw,'Manual');
+  if((lotOverride||expiryOverride)&&sessionLines.length){ const last=sessionLines[sessionLines.length-1]; if(lotOverride&&!last.lot) last.lot=lotOverride; if(expiryOverride&&!last.expiry) last.expiry=expiryOverride; renderSessionList(); }
   closeManualEntry();
 }
 
-function openDCUsage(itemName, gtin, lot, hospital, dcNumber, maxQty){
+let dcUsageData={};
+function openDCUsage(itemName,gtin,lot,hospital,dcNumber,maxQty){
   dcUsageData={itemName,gtin,lot,hospital,dcNumber,qty:1,maxQty};
   document.getElementById('dcUsageItem').value=itemName;
-  document.getElementById('dcUsageLot').value=lot||'—';
-  document.getElementById('dcUsageHospital').value=hospital + (dcNumber ? (' · DC# '+dcNumber) : '');
+  document.getElementById('dcUsageLot').value=lot||'\u2014';
+  document.getElementById('dcUsageHospital').value=hospital+(dcNumber?(' \u00b7 DC# '+dcNumber):'');
   document.getElementById('dcQtyVal').textContent='1';
   document.getElementById('dcUsageRemarks').value='';
-  document.getElementById('dcUsageSubtext').textContent=`Consignment at ${hospital}`+(dcNumber?` (DC# ${dcNumber})`:'');
+  document.getElementById('dcUsageSubtext').textContent='Consignment at '+hospital+(dcNumber?(' (DC# '+dcNumber+')'):'');
   document.getElementById('dcUsageModal').classList.add('open');
 }
 function closeDCModal(){ document.getElementById('dcUsageModal').classList.remove('open'); }
 function adjustDcQty(d){ dcUsageData.qty=Math.max(1,(dcUsageData.qty||1)+d); document.getElementById('dcQtyVal').textContent=dcUsageData.qty; }
-
 function submitDCUsage(){
   const btn=document.getElementById('dcUsageConfirmBtn');
   const remarks=document.getElementById('dcUsageRemarks').value.trim();
-  btn.disabled=true; btn.textContent='…Saving';
-  apiPost('logDCUsage',{
-    itemName:dcUsageData.itemName, gtin:dcUsageData.gtin,
-    lot:dcUsageData.lot, hospital:dcUsageData.hospital,
-    dcNumber:dcUsageData.dcNumber, qty:dcUsageData.qty, remarks
-  }).then(res=>{
-    btn.disabled=false; btn.textContent='✓ Log Usage';
-    if(res&&res.success){ closeDCModal(); loadDC(); }
-    else alert('Error: '+((res&&res.message)||'Failed'));
-  }).catch(e=>{ btn.disabled=false; btn.textContent='✓ Log Usage'; alert('Error: '+e); });
+  btn.disabled=true; btn.textContent='Saving\u2026';
+  apiPost('logDCUsage',{itemName:dcUsageData.itemName,gtin:dcUsageData.gtin,lot:dcUsageData.lot,hospital:dcUsageData.hospital,dcNumber:dcUsageData.dcNumber,qty:dcUsageData.qty,remarks})
+    .then(res=>{ btn.disabled=false; btn.textContent='Log Usage'; if(res&&res.success){closeDCModal();loadDC();}else alert((res&&res.message)||'Failed'); })
+    .catch(e=>{btn.disabled=false;btn.textContent='Log Usage';alert('Error: '+e);});
 }
 
-// ════════════════════════════════════════════════════════
-//  LOAD FUNCTIONS (Inventory / DC / Material / Reports / Logs views)
-// ════════════════════════════════════════════════════════
 function fmtNum(n){ return (parseFloat(n)||0).toLocaleString('en-IN'); }
 
-let lastInventoryData = null;
-
+let lastInventoryData=null;
 function loadInventory(){
   if(!invSegment) return;
   apiGet('getDashboardData',{segment:invSegment}).then(res=>{
     if(!res||!res.success) return;
-    lastInventoryData = res;
+    lastInventoryData=res;
     const k=res.kpis;
     document.getElementById('invTotalScans').textContent=fmtNum(k.totalScans);
     document.getElementById('invTotalIn').textContent=fmtNum(k.totalIn);
@@ -1750,87 +1035,30 @@ function loadInventory(){
   }).catch(()=>{});
 }
 
-function setInvGroupMode(grouped){
-  invGroupByItem = grouped;
-  document.querySelectorAll('#invViewToggle button').forEach((b,i)=>b.classList.toggle('active', (i===0)===grouped));
-  filterInventoryTable();
-}
+function setInvGroupMode(grouped){ invGroupByItem=grouped; document.querySelectorAll('#invViewToggle button').forEach((b,i)=>b.classList.toggle('active',(i===0)===grouped)); filterInventoryTable(); }
 
-// DD/MM/YYYY string helpers — Stock Summary dates arrive pre-formatted as
-// strings, not Date objects, so grouping needs its own light parser.
-function parseDMY_(s){
-  if(!s || s==='—') return null;
-  const m = String(s).match(/^(\d{2})\/(\d{2})\/(\d{4})/);
-  if(!m) return null;
-  const d = new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
-  return isNaN(d) ? null : d;
-}
-function earliestDMY_(arr){
-  let best=null, bestStr='—';
-  arr.forEach(s=>{ const d=parseDMY_(s); if(d && (!best || d<best)){ best=d; bestStr=s; } });
-  return bestStr;
-}
-function latestDMY_(a,b){
-  const da=parseDMY_(a), db=parseDMY_(b);
-  if(!da) return b; if(!db) return a;
-  return db>da ? b : a;
-}
+function parseDMY_(s){ if(!s||s==='\u2014') return null; const m=String(s).match(/^(\d{2})\/(\d{2})\/(\d{4})/); if(!m) return null; const d=new Date(parseInt(m[3]),parseInt(m[2])-1,parseInt(m[1])); return isNaN(d)?null:d; }
+function earliestDMY_(arr){ let best=null,bestStr='\u2014'; arr.forEach(s=>{const d=parseDMY_(s);if(d&&(!best||d<best)){best=d;bestStr=s;}}); return bestStr; }
+function latestDMY_(a,b){ const da=parseDMY_(a),db=parseDMY_(b); if(!da) return b; if(!db) return a; return db>da?b:a; }
 
-// Rolls per-lot Stock Summary rows up to one row per item — sums In/Out/
-// Balance across lots, shows lot count instead of a single lot number,
-// earliest expiry across those lots, and the most recent scan timestamp.
 function groupRowsByItem(rows){
-  const map = {};
-  rows.forEach(r=>{
-    if(!map[r.itemName]) map[r.itemName] = { itemName:r.itemName, lots:0, qtyIn:0, qtyOut:0, balance:0, mrpSet:new Set(), expiries:[], lastScanned:'' };
-    const g = map[r.itemName];
-    g.lots++;
-    g.qtyIn += parseFloat(r.qtyIn)||0;
-    g.qtyOut += parseFloat(r.qtyOut)||0;
-    g.balance += parseFloat(r.balance)||0;
-    if(r.mrp) g.mrpSet.add(r.mrp);
-    if(r.expiry && r.expiry!=='—') g.expiries.push(r.expiry);
-    g.lastScanned = g.lastScanned ? latestDMY_(g.lastScanned, r.lastScanned) : r.lastScanned;
-  });
-  return Object.values(map).map(g=>({
-    itemName: g.itemName,
-    lot: g.lots>1 ? (g.lots+' lots') : '1 lot',
-    expiry: g.expiries.length ? earliestDMY_(g.expiries) : '—',
-    mrp: g.mrpSet.size===1 ? Array.from(g.mrpSet)[0] : '',
-    qtyIn:g.qtyIn, qtyOut:g.qtyOut, balance:g.balance, lastScanned:g.lastScanned
-  })).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
+  const map={};
+  rows.forEach(r=>{ if(!map[r.itemName]) map[r.itemName]={itemName:r.itemName,lots:0,qtyIn:0,qtyOut:0,balance:0,mrpSet:new Set(),expiries:[],lastScanned:''}; const g=map[r.itemName]; g.lots++; g.qtyIn+=parseFloat(r.qtyIn)||0; g.qtyOut+=parseFloat(r.qtyOut)||0; g.balance+=parseFloat(r.balance)||0; if(r.mrp) g.mrpSet.add(r.mrp); if(r.expiry&&r.expiry!=='\u2014') g.expiries.push(r.expiry); g.lastScanned=g.lastScanned?latestDMY_(g.lastScanned,r.lastScanned):r.lastScanned; });
+  return Object.values(map).map(g=>({itemName:g.itemName,lot:g.lots>1?(g.lots+' lots'):'1 lot',expiry:g.expiries.length?earliestDMY_(g.expiries):'\u2014',mrp:g.mrpSet.size===1?Array.from(g.mrpSet)[0]:'',qtyIn:g.qtyIn,qtyOut:g.qtyOut,balance:g.balance,lastScanned:g.lastScanned})).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
 }
 
 function renderInventoryTable(rows){
   const tbody=document.getElementById('invTableBody');
-  if(!rows.length){
-    tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><p>No inventory scans yet for this segment</p></div></td></tr>';
-  } else {
-    tbody.innerHTML=rows.map(r=>`
-      <tr class="${r.balance<0?'neg':''}">
-        <td style="font-weight:700;">${esc(r.itemName)}</td>
-        <td>${esc(r.lot||'—')}</td>
-        <td>${cleanDate(r.expiry)}</td>
-        <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
-        <td style="color:var(--green);font-weight:700;">${fmtNum(r.qtyIn)}</td>
-        <td style="color:var(--red);font-weight:700;">${fmtNum(r.qtyOut)}</td>
-        <td class="bal">${fmtNum(r.balance)}</td>
-        <td style="font-size:10px;color:var(--text3);">${cleanDate(r.lastScanned)}</td>
-      </tr>`).join('');
-  }
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83d\udce6</div><p>No inventory scans yet for this segment</p></div></td></tr>'; return; }
+  tbody.innerHTML=rows.map(r=>'<tr class="'+(r.balance<0?'neg':'')+'"><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td>'+cleanDate(r.expiry)+'</td><td>'+(r.mrp?('\u20b9'+fmtNum(r.mrp)):'\u2014')+'</td><td style="color:var(--green);font-weight:700;">'+fmtNum(r.qtyIn)+'</td><td style="color:var(--red);font-weight:700;">'+fmtNum(r.qtyOut)+'</td><td class="bal">'+fmtNum(r.balance)+'</td><td style="font-size:10px;color:var(--text3);">'+cleanDate(r.lastScanned)+'</td></tr>').join('');
 }
 
 function filterInventoryTable(){
   if(!lastInventoryData) return;
-  const q = document.getElementById('invSearchInput').value.trim().toLowerCase();
-  let rows = !q ? lastInventoryData.stockRows
-    : lastInventoryData.stockRows.filter(r => (r.itemName||'').toLowerCase().includes(q));
-  if(q && !rows.length){
-    document.getElementById('invTableBody').innerHTML =
-      `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔍</div><p>No items matching "${esc(q)}"</p></div></td></tr>`;
-    return;
-  }
-  if(invGroupByItem) rows = groupRowsByItem(rows);
+  const q=document.getElementById('invSearchInput').value.trim().toLowerCase();
+  let rows=!q?lastInventoryData.stockRows:lastInventoryData.stockRows.filter(r=>(r.itemName||'').toLowerCase().includes(q));
+  if(q&&!rows.length){ document.getElementById('invTableBody').innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83d\udd0d</div><p>No items matching "'+esc(q)+'"</p></div></td></tr>'; return; }
+  if(invGroupByItem) rows=groupRowsByItem(rows);
   renderInventoryTable(rows);
 }
 
@@ -1838,34 +1066,23 @@ function loadLogs(){
   apiGet('getDashboardData',{}).then(res=>{
     if(!res||!res.success) return;
     const el=document.getElementById('recentLogsList');
-    if(!res.recentLogs.length){
-      el.innerHTML='<div class="empty"><p>No activity yet</p></div>';
-    } else {
-      el.innerHTML=res.recentLogs.map(l=>{
-        let dirCls='in', dirLabel='IN';
-        if(l.direction==='OUT'){ dirCls = l.scanType==='DC' ? 'dc' : (l.scanType==='MATERIAL' ? 'mat' : 'out'); dirLabel = l.scanType==='DC' ? 'DC' : (l.scanType==='MATERIAL' ? 'Material Out' : 'Sale'); }
-        else if(l.scanType==='DC_RETURN'){ dirCls='ret'; dirLabel='DC Return'; }
-        else if(l.scanType==='MATERIAL'){ dirCls='mat'; dirLabel='Material In'; }
-        return `<div class="log-entry">
-          <div class="log-top">
-            <span class="log-name">${esc(l.itemName||(l.gtin?'GTIN: '+l.gtin:'Unknown'))}</span>
-            <span class="log-dir ${dirCls}">${dirLabel}</span>
-          </div>
-         <div class="log-meta">Qty: ${fmtNum(l.qty)}${l.lot?' · Lot: '+esc(l.lot):''}${l.serialno?' · S/N: '+esc(l.serialno):''}${l.hospital?' · Hospital: '+esc(l.hospital):''}${l.dcNumber?' · DC# '+esc(l.dcNumber):''}${l.invoiceNumber?' · Inv: '+esc(l.invoiceNumber):''}${l.scannedBy?' · By: '+esc(l.scannedBy):''}</div>
-          <div class="log-time">${cleanDate(l.timestamp)}</div>
-        </div>`;
-      }).join('');
-    }
+    if(!res.recentLogs.length){ el.innerHTML='<div class="empty"><p>No activity yet</p></div>'; return; }
+    el.innerHTML=res.recentLogs.map(l=>{
+      let dirCls='in',dirLabel='IN';
+      if(l.direction==='OUT'){dirCls=l.scanType==='DC'?'dc':(l.scanType==='MATERIAL'?'mat':'out');dirLabel=l.scanType==='DC'?'DC':(l.scanType==='MATERIAL'?'Material Out':'Sale');}
+      else if(l.scanType==='DC_RETURN'){dirCls='ret';dirLabel='DC Return';}
+      else if(l.scanType==='MATERIAL'){dirCls='mat';dirLabel='Material In';}
+      return '<div class="log-entry"><div class="log-top"><span class="log-name">'+esc(l.itemName||(l.gtin?'GTIN: '+l.gtin:'Unknown'))+'</span><span class="log-dir '+dirCls+'">'+dirLabel+'</span></div><div class="log-meta">Qty: '+fmtNum(l.qty)+(l.lot?' \u00b7 Lot: '+esc(l.lot):'')+(l.serialno?' \u00b7 S/N: '+esc(l.serialno):'')+(l.hospital?' \u00b7 Hospital: '+esc(l.hospital):'')+(l.dcNumber?' \u00b7 DC# '+esc(l.dcNumber):'')+(l.invoiceNumber?' \u00b7 Inv: '+esc(l.invoiceNumber):'')+(l.scannedBy?' \u00b7 By: '+esc(l.scannedBy):'')+'</div><div class="log-time">'+cleanDate(l.timestamp)+'</div></div>';
+    }).join('');
   }).catch(()=>{});
 }
 
-let lastDCData = null;
-
+let lastDCData=null;
 function loadDC(){
   if(!dcSegment) return;
   apiGet('getDCStockData',{segment:dcSegment}).then(res=>{
     if(!res||!res.success) return;
-    lastDCData = res;
+    lastDCData=res;
     document.getElementById('dcHospitals').textContent=res.kpis.hospitals;
     document.getElementById('dcTotalSent').textContent=fmtNum(res.kpis.totalSent);
     document.getElementById('dcTotalUsed').textContent=fmtNum(res.kpis.totalUsed);
@@ -1874,150 +1091,52 @@ function loadDC(){
   }).catch(()=>{});
 }
 
-function setDcGroupMode(grouped){
-  dcGroupByItem = grouped;
-  document.querySelectorAll('#dcViewToggle button').forEach((b,i)=>b.classList.toggle('active', (i===0)===grouped));
-  filterDCHospitals();
-}
+function setDcGroupMode(grouped){ dcGroupByItem=grouped; document.querySelectorAll('#dcViewToggle button').forEach((b,i)=>b.classList.toggle('active',(i===0)===grouped)); filterDCHospitals(); }
+function toggleHospitalSection(hosp){ if(dcExpandedHospitals.has(hosp)) dcExpandedHospitals.delete(hosp); else dcExpandedHospitals.add(hosp); filterDCHospitals(); }
+function expandAllHospitals(){ if(!lastDCData) return; Object.keys(lastDCData.byHospital).forEach(h=>dcExpandedHospitals.add(h)); filterDCHospitals(); }
+function collapseAllHospitals(){ dcExpandedHospitals.clear(); filterDCHospitals(); }
 
-function toggleHospitalSection(hosp){
-  if(dcExpandedHospitals.has(hosp)) dcExpandedHospitals.delete(hosp);
-  else dcExpandedHospitals.add(hosp);
-  filterDCHospitals();
-}
-
-function expandAllHospitals(){
-  if(!lastDCData) return;
-  Object.keys(lastDCData.byHospital).forEach(h=>dcExpandedHospitals.add(h));
-  filterDCHospitals();
-}
-function collapseAllHospitals(){
-  dcExpandedHospitals.clear();
-  filterDCHospitals();
-}
-
-// Rolls per-lot DC Stock rows up to one row per item within a hospital —
-// sums Sent/Used/Returned/Balance across lots and DC Numbers. No "Log Use"
-// action here since usage has to be logged against a specific lot — switch
-// to By Lot for that.
 function groupDCRowsByItem(rows){
   const map={};
-  rows.forEach(r=>{
-    if(!map[r.itemName]) map[r.itemName] = { itemName:r.itemName, dcNumbers:new Set(), lots:0, sent:0, used:0, returned:0, balance:0, mrpSet:new Set() };
-    const g=map[r.itemName];
-    if(r.dcNumber) g.dcNumbers.add(r.dcNumber);
-    g.lots++;
-    g.sent+=r.sent; g.used+=r.used; g.returned+=r.returned; g.balance+=r.balance;
-    if(r.mrp) g.mrpSet.add(r.mrp);
-  });
-  return Object.values(map).map(g=>({
-    itemName:g.itemName, dcCount:g.dcNumbers.size, lots:g.lots,
-    sent:g.sent, used:g.used, returned:g.returned, balance:g.balance,
-    mrp: g.mrpSet.size===1 ? Array.from(g.mrpSet)[0] : ''
-  })).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
+  rows.forEach(r=>{ if(!map[r.itemName]) map[r.itemName]={itemName:r.itemName,dcNumbers:new Set(),lots:0,sent:0,used:0,returned:0,balance:0,mrpSet:new Set()}; const g=map[r.itemName]; if(r.dcNumber) g.dcNumbers.add(r.dcNumber); g.lots++; g.sent+=r.sent; g.used+=r.used; g.returned+=r.returned; g.balance+=r.balance; if(r.mrp) g.mrpSet.add(r.mrp); });
+  return Object.values(map).map(g=>({itemName:g.itemName,dcCount:g.dcNumbers.size,lots:g.lots,sent:g.sent,used:g.used,returned:g.returned,balance:g.balance,mrp:g.mrpSet.size===1?Array.from(g.mrpSet)[0]:''})).sort((a,b)=>(a.itemName||'').localeCompare(b.itemName||''));
 }
 
-function renderDCItemTable(rows){
-  return `<div class="tbl-wrap"><table>
-    <thead><tr><th>Item</th><th>DC#s</th><th>Lots</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th></tr></thead>
-    <tbody>
-      ${rows.map(r=>`
-        <tr class="${r.balance<=0?'neg':''}">
-          <td style="font-weight:700;">${esc(r.itemName)}</td>
-          <td>${r.dcCount}</td>
-          <td>${r.lots}</td>
-          <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
-          <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
-          <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
-          <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
-          <td class="bal">${fmtNum(r.balance)}</td>
-        </tr>`).join('')}
-    </tbody>
-  </table></div>`;
-}
+function renderDCItemTable(rows){ return '<div class="tbl-wrap"><table><thead><tr><th>Item</th><th>DC#s</th><th>Lots</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th></tr></thead><tbody>'+rows.map(r=>'<tr class="'+(r.balance<=0?'neg':'')+'"><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+r.dcCount+'</td><td>'+r.lots+'</td><td>'+(r.mrp?('\u20b9'+fmtNum(r.mrp)):'\u2014')+'</td><td style="color:var(--amber);font-weight:700;">'+fmtNum(r.sent)+'</td><td style="color:var(--green);font-weight:700;">'+fmtNum(r.used)+'</td><td style="color:var(--purple);font-weight:700;">'+fmtNum(r.returned)+'</td><td class="bal">'+fmtNum(r.balance)+'</td></tr>').join('')+'</tbody></table></div>'; }
 
-function renderDCLotTable(rows, hosp){
-  return `<div class="tbl-wrap"><table>
-    <thead><tr><th>DC Number</th><th>Item</th><th>Lot</th><th>Expiry</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead>
-    <tbody>
-      ${rows.map(r=>`
-        <tr class="${r.balance<=0?'neg':''}">
-          <td style="font-family:'Courier New',monospace;font-size:11px;color:var(--text2);">${esc(r.dcNumber||'—')}</td>
-          <td style="font-weight:700;">${esc(r.itemName)}</td>
-          <td>${esc(r.lot||'—')}</td>
-          <td>${cleanDate(r.expiry)}</td>
-          <td>${r.mrp?('₹'+fmtNum(r.mrp)):'—'}</td>
-          <td style="color:var(--amber);font-weight:700;">${fmtNum(r.sent)}</td>
-          <td style="color:var(--green);font-weight:700;">${fmtNum(r.used)}</td>
-          <td style="color:var(--purple);font-weight:700;">${fmtNum(r.returned)}</td>
-          <td class="bal">${fmtNum(r.balance)}</td>
-          <td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage('${esc(r.itemName).replace(/'/g,"\\'")}','${esc(r.gtin)}','${esc(r.lot||'')}','${esc(hosp).replace(/'/g,"\\'")}','${esc(r.dcNumber||'').replace(/'/g,"\\'")}',${r.balance})">Log Use</button></td>
-        </tr>`).join('')}
-    </tbody>
-  </table></div>`;
-}
+function renderDCLotTable(rows,hosp){ return '<div class="tbl-wrap"><table><thead><tr><th>DC Number</th><th>Item</th><th>Lot</th><th>Expiry</th><th>MRP</th><th>Sent</th><th>Used</th><th>Returned</th><th>At Hospital</th><th></th></tr></thead><tbody>'+rows.map(r=>'<tr class="'+(r.balance<=0?'neg':'')+'"><td style="font-family:\'Courier New\',monospace;font-size:11px;color:var(--text2);">'+esc(r.dcNumber||'\u2014')+'</td><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td>'+cleanDate(r.expiry)+'</td><td>'+(r.mrp?('\u20b9'+fmtNum(r.mrp)):'\u2014')+'</td><td style="color:var(--amber);font-weight:700;">'+fmtNum(r.sent)+'</td><td style="color:var(--green);font-weight:700;">'+fmtNum(r.used)+'</td><td style="color:var(--purple);font-weight:700;">'+fmtNum(r.returned)+'</td><td class="bal">'+fmtNum(r.balance)+'</td><td><button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="openDCUsage(\''+esc(r.itemName).replace(/'/g,"\\'")+'\',\''+esc(r.gtin)+'\',\''+esc(r.lot||'')+'\',\''+esc(hosp).replace(/'/g,"\\'")+'\',\''+esc(r.dcNumber||'').replace(/'/g,"\\'")+'\','+r.balance+')">Log Use</button></td></tr>').join('')+'</tbody></table></div>'; }
 
 function renderDCHospitals(byHospital){
   const el=document.getElementById('dcHospitalsList');
-  const hospNames = Object.keys(byHospital);
-  if(!hospNames.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">🏥</div><p>No DC stock yet for this segment</p><small>Start a DC / Consignment session to send stock to a hospital</small></div>';
-    return;
-  }
-  // First time we ever see exactly one hospital, auto-expand it — no point
-  // making someone click through a collapsed section when there's nothing
-  // else to compare it against.
-  if(hospNames.length===1 && dcExpandedHospitals.size===0) dcExpandedHospitals.add(hospNames[0]);
-
-  el.innerHTML = hospNames.map(hosp=>{
-    const rows = byHospital[hosp];
-    const itemCount = new Set(rows.map(r=>r.itemName)).size;
-    const totalSent = rows.reduce((a,r)=>a+r.sent,0);
-    const totalUsed = rows.reduce((a,r)=>a+r.used,0);
-    const totalReturned = rows.reduce((a,r)=>a+r.returned,0);
-    const totalBalance = rows.reduce((a,r)=>a+r.balance,0);
-    const expanded = dcExpandedHospitals.has(hosp);
-    const hospEsc = esc(hosp).replace(/'/g,"\\'");
-    return `
-    <div class="hospital-header ${expanded?'':'collapsed'}" onclick="toggleHospitalSection('${hospEsc}')">
-      <h4><span class="hh-chevron">▾</span>🏥 ${esc(hosp)}</h4>
-      <div class="hh-chips">
-        <span class="hh-chip">${itemCount} item${itemCount!==1?'s':''}</span>
-        <span class="hh-chip amber">Sent ${fmtNum(totalSent)}</span>
-        <span class="hh-chip green">Used ${fmtNum(totalUsed)}</span>
-        <span class="hh-chip purple">Ret. ${fmtNum(totalReturned)}</span>
-        <span class="hh-chip red">At Hosp. ${fmtNum(totalBalance)}</span>
-      </div>
-    </div>
-    <div class="hospital-body ${expanded?'':'collapsed'}">
-      ${dcGroupByItem ? renderDCItemTable(groupDCRowsByItem(rows)) : renderDCLotTable(rows, hosp)}
-    </div>`;
+  const hospNames=Object.keys(byHospital);
+  if(!hospNames.length){ el.innerHTML='<div class="empty"><div class="empty-icon">\ud83c\udfe5</div><p>No DC stock yet for this segment</p><small>Start a DC / Consignment session to send stock to a hospital</small></div>'; return; }
+  if(hospNames.length===1&&dcExpandedHospitals.size===0) dcExpandedHospitals.add(hospNames[0]);
+  el.innerHTML=hospNames.map(hosp=>{
+    const rows=byHospital[hosp];
+    const itemCount=new Set(rows.map(r=>r.itemName)).size;
+    const totalSent=rows.reduce((a,r)=>a+r.sent,0),totalUsed=rows.reduce((a,r)=>a+r.used,0),totalReturned=rows.reduce((a,r)=>a+r.returned,0),totalBalance=rows.reduce((a,r)=>a+r.balance,0);
+    const expanded=dcExpandedHospitals.has(hosp);
+    const hospEsc=esc(hosp).replace(/'/g,"\\'");
+    return '<div class="hospital-header '+(expanded?'':'collapsed')+'" onclick="toggleHospitalSection(\''+hospEsc+'\')"><h4><span class="hh-chevron">\u25be</span>'+esc(hosp)+'</h4><div class="hh-chips"><span class="hh-chip">'+itemCount+' item'+(itemCount!==1?'s':'')+'</span><span class="hh-chip amber">Sent '+fmtNum(totalSent)+'</span><span class="hh-chip green">Used '+fmtNum(totalUsed)+'</span><span class="hh-chip purple">Ret. '+fmtNum(totalReturned)+'</span><span class="hh-chip red">At Hosp. '+fmtNum(totalBalance)+'</span></div></div><div class="hospital-body '+(expanded?'':'collapsed')+'">'+(dcGroupByItem?renderDCItemTable(groupDCRowsByItem(rows)):renderDCLotTable(rows,hosp))+'</div>';
   }).join('');
 }
 
 function filterDCHospitals(){
   if(!lastDCData) return;
-  const q = document.getElementById('dcSearchInput').value.trim().toLowerCase();
-  if(!q){ renderDCHospitals(lastDCData.byHospital); return; }
-  const filtered = {};
-  Object.entries(lastDCData.byHospital).forEach(([hosp,rows])=>{
-    if(hosp.toLowerCase().includes(q)) filtered[hosp]=rows;
-  });
-  if(!Object.keys(filtered).length){
-    document.getElementById('dcHospitalsList').innerHTML =
-      `<div class="empty"><div class="empty-icon">🔍</div><p>No hospitals matching "${esc(q)}"</p></div>`;
-  } else {
-    renderDCHospitals(filtered);
-  }
+  const q=document.getElementById('dcSearchInput').value.trim().toLowerCase();
+  if(!q){renderDCHospitals(lastDCData.byHospital);return;}
+  const filtered={};
+  Object.entries(lastDCData.byHospital).forEach(([hosp,rows])=>{ if(hosp.toLowerCase().includes(q)) filtered[hosp]=rows; });
+  if(!Object.keys(filtered).length){ document.getElementById('dcHospitalsList').innerHTML='<div class="empty"><div class="empty-icon">\ud83d\udd0d</div><p>No hospitals matching "'+esc(q)+'"</p></div>'; }
+  else renderDCHospitals(filtered);
 }
 
-let lastMaterialData = null;
-
+let lastMaterialData=null;
 function loadMaterialLog(){
   if(!materialSegment) return;
   apiGet('getMaterialLogData',{segment:materialSegment}).then(res=>{
     if(!res||!res.success) return;
-    lastMaterialData = res;
+    lastMaterialData=res;
     document.getElementById('matTotalIn').textContent=fmtNum(res.kpis.totalIn);
     document.getElementById('matTotalOut').textContent=fmtNum(res.kpis.totalOut);
     document.getElementById('matNet').textContent=fmtNum(res.kpis.net);
@@ -2025,114 +1144,44 @@ function loadMaterialLog(){
   }).catch(()=>{});
 }
 
-function setMatGroupMode(grouped){
-  matGroupByReason = grouped;
-  document.querySelectorAll('#matViewToggle button').forEach((b,i)=>b.classList.toggle('active', (i===0)===grouped));
-  renderMaterialView(lastMaterialData ? currentMaterialFilteredRows_() : []);
-}
-
-function toggleReasonSection(reason){
-  if(matExpandedReasons.has(reason)) matExpandedReasons.delete(reason);
-  else matExpandedReasons.add(reason);
-  renderMaterialView(currentMaterialFilteredRows_());
-}
-
-// Re-derives the currently-filtered row set from the search box, so toggling
-// group mode or expanding a reason section doesn't lose an active search.
-function currentMaterialFilteredRows_(){
-  if(!lastMaterialData) return [];
-  const q = document.getElementById('matSearchInput').value.trim().toLowerCase();
-  return !q ? lastMaterialData.rows
-    : lastMaterialData.rows.filter(r => (r.itemName||'').toLowerCase().includes(q) || (r.reason||'').toLowerCase().includes(q));
-}
+function setMatGroupMode(grouped){ matGroupByReason=grouped; document.querySelectorAll('#matViewToggle button').forEach((b,i)=>b.classList.toggle('active',(i===0)===grouped)); renderMaterialView(currentMaterialFilteredRows_()); }
+function toggleReasonSection(reason){ if(matExpandedReasons.has(reason)) matExpandedReasons.delete(reason); else matExpandedReasons.add(reason); renderMaterialView(currentMaterialFilteredRows_()); }
+function currentMaterialFilteredRows_(){ if(!lastMaterialData) return []; const q=document.getElementById('matSearchInput').value.trim().toLowerCase(); return !q?lastMaterialData.rows:lastMaterialData.rows.filter(r=>(r.itemName||'').toLowerCase().includes(q)||(r.reason||'').toLowerCase().includes(q)); }
 
 function renderMaterialView(rows){
-  document.getElementById('matFlatWrap').style.display = matGroupByReason ? 'none' : 'block';
-  document.getElementById('matGroupedWrap').style.display = matGroupByReason ? 'block' : 'none';
-  if(matGroupByReason) renderMaterialGrouped(rows);
-  else renderMaterialTable(rows);
+  document.getElementById('matFlatWrap').style.display=matGroupByReason?'none':'block';
+  document.getElementById('matGroupedWrap').style.display=matGroupByReason?'block':'none';
+  if(matGroupByReason) renderMaterialGrouped(rows); else renderMaterialTable(rows);
 }
 
 function renderMaterialGrouped(rows){
-  const wrap = document.getElementById('matGroupedWrap');
-  if(!rows.length){
-    wrap.innerHTML = '<div class="empty"><div class="empty-icon">🔄</div><p>No material movements yet for this segment</p><small>Use Material In / Material Out from the Scan tab</small></div>';
-    return;
-  }
-  const groups = {};
-  rows.forEach(r=>{
-    const key = r.reason || '(No reason given)';
-    if(!groups[key]) groups[key]=[];
-    groups[key].push(r);
-  });
-  const reasonNames = Object.keys(groups);
-  if(reasonNames.length===1 && matExpandedReasons.size===0) matExpandedReasons.add(reasonNames[0]);
-
-  wrap.innerHTML = reasonNames.map(reason=>{
-    const items = groups[reason];
-    const totalIn = items.filter(r=>r.direction==='IN').reduce((a,r)=>a+r.qty,0);
-    const totalOut = items.filter(r=>r.direction==='OUT').reduce((a,r)=>a+r.qty,0);
-    const expanded = matExpandedReasons.has(reason);
-    const reasonEsc = esc(reason).replace(/'/g,"\\'");
-    return `
-    <div class="reason-header ${expanded?'':'collapsed'}" onclick="toggleReasonSection('${reasonEsc}')">
-      <h4><span class="hh-chevron">▾</span>🔄 ${esc(reason)}</h4>
-      <div class="hh-chips">
-        <span class="hh-chip">${items.length} entr${items.length!==1?'ies':'y'}</span>
-        <span class="hh-chip green">In ${fmtNum(totalIn)}</span>
-        <span class="hh-chip red">Out ${fmtNum(totalOut)}</span>
-      </div>
-    </div>
-    <div class="reason-body ${expanded?'':'collapsed'}">
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Item Name</th><th>Lot</th><th>Dir.</th><th>Qty</th><th>Remarks</th><th>By</th><th>Timestamp</th></tr></thead>
-        <tbody>
-          ${items.map(r=>`
-            <tr>
-              <td style="font-weight:700;">${esc(r.itemName)}</td>
-              <td>${esc(r.lot||'—')}</td>
-              <td><span class="log-dir ${r.direction==='IN'?'in':'mat'}">${r.direction}</span></td>
-              <td style="font-weight:800;">${fmtNum(r.qty)}</td>
-              <td style="color:var(--text2);">${esc(r.remarks||'—')}</td>
-              <td style="font-size:11px;color:var(--text3);">${esc(r.scannedBy||'—')}</td>
-              <td style="font-size:10px;color:var(--text3);">${cleanDate(r.timestamp)}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table></div>
-    </div>`;
+  const wrap=document.getElementById('matGroupedWrap');
+  if(!rows.length){ wrap.innerHTML='<div class="empty"><div class="empty-icon">\ud83d\udd04</div><p>No material movements yet for this segment</p><small>Use Material In / Material Out from the Scan tab</small></div>'; return; }
+  const groups={};
+  rows.forEach(r=>{ const key=r.reason||'(No reason given)'; if(!groups[key]) groups[key]=[]; groups[key].push(r); });
+  const reasonNames=Object.keys(groups);
+  if(reasonNames.length===1&&matExpandedReasons.size===0) matExpandedReasons.add(reasonNames[0]);
+  wrap.innerHTML=reasonNames.map(reason=>{
+    const items=groups[reason];
+    const totalIn=items.filter(r=>r.direction==='IN').reduce((a,r)=>a+r.qty,0);
+    const totalOut=items.filter(r=>r.direction==='OUT').reduce((a,r)=>a+r.qty,0);
+    const expanded=matExpandedReasons.has(reason);
+    const reasonEsc=esc(reason).replace(/'/g,"\\'");
+    return '<div class="reason-header '+(expanded?'':'collapsed')+'" onclick="toggleReasonSection(\''+reasonEsc+'\')"><h4><span class="hh-chevron">\u25be</span>'+esc(reason)+'</h4><div class="hh-chips"><span class="hh-chip">'+items.length+' entr'+(items.length!==1?'ies':'y')+'</span><span class="hh-chip green">In '+fmtNum(totalIn)+'</span><span class="hh-chip red">Out '+fmtNum(totalOut)+'</span></div></div><div class="reason-body '+(expanded?'':'collapsed')+'"><div class="tbl-wrap"><table><thead><tr><th>Item Name</th><th>Lot</th><th>Dir.</th><th>Qty</th><th>Remarks</th><th>By</th><th>Timestamp</th></tr></thead><tbody>'+items.map(r=>'<tr><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td><span class="log-dir '+(r.direction==='IN'?'in':'mat')+'">'+r.direction+'</span></td><td style="font-weight:800;">'+fmtNum(r.qty)+'</td><td style="color:var(--text2);">'+esc(r.remarks||'\u2014')+'</td><td style="font-size:11px;color:var(--text3);">'+esc(r.scannedBy||'\u2014')+'</td><td style="font-size:10px;color:var(--text3);">'+cleanDate(r.timestamp)+'</td></tr>').join('')+'</tbody></table></div></div>';
   }).join('');
 }
 
 function renderMaterialTable(rows){
   const tbody=document.getElementById('matTableBody');
-  if(!rows.length){
-    tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔄</div><p>No material movements yet for this segment</p><small>Use Material In / Material Out from the Scan tab</small></div></td></tr>';
-  } else {
-    tbody.innerHTML=rows.map(r=>`
-      <tr>
-        <td style="font-weight:700;">${esc(r.itemName)}</td>
-        <td>${esc(r.lot||'—')}</td>
-        <td><span class="log-dir ${r.direction==='IN'?'in':'mat'}">${r.direction}</span></td>
-        <td style="font-weight:800;">${fmtNum(r.qty)}</td>
-        <td>${esc(r.reason||'—')}</td>
-        <td style="color:var(--text2);">${esc(r.remarks||'—')}</td>
-        <td style="font-size:11px;color:var(--text3);">${esc(r.scannedBy||'—')}</td>
-        <td style="font-size:10px;color:var(--text3);">${cleanDate(r.timestamp)}</td>
-      </tr>`).join('');
-  }
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83d\udd04</div><p>No material movements yet for this segment</p></div></td></tr>'; return; }
+  tbody.innerHTML=rows.map(r=>'<tr><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td><span class="log-dir '+(r.direction==='IN'?'in':'mat')+'">'+r.direction+'</span></td><td style="font-weight:800;">'+fmtNum(r.qty)+'</td><td>'+esc(r.reason||'\u2014')+'</td><td style="color:var(--text2);">'+esc(r.remarks||'\u2014')+'</td><td style="font-size:11px;color:var(--text3);">'+esc(r.scannedBy||'\u2014')+'</td><td style="font-size:10px;color:var(--text3);">'+cleanDate(r.timestamp)+'</td></tr>').join('');
 }
 
 function filterMaterialTable(){
   if(!lastMaterialData) return;
-  const rows = currentMaterialFilteredRows_();
-  const q = document.getElementById('matSearchInput').value.trim().toLowerCase();
-  if(q && !rows.length){
-    document.getElementById('matFlatWrap').style.display='block';
-    document.getElementById('matGroupedWrap').style.display='none';
-    document.getElementById('matTableBody').innerHTML =
-      `<tr><td colspan="8"><div class="empty"><div class="empty-icon">🔍</div><p>No movements matching "${esc(q)}"</p></div></td></tr>`;
-    return;
-  }
+  const rows=currentMaterialFilteredRows_();
+  const q=document.getElementById('matSearchInput').value.trim().toLowerCase();
+  if(q&&!rows.length){ document.getElementById('matFlatWrap').style.display='block'; document.getElementById('matGroupedWrap').style.display='none'; document.getElementById('matTableBody').innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">\ud83d\udd0d</div><p>No movements matching "'+esc(q)+'"</p></div></td></tr>'; return; }
   renderMaterialView(rows);
 }
 
@@ -2140,26 +1189,15 @@ function loadReports(){
   apiGet('getExpiryReport',{}).then(res=>{
     if(!res||!res.success) return;
     const tbody=document.getElementById('expiryTableBody');
-    if(!res.items||!res.items.length){
-      tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">✅</div><p>No items expiring in the next 180 days</p></div></td></tr>';
-      return;
-    }
+    if(!res.items||!res.items.length){ tbody.innerHTML='<tr><td colspan="7"><div class="empty"><div class="empty-icon">\u2705</div><p>No items expiring in the next 180 days</p></div></td></tr>'; return; }
     tbody.innerHTML=res.items.map(r=>{
       const days=r.daysLeft;
-      let cls='', badgeCls='exp-ok', badgeLabel='OK';
+      let cls='',badgeCls='exp-ok',badgeLabel='OK';
       if(days<0){cls='expired';badgeCls='exp-expired';badgeLabel='EXPIRED';}
       else if(days<=30){cls='expiring-soon';badgeCls='exp-danger';badgeLabel=days+'d';}
       else if(days<=90){cls='expiring-soon';badgeCls='exp-warn';badgeLabel=days+'d';}
       else{badgeLabel=days+'d';}
-      return `<tr class="${cls}">
-        <td style="font-weight:700;">${esc(r.itemName)}</td>
-        <td>${esc(r.lot||'—')}</td>
-        <td>${cleanDate(r.expiry)}</td>
-        <td style="font-weight:800;">${days<0?'Expired':days+' days'}</td>
-        <td>${esc(r.location)}</td>
-        <td style="font-weight:700;">${fmtNum(r.balance)}</td>
-        <td><span class="exp-badge ${badgeCls}">${badgeLabel}</span></td>
-      </tr>`;
+      return '<tr class="'+cls+'"><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td>'+cleanDate(r.expiry)+'</td><td style="font-weight:800;">'+(days<0?'Expired':days+' days')+'</td><td>'+esc(r.location)+'</td><td style="font-weight:700;">'+fmtNum(r.balance)+'</td><td><span class="exp-badge '+badgeCls+'">'+badgeLabel+'</span></td></tr>';
     }).join('');
   }).catch(()=>{});
 }
