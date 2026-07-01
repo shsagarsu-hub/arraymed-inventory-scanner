@@ -1170,6 +1170,101 @@ function exportStockSummaryXLSX(){
   });
 }
 
+let lastExceptionData = null;
+let exceptionFilter = 'ALL';
+ 
+const EXC_TYPE_META = {
+  NEGATIVE_BALANCE:   { label: 'Negative Balance',   pillClass: 'negative' },
+  EXPIRED_WITH_STOCK: { label: 'Expired, Has Stock',  pillClass: 'expiredstock' },
+  WEIRD_EXPIRY:       { label: 'Weird Expiry',        pillClass: 'weirdexpiry' },
+  PLACEHOLDER_NAME:   { label: 'Placeholder Name',    pillClass: 'placeholder' },
+  MALFORMED_GTIN:     { label: 'Bad GTIN',             pillClass: 'malformedgtin' }
+};
+ 
+function loadExceptions(){
+  apiGet('getExceptionReport',{}).then(res=>{
+    if(!res || !res.success) return;
+    lastExceptionData = res;
+    const k = res.kpis;
+    document.getElementById('excNegBalance').textContent = fmtNum(k.negativeBalance);
+    document.getElementById('excExpiredStock').textContent = fmtNum(k.expiredWithStock);
+    document.getElementById('excWeirdExpiry').textContent = fmtNum(k.weirdExpiry);
+    document.getElementById('excPlaceholder').textContent = fmtNum(k.placeholderName);
+    document.getElementById('excMalformedGtin').textContent = fmtNum(k.malformedGtin);
+    renderExceptionTable();
+  }).catch(()=>{});
+}
+ 
+function setExceptionFilter(type){
+  exceptionFilter = type;
+  document.querySelectorAll('#excFilterToggle button').forEach(b=>b.classList.toggle('active', b.dataset.filter===type));
+  renderExceptionTable();
+}
+ 
+function renderExceptionTable(){
+  const tbody = document.getElementById('excTableBody');
+  if(!lastExceptionData){ tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><p>Loading&hellip;</p></div></td></tr>'; return; }
+  const q = document.getElementById('excSearchInput').value.trim().toLowerCase();
+  let rows = lastExceptionData.exceptions;
+  if(exceptionFilter !== 'ALL') rows = rows.filter(r=>r.type===exceptionFilter);
+  if(q) rows = rows.filter(r =>
+    (r.itemName||'').toLowerCase().includes(q) ||
+    (r.gtin||'').toLowerCase().includes(q) ||
+    (r.reason||'').toLowerCase().includes(q)
+  );
+  if(!rows.length){
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="empty-icon">&#x2705;</div><p>No exceptions found'+(q||exceptionFilter!=='ALL'?' for this filter':'')+'</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r=>{
+    const meta = EXC_TYPE_META[r.type] || { label:r.type, pillClass:'placeholder' };
+    return '<tr>'+
+      '<td><span class="exc-pill '+meta.pillClass+'">'+esc(meta.label)+'</span></td>'+
+      '<td style="font-weight:700;">'+esc(r.itemName)+'</td>'+
+      '<td style="font-family:\'Courier New\',monospace;font-size:11px;">'+esc(r.gtin||'\u2014')+'</td>'+
+      '<td>'+esc(r.lot||'\u2014')+'</td>'+
+      '<td style="font-size:11px;color:var(--text2);">'+esc(r.location)+'</td>'+
+      '<td style="font-size:11px;color:var(--text2);">'+esc(r.segment||'\u2014')+'</td>'+
+      '<td style="font-size:11px;color:var(--text2);max-width:280px;">'+esc(r.reason)+'</td>'+
+      '</tr>';
+  }).join('');
+}
+ 
+// CSV export: simplest path, no extra Apps Script setup required.
+function exportStockSummaryCSV(){
+  if(!invSegment){ alert('Select a business unit / segment first.'); return; }
+  const url = API_BASE_URL + '?action=downloadStockSummaryCSV&segment=' + encodeURIComponent(invSegment);
+  window.open(url, '_blank');
+}
+ 
+// XLSX export: requires the Advanced Drive Service enabled on the Apps
+// Script project. Comes back as base64 JSON, converted to a Blob
+// client-side and downloaded via a temporary <a> link.
+function exportStockSummaryXLSX(){
+  if(!invSegment){ alert('Select a business unit / segment first.'); return; }
+  const btn = document.getElementById('xlsxExportBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Preparing…';
+  apiGet('getStockSummaryXLSX', {segment: invSegment}).then(res=>{
+    btn.disabled = false; btn.textContent = originalText;
+    if(!res || !res.success){ alert((res&&res.message)||'Export failed.'); return; }
+    const byteChars = atob(res.base64);
+    const byteNumbers = new Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) byteNumbers[i]=byteChars.charCodeAt(i);
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = res.filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }).catch(e=>{
+    btn.disabled = false; btn.textContent = originalText;
+    alert('Export error: '+e);
+  });
+}
+
 function loadLogs(){
   apiGet('getDashboardData',{}).then(res=>{
     if(!res||!res.success) return;
