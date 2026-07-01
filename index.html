@@ -1334,6 +1334,105 @@ function filterDCHospitals(){
   else renderDCHospitals(filtered);
 }
 
+<!-- ═══════════════════════════════════════════════════════════════
+  DC STOCK & MATERIAL LOG EXPORT — frontend additions
+  ═══════════════════════════════════════════════════════════════ -->
+
+<!-- 1) DC STOCK — find this existing line in the DC Stock view:
+
+  <div class="card-header" style="margin-bottom:10px;"><div class="section-label" style="margin:0;">By Hospital</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">&#x27F3; Refresh</button></div>
+
+   Replace it with this (adds CSV + Excel buttons next to Refresh): -->
+
+<div class="card-header" style="margin-bottom:10px;">
+  <div class="section-label" style="margin:0;">By Hospital</div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="exportDCStockCSV()">&#x2B07; CSV</button>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" id="dcXlsxExportBtn" onclick="exportDCStockXLSX()">&#x2B07; Excel</button>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">&#x27F3; Refresh</button>
+  </div>
+</div>
+
+<!-- 2) MATERIAL LOG — find this existing line in the Material Log view:
+
+  <div class="card-header"><div class="card-title" style="margin:0;">Movement History</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">&#x27F3; Refresh</button></div>
+
+   Replace it with this: -->
+
+<div class="card-header">
+  <div class="card-title" style="margin:0;">Movement History</div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="exportMaterialLogCSV()">&#x2B07; CSV</button>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" id="matXlsxExportBtn" onclick="exportMaterialLogXLSX()">&#x2B07; Excel</button>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">&#x27F3; Refresh</button>
+  </div>
+</div>
+
+<!-- 3) Add this JS anywhere at the top level of the existing <script>
+      block (e.g. right after the Inventory Stock export functions,
+      or right after filterDCHospitals() / filterMaterialTable()). -->
+
+function exportDCStockCSV(){
+  if(!dcSegment){ alert('Select a business unit / segment first.'); return; }
+  const url = API_BASE_URL + '?action=downloadDCStockCSV&segment=' + encodeURIComponent(dcSegment);
+  window.open(url, '_blank');
+}
+
+function exportDCStockXLSX(){
+  if(!dcSegment){ alert('Select a business unit / segment first.'); return; }
+  const btn = document.getElementById('dcXlsxExportBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Preparing…';
+  apiGet('getDCStockXLSX', {segment: dcSegment}).then(res=>{
+    btn.disabled = false; btn.textContent = originalText;
+    if(!res || !res.success){ alert((res&&res.message)||'Export failed.'); return; }
+    downloadBase64AsFile_(res.base64, res.filename);
+  }).catch(e=>{
+    btn.disabled = false; btn.textContent = originalText;
+    alert('Export error: '+e);
+  });
+}
+
+function exportMaterialLogCSV(){
+  if(!materialSegment){ alert('Select a business unit / segment first.'); return; }
+  const url = API_BASE_URL + '?action=downloadMaterialLogCSV&segment=' + encodeURIComponent(materialSegment);
+  window.open(url, '_blank');
+}
+
+function exportMaterialLogXLSX(){
+  if(!materialSegment){ alert('Select a business unit / segment first.'); return; }
+  const btn = document.getElementById('matXlsxExportBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Preparing…';
+  apiGet('getMaterialLogXLSX', {segment: materialSegment}).then(res=>{
+    btn.disabled = false; btn.textContent = originalText;
+    if(!res || !res.success){ alert((res&&res.message)||'Export failed.'); return; }
+    downloadBase64AsFile_(res.base64, res.filename);
+  }).catch(e=>{
+    btn.disabled = false; btn.textContent = originalText;
+    alert('Export error: '+e);
+  });
+}
+
+// Shared helper — same base64-to-download logic used by
+// exportStockSummaryXLSX, factored out so it's not duplicated
+// three times. If exportStockSummaryXLSX already exists in your
+// file with this logic inline, you can leave it as-is; this helper
+// is only used by the two new DC Stock / Material Log functions above.
+function downloadBase64AsFile_(base64, filename){
+  const byteChars = atob(base64);
+  const byteNumbers = new Array(byteChars.length);
+  for(let i=0;i<byteChars.length;i++) byteNumbers[i]=byteChars.charCodeAt(i);
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 let lastMaterialData=null;
 function loadMaterialLog(){
   if(!materialSegment) return;
