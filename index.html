@@ -362,7 +362,7 @@
         <div class="kpi-box green"><div class="kpi-num" id="dcTotalUsed">0</div><div class="kpi-label">Total Used</div></div>
         <div class="kpi-box red"><div class="kpi-num" id="dcBalance">0</div><div class="kpi-label">At Hospitals</div></div>
       </div>
-      <div class="card-header" style="margin-bottom:10px;"><div class="section-label" style="margin:0;">By Hospital</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">&#x27F3; Refresh</button></div>
+      <div class="card-header" style="margin-bottom:10px;">   <div class="section-label" style="margin:0;">By Hospital</div>   <div style="display:flex;gap:8px;">     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="exportDCStockCSV()">&#x2B07; CSV</button>     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" id="dcXlsxExportBtn" onclick="exportDCStockXLSX()">&#x2B07; Excel</button>     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">&#x27F3; Refresh</button>   </div> </div>
       <div class="toolbar-row">
         <div class="view-toggle" id="dcViewToggle"><button class="active" onclick="setDcGroupMode(true)">&#x1F4E6; By Item</button><button onclick="setDcGroupMode(false)">&#x1F52C; By Lot</button></div>
         <div class="toolbar-actions"><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="expandAllHospitals()">&#x2B07; Expand All</button><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="collapseAllHospitals()">&#x2B06; Collapse All</button></div>
@@ -385,7 +385,7 @@
       </div>
       <div class="card" style="padding:0;">
         <div style="padding:14px 16px 0;">
-          <div class="card-header"><div class="card-title" style="margin:0;">Movement History</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">&#x27F3; Refresh</button></div>
+          <div class="card-header">   <div class="card-title" style="margin:0;">Movement History</div>   <div style="display:flex;gap:8px;">     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="exportMaterialLogCSV()">&#x2B07; CSV</button>     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" id="matXlsxExportBtn" onclick="exportMaterialLogXLSX()">&#x2B07; Excel</button>     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">&#x27F3; Refresh</button>   </div> </div>
           <div class="toolbar-row"><div class="view-toggle" id="matViewToggle"><button class="active" onclick="setMatGroupMode(true)">&#x1F5C2; By Reason</button><button onclick="setMatGroupMode(false)">&#x1F4DC; By Entry</button></div></div>
           <div class="fg" style="margin-bottom:12px;"><input type="text" id="matSearchInput" placeholder="&#x1F50D; Search item name or reason&hellip;" oninput="filterMaterialTable()"></div>
         </div>
@@ -1333,44 +1333,6 @@ function filterDCHospitals(){
   if(!Object.keys(filtered).length){ document.getElementById('dcHospitalsList').innerHTML='<div class="empty"><div class="empty-icon">\ud83d\udd0d</div><p>No hospitals matching "'+esc(q)+'"</p></div>'; }
   else renderDCHospitals(filtered);
 }
-
-<!-- ═══════════════════════════════════════════════════════════════
-  DC STOCK & MATERIAL LOG EXPORT — frontend additions
-  ═══════════════════════════════════════════════════════════════ -->
-
-<!-- 1) DC STOCK — find this existing line in the DC Stock view:
-
-  <div class="card-header" style="margin-bottom:10px;"><div class="section-label" style="margin:0;">By Hospital</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">&#x27F3; Refresh</button></div>
-
-   Replace it with this (adds CSV + Excel buttons next to Refresh): -->
-
-<div class="card-header" style="margin-bottom:10px;">
-  <div class="section-label" style="margin:0;">By Hospital</div>
-  <div style="display:flex;gap:8px;">
-    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="exportDCStockCSV()">&#x2B07; CSV</button>
-    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" id="dcXlsxExportBtn" onclick="exportDCStockXLSX()">&#x2B07; Excel</button>
-    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadDC()">&#x27F3; Refresh</button>
-  </div>
-</div>
-
-<!-- 2) MATERIAL LOG — find this existing line in the Material Log view:
-
-  <div class="card-header"><div class="card-title" style="margin:0;">Movement History</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">&#x27F3; Refresh</button></div>
-
-   Replace it with this: -->
-
-<div class="card-header">
-  <div class="card-title" style="margin:0;">Movement History</div>
-  <div style="display:flex;gap:8px;">
-    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="exportMaterialLogCSV()">&#x2B07; CSV</button>
-    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" id="matXlsxExportBtn" onclick="exportMaterialLogXLSX()">&#x2B07; Excel</button>
-    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadMaterialLog()">&#x27F3; Refresh</button>
-  </div>
-</div>
-
-<!-- 3) Add this JS anywhere at the top level of the existing <script>
-      block (e.g. right after the Inventory Stock export functions,
-      or right after filterDCHospitals() / filterMaterialTable()). -->
 
 function exportDCStockCSV(){
   if(!dcSegment){ alert('Select a business unit / segment first.'); return; }
