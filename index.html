@@ -339,7 +339,7 @@
       </div>
       <div class="card" style="padding:0;">
         <div style="padding:14px 16px 0;">
-          <div class="card-header"><div class="card-title" style="margin:0;">Live Stock Balance</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">&#x27F3; Refresh</button></div>
+          <div class="card-header">   <div class="card-title" style="margin:0;">Live Stock Balance</div>   <div style="display:flex;gap:8px;">     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="exportStockSummaryCSV()">&#x2B07; CSV</button>     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" id="xlsxExportBtn" onclick="exportStockSummaryXLSX()">&#x2B07; Excel</button>     <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadInventory()">&#x27F3; Refresh</button>   </div> </div>
           <div class="toolbar-row"><div class="view-toggle" id="invViewToggle"><button class="active" onclick="setInvGroupMode(true)">&#x1F4E6; By Item</button><button onclick="setInvGroupMode(false)">&#x1F52C; By Lot</button></div></div>
           <div class="fg" style="margin-bottom:12px;"><input type="text" id="invSearchInput" placeholder="&#x1F50D; Search item name&hellip;" oninput="filterInventoryTable()"></div>
         </div>
@@ -395,14 +395,48 @@
     </div>
   </div>
   <div class="view" id="view-reports">
-    <div class="page-title">&#x1F4CB; <span>Reports</span></div>
+    <div class="page-title">📋 <span>Reports</span></div>
     <div class="card">
-      <div class="card-header"><div class="card-title" style="margin:0;">&#x23F0; Expiry Tracker &mdash; Next 180 Days</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadReports()">&#x27F3; Refresh</button></div>
+      <div class="card-header"><div class="card-title" style="margin:0;">⏰ Expiry Tracker — Next 180 Days</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadReports()">⟳ Refresh</button></div>
       <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">Covers both Inventory and DC stock. Items expiring within 180 days from today.</p>
-      <div class="tbl-wrap"><table><thead><tr><th>Item Name</th><th>Lot</th><th>Expiry</th><th>Days Left</th><th>Location</th><th>Balance</th><th>Status</th></tr></thead><tbody id="expiryTableBody"><tr><td colspan="7"><div class="empty"><p>Loading&hellip;</p></div></td></tr></tbody></table></div>
+      <div class="tbl-wrap"><table>...</table></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" style="margin:0;">⚠️ Exception Report</div>
+    <button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadExceptions()">&#x27F3; Refresh</button>
+  </div>
+  <p style="font-size:11px;color:var(--text2);margin-bottom:12px;">
+    Flags stock we couldn't scan properly, placeholder names (e.g. "Str", "JR"), unusual expiry
+    dates, and negative balances — so bad data gets caught and cleaned up instead of quietly
+    sitting in the numbers.
+  </p>
+  <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px;">
+    <div class="kpi-box red"><div class="kpi-num" id="excNegBalance">0</div><div class="kpi-label">Negative Bal.</div></div>
+    <div class="kpi-box amber"><div class="kpi-num" id="excExpiredStock">0</div><div class="kpi-label">Expired w/ Stock</div></div>
+    <div class="kpi-box amber"><div class="kpi-num" id="excWeirdExpiry">0</div><div class="kpi-label">Weird Expiry</div></div>
+    <div class="kpi-box blue"><div class="kpi-num" id="excPlaceholder">0</div><div class="kpi-label">Placeholder Names</div></div>
+    <div class="kpi-box blue"><div class="kpi-num" id="excMalformedGtin">0</div><div class="kpi-label">Bad GTINs</div></div>
+  </div>
+  <div class="toolbar-row">
+    <div class="view-toggle" id="excFilterToggle">
+      <button class="active" data-filter="ALL" onclick="setExceptionFilter('ALL')">All</button>
+      <button data-filter="NEGATIVE_BALANCE" onclick="setExceptionFilter('NEGATIVE_BALANCE')">Negative</button>
+      <button data-filter="EXPIRED_WITH_STOCK" onclick="setExceptionFilter('EXPIRED_WITH_STOCK')">Expired</button>
+      <button data-filter="WEIRD_EXPIRY" onclick="setExceptionFilter('WEIRD_EXPIRY')">Weird Date</button>
+      <button data-filter="PLACEHOLDER_NAME" onclick="setExceptionFilter('PLACEHOLDER_NAME')">Placeholder</button>
+      <button data-filter="MALFORMED_GTIN" onclick="setExceptionFilter('MALFORMED_GTIN')">Bad GTIN</button>
     </div>
   </div>
-  <div class="view" id="view-logs">
+  <div class="fg" style="margin-bottom:12px;"><input type="text" id="excSearchInput" placeholder="&#x1F50D; Search item name, GTIN, or reason&hellip;" oninput="renderExceptionTable()"></div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Type</th><th>Item Name</th><th>GTIN</th><th>Lot</th><th>Location</th><th>Segment</th><th>Reason</th></tr></thead>
+      <tbody id="excTableBody"><tr><td colspan="7"><div class="empty"><p>Loading&hellip;</p></div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+<div class="view" id="view-logs">
     <div class="page-title">&#x1F550; Scan <span>Logs</span></div>
     <div class="card">
       <div class="card-header"><div class="card-title" style="margin:0;">Recent Activity (last 25)</div><button class="btn btn-secondary" style="padding:6px 12px;font-size:11px;" onclick="loadLogs()">&#x27F3; Refresh</button></div>
@@ -1093,9 +1127,47 @@ function filterInventoryTable(){
   if(!lastInventoryData) return;
   const q=document.getElementById('invSearchInput').value.trim().toLowerCase();
   let rows=!q?lastInventoryData.stockRows:lastInventoryData.stockRows.filter(r=>(r.itemName||'').toLowerCase().includes(q));
-  if(q&&!rows.length){ document.getElementById('invTableBody').innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">\ud83d\udd0d</div><p>No items matching "'+esc(q)+'"</p></div></td></tr>'; return; }
+  if(q&&!rows.length){ document.getElementById('invTableBody').innerHTML='<tr><td colspan="12"><div class="empty"><div class="empty-icon">🔍</div><p>No items matching "'+esc(q)+'"</p></div></td></tr>'; return; }
   if(invGroupByItem) rows=groupRowsByItem(rows);
   renderInventoryTable(rows);
+}
+
+// CSV export: simplest path, no extra Apps Script setup required.
+// Uses the segment currently selected in the Inventory Stock dropdown.
+function exportStockSummaryCSV(){
+  if(!invSegment){ alert('Select a business unit / segment first.'); return; }
+  const url = API_BASE_URL + '?action=downloadStockSummaryCSV&segment=' + encodeURIComponent(invSegment);
+  window.open(url, '_blank');
+}
+
+// XLSX export: requires the Advanced Drive Service enabled on the Apps
+// Script project (see setup note in the backend file). Comes back as
+// base64 JSON since a GET request can't force a binary download the
+// way the CSV path can, so we convert it to a Blob client-side and
+// trigger the download via a temporary <a> link.
+function exportStockSummaryXLSX(){
+  if(!invSegment){ alert('Select a business unit / segment first.'); return; }
+  const btn = document.getElementById('xlsxExportBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Preparing…';
+  apiGet('getStockSummaryXLSX', {segment: invSegment}).then(res=>{
+    btn.disabled = false; btn.textContent = originalText;
+    if(!res || !res.success){ alert((res&&res.message)||'Export failed.'); return; }
+    const byteChars = atob(res.base64);
+    const byteNumbers = new Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++) byteNumbers[i]=byteChars.charCodeAt(i);
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = res.filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }).catch(e=>{
+    btn.disabled = false; btn.textContent = originalText;
+    alert('Export error: '+e);
+  });
 }
 
 function loadLogs(){
@@ -1236,6 +1308,7 @@ function loadReports(){
       return '<tr class="'+cls+'"><td style="font-weight:700;">'+esc(r.itemName)+'</td><td>'+esc(r.lot||'\u2014')+'</td><td>'+cleanDate(r.expiry)+'</td><td style="font-weight:800;">'+(days<0?'Expired':days+' days')+'</td><td>'+esc(r.location)+'</td><td style="font-weight:700;">'+fmtNum(r.balance)+'</td><td><span class="exp-badge '+badgeCls+'">'+badgeLabel+'</span></td></tr>';
     }).join('');
   }).catch(()=>{});
+ loadExceptions();
 }
 
 function esc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
