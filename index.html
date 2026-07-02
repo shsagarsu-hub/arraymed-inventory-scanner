@@ -969,7 +969,7 @@ function renderReview(){
       '<div class="ric-top"><div><div class="ric-gtin">GTIN '+esc(l.gtin)+(l.lot?(' \u00b7 Lot '+esc(l.lot)):'')+(l.serial?(' \u00b7 S/N '+esc(l.serial)):'')+'</div></div>'+
       '<div class="ric-qty-badge">Qty: '+l.qty+'</div></div>';
     if(l.unmapped){
-      inner += '<div class="fg" style="margin-bottom:6px;"><label>Tally Item Name <span style="color:var(--red)">*</span></label><input type="text" id="ric-name-'+i+'" placeholder="Enter name as per Tally" oninput="updateReviewLineName('+i+', this.value)"></div>'+
+      inner += '<div class="fg" style="margin-bottom:6px;"><label>Tally Item Name <span style="color:var(--red)">*</span></label><input type="text" id="ric-name-'+i+'" placeholder="Enter FULL name as per Tally (min 5 characters)" minlength="5" oninput="updateReviewLineName('+i+', this.value); this.style.borderColor = looksLikePlaceholder(this.value) ? \'var(--red)\' : \'\';"></div>'+
         '<div class="fg" style="margin-bottom:6px;"><label>Brand (optional)</label><input type="text" id="ric-brand-'+i+'" placeholder="e.g. Stryker, Zeiss\u2026" oninput="updateReviewLineBrand('+i+', this.value)"></div>';
     } else {
       inner += '<div style="font-size:13px;font-weight:700;margin-bottom:6px;">'+esc(l.itemName)+(l.brand?(' \u00b7 '+esc(l.brand)):'')+'</div>';
@@ -985,9 +985,26 @@ function updateReviewLineMRP(i,val){ sessionLines[i].mrp=val.trim(); }
 </script>
 
 <script>
+const PLACEHOLDER_NAME_EXACT_FE = ['str','stry','styr','stryk','jr','ambu','unmapped','na','n/a','test','temp','unknown','item','product','x','xx','xxx'];
+const PLACEHOLDER_NAME_MAX_LEN_FE = 4;
+function looksLikePlaceholder(name){
+  const n = String(name||'').trim();
+  if(!n) return true;
+  if(PLACEHOLDER_NAME_EXACT_FE.indexOf(n.toLowerCase())!==-1) return true;
+  if(n.length<=PLACEHOLDER_NAME_MAX_LEN_FE) return true;
+  return false;
+}
+
 function submitSession(){
   const stillUnmapped=sessionLines.filter(l=>l.unmapped&&!l.itemName.trim());
   if(stillUnmapped.length){ alert('Please enter the Tally Item Name for all unmapped items ('+stillUnmapped.length+' remaining) before submitting.'); return; }
+  const placeholderNamed=sessionLines.filter(l=>l.unmapped&&looksLikePlaceholder(l.itemName));
+  if(placeholderNamed.length){
+    alert('These item names look like placeholders, not real Tally names, and won\'t be saved:\n\n'+
+      placeholderNamed.map(l=>'GTIN '+l.gtin+': "'+l.itemName+'"').join('\n')+
+      '\n\nPlease type the full item name as it appears in Tally before submitting.');
+    return;
+  }
   if(!sessionLines.length){ alert('No items to submit.'); return; }
   const btn=document.getElementById('submitSessionBtn');
   btn.disabled=true; btn.textContent='Submitting\u2026';
